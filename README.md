@@ -1,4 +1,5 @@
 <!-- [![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)-->
+
 [![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A522.10.1-23aa62.svg)](https://www.nextflow.io/)
 [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
@@ -7,7 +8,7 @@
 
 ## Introduction
 
-<!-- TODO nf-core: Write a 1-2 sentence summary of what data the pipeline is for and what it does -->
+The pipeline takes as input SNVs and short InDels in VCF file format and annotates them using Ensembl variant effect predictor (VEP). Several parameters in VEP annotation can be configured through this workflow.
 
 **cio-abcd/variantinterpretation** is a bioinformatics best-practice analysis pipeline for adding biological and clinical knowledge to genomic variants.
 
@@ -21,8 +22,9 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 
 <!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->
 
-1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
-2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
+1. Run Samplesheet check with modified [nf-core script](bin/check_samplesheet.py)
+2. Annotation using [Ensembl variant effect predictor (VEP)](https://www.ensembl.org/info/docs/tools/vep/index.html)
+3. Run MultiQC ([`MultiQC`](http://multiqc.info/))
 
 ## Quick Start
 
@@ -43,14 +45,14 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
    > - If you are using `singularity`, please use the [`nf-core download`](https://nf-co.re/tools/#downloading-pipelines-for-offline-use) command to download images first, before running the pipeline. Setting the [`NXF_SINGULARITY_CACHEDIR` or `singularity.cacheDir`](https://www.nextflow.io/docs/latest/singularity.html?#singularity-docker-hub) Nextflow options enables you to store and re-use the images from a central location for future pipeline runs.
    > - If you are using `conda`, it is highly recommended to use the [`NXF_CONDA_CACHEDIR` or `conda.cacheDir`](https://www.nextflow.io/docs/latest/conda.html) settings to store the environments in a central location for future pipeline runs.
 
-<!-- 4. Start running your own analysis! -->
+4. Start running your own analysis!
 
-   <!-- TODO nf-core: Update the example "typical command" below used to run the pipeline -->
-<!--
-   ```bash
-   nextflow run cio-abcd/variantinterpretation --input samplesheet.csv --outdir <OUTDIR> --genome GRCh37 -profile <docker/singularity/podman/shifter/charliecloud/conda/institute>
-   ```
--->
+Specify parameters best using `nf-core launch` and add to run command.
+
+```bash
+nextflow run cio-abcd/variantinterpretation -params-file nf-params.json -profile <docker/singularity/podman/shifter/charliecloud/conda/institute>
+```
+
 ## Contributions and Support
 
 This Pipeline development repository is a collaborative effort of the Center for Integrated Oncology of the Universities of Aachen, Bonn, Cologne and Düsseldorf to standardize and optimize data analysis in a clinical context.
