@@ -12,9 +12,10 @@ WorkflowVariantinterpretation.initialise(params, log)
 // TODO nf-core: Add all file path parameters for the pipeline to the list below
 // Check input path parameters to see if they exist
 def checkPathParamList = [ 
-	params.input,
-	params.fasta,
-	params.multiqc_config,	
+       params.input,
+       params.fasta,
+       params.multiqc_config,
+       params.vep_cache
 ]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
@@ -23,7 +24,7 @@ if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input sample
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    CONFIG FILES
+    CONFIG FILES & INPUT CHANNELS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
@@ -31,6 +32,20 @@ ch_multiqc_config          = Channel.fromPath("$projectDir/assets/multiqc_config
 ch_multiqc_custom_config   = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
 ch_multiqc_logo            = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
 ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
+
+// Initialize files channels from parameters
+
+vep_cache                  = params.vep_cache          ? Channel.fromPath(params.vep_cache).collect()                : []
+fasta                      = params.fasta              ? Channel.fromPath(params.fasta).collect()                    : Channel.empty()
+
+// Initialize value channels from parameters
+
+vep_cache_version          = params.vep_cache_version  ?: Channel.empty()
+vep_genome                 = params.vep_genome         ?: Channel.empty()
+vep_species                = params.vep_species        ?: Channel.empty()
+
+// VEP extra files
+vep_extra_files            = []
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -52,6 +67,7 @@ include { INPUT_CHECK    } from '../subworkflows/local/input_check'
 //
 // MODULE: Installed directly from nf-core/modules
 //
+include { ENSEMBLVEP_VEP              } from '../modules/nf-core/ensemblvep/vep/main' 
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
@@ -71,10 +87,29 @@ workflow VARIANTINTERPRETATION {
     //
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files
     //
-    INPUT_CHECK (
+    input = INPUT_CHECK (
         ch_input
     )
-    ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
+    ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)    
+
+    ///
+    // VEP annotation module
+    //
+    if (params.vep) {
+        ENSEMBLVEP_VEP( input.variants,
+                        vep_genome,
+                        vep_species,
+                        vep_cache_version,
+                        vep_cache,
+                        fasta,
+                        vep_extra_files)
+        ch_versions = ch_versions.mix(ENSEMBLVEP_VEP.out.versions)
+    }
+
+    // dump software versions
+    ch_version_yaml = Channel.empty()
+    CUSTOM_DUMPSOFTWAREVERSIONS(ch_versions.unique().collectFile(name: 'versions.yml'))
+    ch_version_yaml = CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect()
 
     //
     // MODULE: MultiQC
@@ -97,6 +132,7 @@ workflow VARIANTINTERPRETATION {
         ch_multiqc_logo.toList()
     )
     multiqc_report = MULTIQC.out.report.toList()
+
 }
 
 /*

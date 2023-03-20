@@ -80,6 +80,42 @@
                 }
             }
         },
+        "annotation_options": {
+            "title": "Annotation options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "vep": {
+                    "type": "boolean",
+                    "default": true
+                },
+                "vep_out_format": {
+                    "type": "string",
+                    "default": "vcf"
+                },
+                "vep_compress_output": {
+                    "type": "string",
+                    "default": "None"
+                },
+                "vep_genome": {
+                    "type": "string",
+                    "default": "None"
+                },
+                "vep_species": {
+                    "type": "string",
+                    "default": "None"
+                },
+                "vep_cache": {
+                    "type": "string",
+                    "default": "None"
+                },
+                "vep_cache_version": {
+                    "type": "string",
+                    "default": "None"
+                }
+            }
+        },
         "institutional_config_options": {
             "title": "Institutional config options",
             "type": "object",
@@ -273,6 +309,9 @@
         },
         {
             "$ref": "#/definitions/reference_genome_options"
+        },
+        {
+            "$ref": "#/definitions/annotation_options"
         },
         {
             "$ref": "#/definitions/institutional_config_options"
