@@ -23,8 +23,8 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 - `ensemblvep/`
   - `*.summary.html`: Summary VEP report.
-  - `*.vcf.gz`: Gzipped VCF file containing the input variants  annotated with VEP. The CSQ string gives information about added columns by VEP.
-</details>
+  - `*.vcf.gz`: Gzipped VCF file containing the input variants annotated with VEP. The CSQ string gives information about added columns by VEP.
+  </details>
 
 [VEP](https://www.ensembl.org/info/docs/tools/vep/index.html) annotated variants based on provided public databases. It provides biological information as protein consequence and effect prediction as well as co-located variants from existing databases giving information, e.g., about population allele frequencies. For full overview, see the [VEP annotation sources](https://www.ensembl.org/info/docs/tools/vep/script/vep_cache.html) and [VEP command flags](https://www.ensembl.org/info/docs/tools/vep/script/vep_options.html).
 

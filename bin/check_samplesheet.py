@@ -24,9 +24,7 @@ class RowChecker:
 
     """
 
-    VALID_FORMATS = (
-        ".vcf.gz",        
-    )
+    VALID_FORMATS = (".vcf.gz",)
 
     def __init__(
         self,
@@ -40,18 +38,18 @@ class RowChecker:
         Args:
             sample_col (str): The name of the column that contains the sample name
                 (default "sample").
-            vcf_col (str): The name of the column that contains the vcf file path (default "vcf").            
+            vcf_col (str): The name of the column that contains the vcf file path (default "vcf").
 
         """
         super().__init__(**kwargs)
         self._sample_col = sample_col
-        self._vcf_col = vcf_col        
+        self._vcf_col = vcf_col
         self._seen = set()
         self.modified = []
 
     def validate_and_transform(self, row):
         """
-        Perform all validations on the given row and insert the read pairing status.
+        Perform all validations on the given row
 
         Args:
             row (dict): A mapping from column headers (keys) to elements of that row
@@ -59,7 +57,7 @@ class RowChecker:
 
         """
         self._validate_sample(row)
-        self._validate_vcf(row)        
+        self._validate_vcf(row)
         self._seen.add((row[self._sample_col], row[self._vcf_col]))
         self.modified.append(row)
 
@@ -153,7 +151,7 @@ def check_samplesheet(file_in, file_out):
         see also the `viral recon samplesheet`_::
 
             sample,vcf
-            SAMPLE,SAMPLE.vcf.gz            
+            SAMPLE,SAMPLE.vcf.gz
 
     """
     required_columns = {"sample", "vcf"}
@@ -174,7 +172,7 @@ def check_samplesheet(file_in, file_out):
                 logger.critical(f"{str(error)} On line {i + 2}.")
                 sys.exit(1)
         checker.validate_unique_samples()
-    header = list(reader.fieldnames)    
+    header = list(reader.fieldnames)
     # See https://docs.python.org/3.9/library/csv.html#id3 to read up on `newline=""`.
     with file_out.open(mode="w", newline="") as out_handle:
         writer = csv.DictWriter(out_handle, header, delimiter=",")

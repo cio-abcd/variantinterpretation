@@ -1,4 +1,5 @@
 <!-- [![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)-->
+
 [![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A522.10.1-23aa62.svg)](https://www.nextflow.io/)
 [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
@@ -7,7 +8,7 @@
 
 ## Introduction
 
-The pipeline takes as input SNVs and short InDels in VCF file format and annotates them using Ensembl variant effect predictor (VEP). Several parameters in VEP annotation can be configured through this workflow. 
+The pipeline takes as input SNVs and short InDels in VCF file format and annotates them using Ensembl variant effect predictor (VEP). Several parameters in VEP annotation can be configured through this workflow.
 
 **cio-abcd/variantinterpretation** is a bioinformatics best-practice analysis pipeline for adding biological and clinical knowledge to genomic variants.
 
@@ -48,9 +49,9 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 
 Specify parameters best using `nf-core launch` and add to run command.
 
-   ```bash
-   nextflow run cio-abcd/variantinterpretation -params-file nf-params.json -profile <docker/singularity/podman/shifter/charliecloud/conda/institute>
-   ```
+```bash
+nextflow run cio-abcd/variantinterpretation -params-file nf-params.json -profile <docker/singularity/podman/shifter/charliecloud/conda/institute>
+```
 
 ## Contributions and Support
 

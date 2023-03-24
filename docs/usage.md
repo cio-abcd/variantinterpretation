@@ -31,10 +31,11 @@ TREATMENT_REP3,AEG588A6.vcf.gz,
 TREATMENT_REP3,AEG588A6.vcf.gz,
 ```
 
-| Column    | Description                                                                                                                                                                            |
-| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sample`  | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
-| `vcf` | Full path to vcf file. File has to be gzipped and have the extension ".vcf.gz".                                                             |
+| Column   | Description                                                                                                                                                                            |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sample` | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
+| `vcf`    | Full path to vcf file. File has to be gzipped and have the extension ".vcf.gz".                                                                                                        |
+
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
 
 ## Running the pipeline
