@@ -68,8 +68,7 @@
                     "format": "directory-path",
                     "description": "Directory / URL base for iGenomes references.",
                     "default": "s3://ngi-igenomes/igenomes",
-                    "fa_icon": "fas fa-cloud-download-alt",
-                    "hidden": true
+                    "fa_icon": "fas fa-cloud-download-alt"
                 },
                 "igenomes_ignore": {
                     "type": "boolean",
@@ -83,38 +82,114 @@
         "annotation_options": {
             "title": "Annotation options",
             "type": "object",
-            "description": "",
+            "description": "VEP-related options for annotation of VCF files",
             "default": "",
             "properties": {
                 "vep": {
                     "type": "boolean",
-                    "default": true
+                    "default": true,
+                    "description": "Enable annotation using VEP"
                 },
                 "vep_out_format": {
                     "type": "string",
-                    "default": "vcf"
-                },
-                "vep_compress_output": {
-                    "type": "string",
-                    "default": "None"
+                    "default": "vcf",
+                    "description": "Output format for VEP",
+                    "enum": ["vcf", "json", "tab"]
                 },
                 "vep_genome": {
                     "type": "string",
-                    "default": "None"
+                    "default": "GRCh38",
+                    "description": "Specify the genome used for VEP."
                 },
                 "vep_species": {
                     "type": "string",
-                    "default": "None"
+                    "default": "homo_sapiens",
+                    "description": "Specify the species used for VEP"
                 },
                 "vep_cache": {
                     "type": "string",
-                    "default": "None"
+                    "default": "None",
+                    "description": "Define offline cache used for VEP.",
+                    "help_text": "Define offline cache used for VEP. Mandatory for running VEP. Has to be a file path."
                 },
                 "vep_cache_version": {
                     "type": "string",
-                    "default": "None"
+                    "default": "108",
+                    "description": "Version of VEP cache to use.",
+                    "help_text": "Should always match the implemented VEP tool version."
+                },
+                "refseq": {
+                    "type": "boolean",
+                    "default": true,
+                    "help_text": "Needs FASTA file defined.",
+                    "description": "Use RefSeq transcripts for annotation with VEP"
+                },
+                "merged": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Use merged ensembl and refseq cache",
+                    "help_text": "Cannot be combined with --refseq"
+                },
+                "check_existing": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Annotate dbSNP or other co-located databases."
+                },
+                "everything": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Adds lots of standard flags for annotation with VEP."
+                },
+                "no_escape": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Do not escape characters as \"=\" in HGSV strings."
+                },
+                "flag_pick": {
+                    "type": "boolean",
+                    "description": "Flags only one transcript based on VEP-specific criteria.",
+                    "help_text": "More information about the order to pick transcripts can be found here: https://www.ensembl.org/info/docs/tools/vep/script/vep_other.html#pick"
+                },
+                "flag_pick_allele": {
+                    "type": "boolean",
+                    "description": "as --flag_pick, but per variant allele.",
+                    "help_text": "Only different from --flag_pick if alternative alleles are present."
+                },
+                "flag_pick_allele_gene": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "as --flag_pick_allele, but but per variant allele and gene combination."
+                },
+                "terms": {
+                    "type": "string",
+                    "default": "SO",
+                    "enum": ["SO", "display", "NCBI"],
+                    "description": "Consequence terms to use.",
+                    "help_text": "Default is Sequence Ontology. Details can be found here: http://www.sequenceontology.org/"
+                },
+                "clin_sig_allele": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Provide allele-specific clinical significance."
+                },
+                "exclude_null_alleles": {
+                    "type": "boolean",
+                    "description": "Exclude variants with unknown alleles in existing databases as HGMD or COSMIC.",
+                    "help_text": "Important for the --check_existing output."
+                },
+                "no_check_alleles": {
+                    "type": "boolean",
+                    "description": "Disable check for novel alleles in existing databases. If disabled, compares by coordinate alone.",
+                    "help_text": "Important for the --check_existing output."
+                },
+                "var_synonyms": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Output also Synonyms for existing variants.",
+                    "help_text": "Important for --check_existing output."
                 }
-            }
+            },
+            "fa_icon": "fas fa-scroll"
         },
         "institutional_config_options": {
             "title": "Institutional config options",
@@ -176,7 +251,6 @@
                     "description": "Maximum number of CPUs that can be requested for any single job.",
                     "default": 16,
                     "fa_icon": "fas fa-microchip",
-                    "hidden": true,
                     "help_text": "Use to set an upper-limit for the CPU requirement for each process. Should be an integer e.g. `--max_cpus 1`"
                 },
                 "max_memory": {
@@ -185,7 +259,6 @@
                     "default": "128.GB",
                     "fa_icon": "fas fa-memory",
                     "pattern": "^\\d+(\\.\\d+)?\\.?\\s*(K|M|G|T)?B$",
-                    "hidden": true,
                     "help_text": "Use to set an upper-limit for the memory requirement for each process. Should be a string in the format integer-unit e.g. `--max_memory '8.GB'`"
                 },
                 "max_time": {
@@ -194,7 +267,6 @@
                     "default": "240.h",
                     "fa_icon": "far fa-clock",
                     "pattern": "^(\\d+\\.?\\s*(s|m|h|day)\\s*)+$",
-                    "hidden": true,
                     "help_text": "Use to set an upper-limit for the time requirement for each process. Should be a string in the format integer-unit e.g. `--max_time '2.h'`"
                 }
             }

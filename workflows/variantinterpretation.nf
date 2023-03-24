@@ -40,9 +40,22 @@ fasta                      = params.fasta              ? Channel.fromPath(params
 
 // Initialize value channels from parameters
 
-vep_cache_version          = params.vep_cache_version  ?: Channel.empty()
-vep_genome                 = params.vep_genome         ?: Channel.empty()
-vep_species                = params.vep_species        ?: Channel.empty()
+vep_cache_version          = params.vep_cache_version       ?: Channel.empty()
+vep_genome                 = params.vep_genome              ?: Channel.empty()
+vep_species                = params.vep_species             ?: Channel.empty()
+refseq                     = params.refseq                  ?: Channel.empty()
+merged                     = params.merged                  ?: Channel.empty()
+check_existing             = params.check_existing          ?: Channel.empty()
+everything                 = params.everything              ?: Channel.empty()
+no_escape                  = params.no_escape               ?: Channel.empty()
+flag_pick                  = params.flag_pick               ?: Channel.empty()
+flag_pick_allele           = params.flag_pick_allele        ?: Channel.empty()
+flag_pick_allele_gene      = params.flag_pick_allele_gene   ?: Channel.empty()
+terms                      = params.terms                   ?: Channel.empty()
+clin_sig_allele            = params.clin_sig_allele         ?: Channel.empty()
+exclude_null_alleles       = params.exclude_null_alleles    ?: Channel.empty()
+no_check_alleles           = params.no_check_alleles        ?: Channel.empty()
+var_synonyms               = params.var_synonyms            ?: Channel.empty()
 
 // VEP extra files
 vep_extra_files            = []
@@ -131,7 +144,7 @@ workflow VARIANTINTERPRETATION {
         ch_multiqc_custom_config.toList(),
         ch_multiqc_logo.toList()
     )
-    multiqc_report = MULTIQC.out.report.toList()
+        multiqc_report = MULTIQC.out.report.toList()
 
 }
 
