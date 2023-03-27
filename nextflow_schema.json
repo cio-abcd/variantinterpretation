@@ -118,17 +118,12 @@
                     "description": "Version of VEP cache to use.",
                     "help_text": "Should always match the implemented VEP tool version."
                 },
-                "refseq": {
-                    "type": "boolean",
-                    "default": true,
-                    "help_text": "Needs FASTA file defined.",
-                    "description": "Use RefSeq transcripts for annotation with VEP"
-                },
-                "merged": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Use merged ensembl and refseq cache",
-                    "help_text": "Cannot be combined with --refseq"
+                "vep_cache_source": {
+                    "type": "string",
+                    "default": "None",
+                    "help_text": "Leave empty (null) if ensembl (standard) cache is used.",
+                    "enum": ["None", "refseq", "merged"],
+                    "description": "Specified VEP cache. Either Ensembl (default, null), Refseq or merged."
                 },
                 "check_existing": {
                     "type": "boolean",
