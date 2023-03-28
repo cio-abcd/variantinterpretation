@@ -12,9 +12,10 @@ The directories listed below will be created in the results directory after the 
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
 
-- [ensemblvep](#ensemblvep) - Annotated VCF file and summary.
-- [MultiQC](#multiqc) - Aggregate report describing results and QC from the whole pipeline
-- [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution
+- [ensemblvep](#ensemblvep) - Annotates VCF file and reports summary.
+- [transcriptfilter](#transcriptfilter) - Filters for specific transcripts.
+- [MultiQC](#multiqc) - Aggregate report describing results and QC from the whole pipeline.
+- [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution.
 
 ### Ensembl VEP
 
@@ -27,6 +28,17 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
   </details>
 
 [VEP](https://www.ensembl.org/info/docs/tools/vep/index.html) annotated variants based on provided public databases. It provides biological information as protein consequence and effect prediction as well as co-located variants from existing databases giving information, e.g., about population allele frequencies. For full overview, see the [VEP annotation sources](https://www.ensembl.org/info/docs/tools/vep/script/vep_cache.html) and [VEP command flags](https://www.ensembl.org/info/docs/tools/vep/script/vep_options.html).
+
+### Transcriptfilter
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `ensemblvep/`
+  - `*.filt.vcf`: VCF file with all variants and additional FILTER column flag.
+  </details>
+
+[VEP_filter](https://www.ensembl.org/info/docs/tools/vep/script/vep_filter.html) is a separate script in the Ensembl VEP package that separates the filter step form vep. This module has a hard-coded configuration "--soft_filter" to prevent silent dropping of variants, instead a flag "filter_vep_fail/filter_vep_pass" will be added to the FILTER column. A default external argument is also --only_matched, will results in annotation being dropped if it does not match the filtering criteria. That results in variants only having transcript annotations matching the filter criteria, variants without any matching transcript will be retained, but without any annotation.
 
 ### MultiQC
 
