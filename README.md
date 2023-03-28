@@ -24,7 +24,8 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 
 1. Run Samplesheet check with modified [nf-core script](bin/check_samplesheet.py)
 2. Annotation using [Ensembl variant effect predictor (VEP)](https://www.ensembl.org/info/docs/tools/vep/index.html)
-3. Run MultiQC ([`MultiQC`](http://multiqc.info/))
+3. Filtering of transcripts using [filter_vep script](https://www.ensembl.org/info/docs/tools/vep/script/vep_filter.html).
+4. Run MultiQC ([`MultiQC`](http://multiqc.info/))
 
 ## Quick Start
 
