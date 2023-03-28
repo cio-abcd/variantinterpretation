@@ -186,6 +186,29 @@
             },
             "fa_icon": "fas fa-scroll"
         },
+        "filtering_option": {
+            "title": "Filtering option",
+            "type": "object",
+            "description": "Options for filtering VCF files",
+            "default": "",
+            "fa_icon": "fas fa-filter",
+            "properties": {
+                "transcriptfilter": {
+                    "type": "string",
+                    "default": "None",
+                    "enum": ["None", "PICK", "CANONICAL", "MANE_SELECT"],
+                    "description": "Transcript annotation column for filtering.",
+                    "help_text": "If variant does not have any match, all annotation will be removed and variant is flagged in FILTER column.\nCan work simultaneously with \"transcriptfilter\" param."
+                },
+                "transcriptlist": {
+                    "type": "string",
+                    "default": "None",
+                    "help_text": "If variant does not have any match, all annotation will be removed and variant is flagged in FILTER column.\nCan work simultaneously with \"transcriptfilter\" param.",
+                    "format": "file-path",
+                    "description": "List of transcripts for filtering."
+                }
+            }
+        },
         "institutional_config_options": {
             "title": "Institutional config options",
             "type": "object",
@@ -379,6 +402,9 @@
         },
         {
             "$ref": "#/definitions/annotation_options"
+        },
+        {
+            "$ref": "#/definitions/filtering_option"
         },
         {
             "$ref": "#/definitions/institutional_config_options"

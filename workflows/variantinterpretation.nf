@@ -15,7 +15,8 @@ def checkPathParamList = [
        params.input,
        params.fasta,
        params.multiqc_config,
-       params.vep_cache
+       params.vep_cache,
+       params.transcriptlist
 ]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
@@ -37,6 +38,7 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 
 vep_cache                  = params.vep_cache          ? Channel.fromPath(params.vep_cache).collect()                : []
 fasta                      = params.fasta              ? Channel.fromPath(params.fasta).collect()                    : Channel.empty()
+transcriptlist             = params.transcriptlist     ? Channel.fromPath(params.transcriptlist).collect()           : []
 
 // Initialize value channels from parameters
 
@@ -56,8 +58,8 @@ vep_extra_files            = []
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
-include { INPUT_CHECK    } from '../subworkflows/local/input_check'
-
+include { INPUT_CHECK           } from '../subworkflows/local/input_check'
+include { ENSEMBLVEP_FILTER     } from '../modules/local/ensemblvep/filter_vep/main'
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
@@ -104,6 +106,14 @@ workflow VARIANTINTERPRETATION {
                         fasta,
                         vep_extra_files)
         ch_versions = ch_versions.mix(ENSEMBLVEP_VEP.out.versions)
+
+        // Filtering for transcripts
+        if ( params.transcriptfilter || (params.transcriptlist!=[]) ) {
+            ENSEMBLVEP_FILTER( ENSEMBLVEP_VEP.out.vcf,
+                               transcriptlist
+            )
+            ch_versions = ch_versions.mix(ENSEMBLVEP_FILTER.out.versions)
+        }
     }
 
     // dump software versions
