@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - dev
+      - ci_dev
   pull_request:
   release:
     types: [published]
@@ -20,7 +21,7 @@ jobs:
     name: Run pipeline with test data
     # Only run on push if this is the nf-core dev branch (merged PRs)
     if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'cio-abcd/variantinterpretation') }}"
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     strategy:
       matrix:
         NXF_VER:
@@ -40,4 +41,4 @@ jobs:
         # For example: adding multiple test runs with different parameters
         # Remember that you can parallelise this by using strategy.matrix
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile test,docker --outdir ./results
+          nextflow run ${GITHUB_WORKSPACE} -profile test_ukb,podman --vep_cache /opt/vep_cache/108/indexed  --outdir ./results --input /opt/testdata_variantinterpretation/samplesheet.csv --fasta /opt/ncbi_grch38_wholegenomefasta_genome.fa
