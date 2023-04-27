@@ -53,10 +53,18 @@ Specify parameters best using `nf-core launch` and add to run command.
 nextflow run cio-abcd/variantinterpretation -params-file nf-params.json -profile <docker/singularity/podman/shifter/charliecloud/conda/institute>
 ```
 
+## Testing and Continuous Integration
+
+This Pipeline uses a custom continuous integration setup, so we can test compute intensive processes on private testdata.
+The [testdata](https://github.com/cio-abcd/testdata_variantinterpretation) and [ci setup](https://github.com/cio-abcd/cio_ci) are private for now.
+Currently the `nf-core CI` ci-test run on the single cell line sample [HD200](https://github.com/cio-abcd/testdata_variantinterpretation/blob/7fddfa20256a6a787a776838da59864f7ef8050e/UKD/sarek_mutect2/HD200-DNA.mutect2.vcf.gz), see [info.txt](https://github.com/cio-abcd/testdata_variantinterpretation/blob/7fddfa20256a6a787a776838da59864f7ef8050e/UKD/sarek_mutect2/info.txt).
+
 ## Contributions and Support
 
 This Pipeline development repository is a collaborative effort of the Center for Integrated Oncology of the Universities of Aachen, Bonn, Cologne and Düsseldorf to standardize and optimize data analysis in a clinical context.
+
 TODO: Add Information on CIO and ZPM.
+
 If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
 
 **Contributing authors**
