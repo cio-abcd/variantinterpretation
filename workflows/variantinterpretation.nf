@@ -45,6 +45,7 @@ transcriptlist             = params.transcriptlist     ? Channel.fromPath(params
 vep_cache_version          = params.vep_cache_version       ?: Channel.empty()
 vep_genome                 = params.vep_genome              ?: Channel.empty()
 vep_species                = params.vep_species             ?: Channel.empty()
+extraction_fields          = params.extraction_fields       ?: Channel.empty()
 
 // VEP extra files
 vep_extra_files            = []
@@ -60,6 +61,9 @@ vep_extra_files            = []
 //
 include { INPUT_CHECK           } from '../subworkflows/local/input_check'
 include { ENSEMBLVEP_FILTER     } from '../modules/local/ensemblvep/filter_vep/main'
+include { ENSEMBLVEP_VEP        } from '../modules/local/ensemblvep/vep/main'
+include { VEMBRANE_TABLE        } from '../subworkflows/local/vembrane_table/main'
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
@@ -69,7 +73,8 @@ include { ENSEMBLVEP_FILTER     } from '../modules/local/ensemblvep/filter_vep/m
 //
 // MODULE: Installed directly from nf-core/modules
 //
-include { ENSEMBLVEP_VEP              } from '../modules/nf-core/ensemblvep/vep/main' 
+include { BCFTOOLS_INDEX	      } from '../modules/nf-core/bcftools/index/main'
+include { BCFTOOLS_NORM               } from '../modules/nf-core/bcftools/norm/main' 
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
@@ -95,10 +100,30 @@ workflow VARIANTINTERPRETATION {
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)    
 
     ///
+    // bcftools index module
+    ///
+
+    BCFTOOLS_INDEX (	input.variants
+                   )
+    ch_versions = ch_versions.mix(BCFTOOLS_INDEX.out.versions)
+
+    ///
+    // splitting multiallelic sites into biallelic
+    ///
+
+    ch_norm = input.variants
+    ch_norm = ch_norm.join(BCFTOOLS_INDEX.out.tbi)
+
+    BCFTOOLS_NORM (     ch_norm,
+                        fasta
+		  )
+    ch_versions = ch_versions.mix(BCFTOOLS_NORM.out.versions)
+
+    ///
     // VEP annotation module
     //
     if (params.vep) {
-        ENSEMBLVEP_VEP( input.variants,
+        ENSEMBLVEP_VEP( BCFTOOLS_NORM.out.vcf,
                         vep_genome,
                         vep_species,
                         vep_cache_version,
@@ -114,6 +139,22 @@ workflow VARIANTINTERPRETATION {
             )
             ch_versions = ch_versions.mix(ENSEMBLVEP_FILTER.out.versions)
         }
+    }
+
+    ///
+    // MODULE: TSV conversion with vembrane table
+    ///    
+    if ( params.tsv ) {
+        if ( params.transcriptfilter || (params.transcriptlist!=[]) ) {
+            VEMBRANE_TABLE ( ENSEMBLVEP_FILTER.out.vcf,
+                             extraction_fields
+            )
+        } else {
+            VEMBRANE_TABLE ( ENSEMBLVEP_VEP.out.vcf,
+                             extraction_fields
+            )
+        }
+        ch_versions = ch_versions.mix(VEMBRANE_TABLE.out.versions)
     }
 
     // dump software versions
