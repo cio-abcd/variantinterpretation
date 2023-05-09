@@ -25,7 +25,8 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 1. Run Samplesheet check with modified [nf-core script](bin/check_samplesheet.py)
 2. Annotation using [Ensembl variant effect predictor (VEP)](https://www.ensembl.org/info/docs/tools/vep/index.html)
 3. Filtering of transcripts using [filter_vep script](https://www.ensembl.org/info/docs/tools/vep/script/vep_filter.html).
-4. Run MultiQC ([`MultiQC`](http://multiqc.info/))
+4. Generate a TSV file based on provided [VEP annotation fields](https://www.ensembl.org/info/docs/tools/vep/vep_formats.html#output) using [vembrane table](https://github.com/vembrane/vembrane)
+5. Run MultiQC ([`MultiQC`](http://multiqc.info/))
 
 ## Quick Start
 
@@ -64,7 +65,12 @@ If you would like to contribute to this pipeline, please see the [contributing g
 
 - RWTH University Hospital (UKA): Lancelot Seillier
 - University Hospital Bonn (UKB): Patrick Basitta, Florian Hölscher
+- University Hospital Köln (UKK): tba
 - University Hospital Düsseldorf (UKD): Kai Horny
+
+**Further contributors**
+
+TBA
 
 ## Citations
 

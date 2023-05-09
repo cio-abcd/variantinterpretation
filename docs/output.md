@@ -14,6 +14,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 - [ensemblvep](#ensemblvep) - Annotates VCF file and reports summary.
 - [transcriptfilter](#transcriptfilter) - Filters for specific transcripts.
+- [vembrane table](#vembranetable) - Generates TSV output based on provided VEP annotation fields
 - [MultiQC](#multiqc) - Aggregate report describing results and QC from the whole pipeline.
 - [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution.
 
@@ -39,6 +40,17 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
   </details>
 
 [VEP_filter](https://www.ensembl.org/info/docs/tools/vep/script/vep_filter.html) is a separate script in the Ensembl VEP package that separates the filter step form vep. This module has a hard-coded configuration "--soft_filter" to prevent silent dropping of variants, instead a flag "filter_vep_fail/filter_vep_pass" will be added to the FILTER column. A default external argument is also --only_matched, will results in annotation being dropped if it does not match the filtering criteria. That results in variants only having transcript annotations matching the filter criteria, variants without any matching transcript will be retained, but without any annotation.
+
+### Vembrane table
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `vembrane/`
+  - `*.tsv`: TSV file containing all fields provided by --extraction_fields, default: CHROM, POS, REF, ALT
+  </details>
+
+[Vembrane table](https://github.com/vembrane/vembrane) generates TSV files based on information found in the VCF header structure and can parse annotation information from VEP. This module can extract all annotation fields found in the [VEP output documentation](https://www.ensembl.org/info/docs/tools/vep/vep_formats.html#output), which need to be provided by --extraction_fields following common python syntax structures.
 
 ### MultiQC
 

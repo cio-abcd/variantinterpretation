@@ -37,7 +37,7 @@ process ENSEMBLVEP_VEP {
     """
     vep \\
         -i $vcf \\
-        -o ${prefix}.${file_extension}.gz \\
+        -o ${prefix}.ann.${file_extension}.gz \\
         $args \\
         $compress_cmd \\
         $reference \\
