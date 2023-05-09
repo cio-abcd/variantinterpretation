@@ -209,6 +209,24 @@
                 }
             }
         },
+        "vembrane_table_options": {
+            "title": "Vembrane table options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "tsv": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Convert annotated VCF file into TSV format"
+                },
+                "extraction_fields": {
+                    "type": "string",
+                    "default": "all",
+                    "description": "Fields for vembrane to include in TSV output. Default are all VCF fields except INFO and FORMAT column and all CSQ fields from VEP in the INFO column"
+                }
+            }
+        },
         "institutional_config_options": {
             "title": "Institutional config options",
             "type": "object",
@@ -405,6 +423,9 @@
         },
         {
             "$ref": "#/definitions/filtering_option"
+        },
+        {
+            "$ref": "#/definitions/vembrane_table_options"
         },
         {
             "$ref": "#/definitions/institutional_config_options"
