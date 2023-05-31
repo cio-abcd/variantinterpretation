@@ -220,10 +220,26 @@
                     "default": true,
                     "description": "Convert annotated VCF file into TSV format"
                 },
-                "extraction_fields": {
+                "allele_fraction": {
+                    "type": "string",
+                    "default": "FORMAT_AD",
+                    "description": "Specify how to extract and calculate the allele fraction from the VCF file.",
+                    "help_text": "The allele fraction (AF) of a variant is not always reported directly in the VCF file, but encoded indirectly in the FORMAT column. The AF is extracted or calculated  in the `vembrane table` module.   \nWithin the FORMAT column are some standard fields from which the AF can be calculated:   \n\n- **DP:** Depth or coverage, number of reads at this position.  \n- **AD:** Allelic depth, Number of reads supporting REF and ALT alleles (comma-separated, can be addressed with [0] or [1] as index)  \n\nDividing the allelic depth by the coverage gives the AF, which can be invoked with `FORMAT_AD`. Some VCF files also directly encode the AF in the FORMAT column as `AF` field, which can be invoked with `FORMAT_AF`.  \nFor the following variant callers, some defaults were specified that can be invoked by the name of the caller:  \n\n- **Freebayes** uses the `FORMAT_AD` method dividing ALT allele readnumbers (AD[1]) by depth (DP)   \n- **Mutect2** uses the AF field in the FORMAT column as defined in `FORMAT_AF` method. It is a probabilistic AF estimate, hence it is different compared to AF calculated with DP and AD column. Additionally, the DP field is also in the INFO column and will be extracted, which can be greater as the DP field in the FORMAT column as it also contains uninformative reads. So there can be three different ways of calculating the AF. Sources: [[1]](https://gatk.broadinstitute.org/hc/en-us/community/posts/4566282375835-Mutect2-AF-does-not-match-AD-and-DP),[[2]](https://github.com/broadinstitute/gatk/issues/6067),[[3]](https://gatk.broadinstitute.org/hc/en-us/articles/360035532252-Allele-Depth-AD-is-lower-than-expected).   \n- **Strelka:** Has DP values for SNVs and other coverage values for InDels in the DPI field, hence both are calculated.",
+                    "enum": ["FORMAT_AF", "mutect2", "FORMAT_AD", "strelka"]
+                },
+                "annotation_fields": {
                     "type": "string",
                     "default": "all",
-                    "description": "Fields for vembrane to include in TSV output. Default are all VCF fields except INFO and FORMAT column and all CSQ fields from VEP in the INFO column"
+                    "description": "Comma-separated CSQ string with annotation fields from VEP annotation to include in TSV output. Can extract all annotation fields with 'all' (default)."
+                },
+                "format_fields": {
+                    "type": "string",
+                    "default": "GT,AD[0],AD[1],DP",
+                    "description": "Comma-separated fields with FORMAT fields from VCF FORMAT column to include in TSV output. Can include, e.g., allelic depth, fraction and coverage. Also supports values \"mutect2\" and \"freebayes\" for automatic extraction."
+                },
+                "info_fields": {
+                    "type": "string",
+                    "default": "None"
                 }
             }
         },
