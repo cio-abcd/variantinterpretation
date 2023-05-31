@@ -5,6 +5,7 @@ process VEMBRANE_CREATE_FIELDS {
     input:
     tuple val(meta), path(vcf)
     val extraction_fields
+    val format_fields
 
     output:
     env fields,     emit: fields
@@ -22,8 +23,20 @@ process VEMBRANE_CREATE_FIELDS {
     def vcf_zip  = vcf_list[0].endsWith('.gz')
     def command1 = vcf_zip ? 'zcat' : 'cat'
 
-    if ( extraction_fields == 'all' )
-        """
+    """
+    # FORMAT fields of VCF
+    formatfields=\$(echo $format_fields | awk '{ \\
+            for (i = 1; i <= NF; i++) { \\
+                printf("FORMAT[\\"%s\\"][0], ", \$i) \\
+            } \\
+        }')
+    formatheader=\$(echo $format_fields | awk '{ \\
+            for (i = 1; i <= NF; i++) { \\
+                printf("%s, ", \$i) \\
+            } \\
+        }')
+
+    if [[ '$extraction_fields' == 'all' ]]; then
         # get CSQ field names and convert to vembrane format
         csqfields=\$($command1 $vcf | awk -F'Format: ' '/CSQ/ && /^#/{ \\
             gsub(/">/, "", \$2); \\
@@ -48,12 +61,12 @@ process VEMBRANE_CREATE_FIELDS {
             print output \\
         }') \\
 
-        fields=`echo "$args, " \$csqfields` \\
-        header=`echo "$args, " \$csqheader`
-        """
+        #output fields
+        fields=`echo "$args" \$formatfields \$csqfields` \\
+        header=`echo "$args" \$formatheader \$csqheader`
     else
-        """
-        fields=`echo "$args, " "$extraction_fields"`
-        header=`echo "$args, " "$extraction_fields"`
-        """
+        fields=`echo \$formatfields '$extraction_fields'`
+        header=`echo \$formatheader '$extraction_fields'`
+    fi
+    """
 }

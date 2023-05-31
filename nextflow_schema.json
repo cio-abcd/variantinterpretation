@@ -223,7 +223,12 @@
                 "extraction_fields": {
                     "type": "string",
                     "default": "all",
-                    "description": "Fields for vembrane to include in TSV output. Default are all VCF fields except INFO and FORMAT column and all CSQ fields from VEP in the INFO column"
+                    "description": "whitespace or tab-separated fields for vembrane to include in TSV output. Default are all VCF fields except INFO and FORMAT column and all CSQ fields from VEP in the INFO column"
+                },
+                "format_fields": {
+                    "type": "string",
+                    "default": "AD DP",
+                    "description": "whitespace or tab-seaparated fields from VCF FORMAT column to include in TSV output. Can include allelic depth, fraction and coverage. Also supports values \"mutect2\" and \"freebayes\" for automatic extraction."
                 }
             }
         },

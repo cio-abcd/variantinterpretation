@@ -10,12 +10,14 @@ workflow VEMBRANE_TABLE {
     take:
     vcf                 // channel: [ val(meta), vcf ]
     extraction_fields   // value: extraction fields
+    format_fields       // value: format fields
 
     main:
     ch_versions = Channel.empty()
 
     VEMBRANE_CREATE_FIELDS ( vcf,
-                             extraction_fields
+                             extraction_fields,
+                             format_fields
     )
     VEMBRANE_VEMBRANETABLE ( vcf,
                              VEMBRANE_CREATE_FIELDS.out.fields,

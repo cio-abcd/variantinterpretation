@@ -47,6 +47,19 @@ vep_genome                 = params.vep_genome              ?: Channel.empty()
 vep_species                = params.vep_species             ?: Channel.empty()
 extraction_fields          = params.extraction_fields       ?: Channel.empty()
 
+// Convert specific format field parameters of variant callers
+if ( params.format_fields ) {
+    if (params.format_fields == 'mutect2') {
+        format_fields = Channel.value('AF AD DP')
+    } else if (params.format_fields == 'freebayes') {
+        format_fields = Channel.value('AD DP')
+    } else {
+        format_fields = params.format_fields
+    }
+} else {
+    Channel.empty()
+}
+
 // VEP extra files
 vep_extra_files            = []
 
@@ -143,15 +156,18 @@ workflow VARIANTINTERPRETATION {
 
     ///
     // MODULE: TSV conversion with vembrane table
-    ///    
+    ///
+
     if ( params.tsv ) {
         if ( params.transcriptfilter || (params.transcriptlist!=[]) ) {
             VEMBRANE_TABLE ( ENSEMBLVEP_FILTER.out.vcf,
-                             extraction_fields
+                             extraction_fields,
+                             format_fields
             )
         } else {
             VEMBRANE_TABLE ( ENSEMBLVEP_VEP.out.vcf,
-                             extraction_fields
+                             extraction_fields,
+                             format_fields
             )
         }
         ch_versions = ch_versions.mix(VEMBRANE_TABLE.out.versions)
