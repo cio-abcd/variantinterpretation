@@ -9,6 +9,8 @@ Initial release of cio-abcd/variantinterpretation, created with the [nf-core](ht
 
 - Added esnembl VEP module for VCF annnotation.
 - Added transcript filtering module based in the vep filter script.
+- Added TSV conversion module with vembrane
+- Added allele fraction calculation
 
 ### `Added`
 
