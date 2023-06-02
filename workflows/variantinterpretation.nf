@@ -45,14 +45,16 @@ transcriptlist             = params.transcriptlist     ? Channel.fromPath(params
 vep_cache_version          = params.vep_cache_version       ?: Channel.empty()
 vep_genome                 = params.vep_genome              ?: Channel.empty()
 vep_species                = params.vep_species             ?: Channel.empty()
-extraction_fields          = params.extraction_fields       ?: Channel.empty()
+annotation_fields          = params.annotation_fields       ?: ''
+format_fields              = params.format_fields           ?: ''
+info_fields                = params.info_fields             ?: ''
 
 // Convert specific format field parameters of variant callers
 if ( params.format_fields ) {
     if (params.format_fields == 'mutect2') {
-        format_fields = Channel.value('AF AD DP')
+        format_fields = Channel.value('AF, AD, DP')
     } else if (params.format_fields == 'freebayes') {
-        format_fields = Channel.value('AD DP')
+        format_fields = Channel.value('AD, DP')
     } else {
         format_fields = params.format_fields
     }
@@ -161,13 +163,15 @@ workflow VARIANTINTERPRETATION {
     if ( params.tsv ) {
         if ( params.transcriptfilter || (params.transcriptlist!=[]) ) {
             VEMBRANE_TABLE ( ENSEMBLVEP_FILTER.out.vcf,
-                             extraction_fields,
-                             format_fields
+                             annotation_fields,
+                             format_fields,
+                             info_fields
             )
         } else {
             VEMBRANE_TABLE ( ENSEMBLVEP_VEP.out.vcf,
-                             extraction_fields,
-                             format_fields
+                             annotation_fields,
+                             format_fields,
+                             info_fields
             )
         }
         ch_versions = ch_versions.mix(VEMBRANE_TABLE.out.versions)

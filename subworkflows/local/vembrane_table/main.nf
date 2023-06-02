@@ -9,15 +9,17 @@ include { VEMBRANE_VEMBRANETABLE } from '../../../modules/local/vembrane/table/m
 workflow VEMBRANE_TABLE {
     take:
     vcf                 // channel: [ val(meta), vcf ]
-    extraction_fields   // value: extraction fields
-    format_fields       // value: format fields
+    annotation_fields   // value: Annotation fields in INFO column
+    format_fields       // value: FORMAT fields
+    info_fields         // value: INFO fields
 
     main:
     ch_versions = Channel.empty()
 
     VEMBRANE_CREATE_FIELDS ( vcf,
-                             extraction_fields,
-                             format_fields
+                             annotation_fields,
+                             format_fields,
+                             info_fields
     )
     VEMBRANE_VEMBRANETABLE ( vcf,
                              VEMBRANE_CREATE_FIELDS.out.fields,
