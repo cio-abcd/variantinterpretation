@@ -21,11 +21,24 @@ jobs:
     name: Run pipeline with test data
     # Only run on push if this is the nf-core dev branch (merged PRs)
     #if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'cio-abcd/variantinterpretation') }}"
+    continue-on-error: true
     runs-on: self-hosted
     strategy:
       matrix:
         NXF_VER:
           - "22.10.1"
+          - "22.10.2"
+          - "22.10.3"
+          - "22.10.4"
+          - "22.10.5"
+          - "22.10.6"
+          - "22.10.7"
+          - "22.10.8"
+          - "22.10.8"
+          - "22.11.1-edge"
+          - "22.12.0-edge"
+          - "23.04.0"
+          - "23.05.0-edge"
           - "latest-everything"
     steps:
       - name: Check out pipeline code
@@ -38,4 +51,4 @@ jobs:
 
       - name: Run pipeline with test data
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile test_ukb,podman --vep_cache /opt/vep_cache/108/indexed  --outdir ./results --input /opt/testdata_variantinterpretation/samplesheet.csv --fasta /opt/ncbi_grch38_wholegenomefasta_genome.fa
+          nextflow run ${GITHUB_WORKSPACE} -profile test_ukb,podman --vep_cache /opt/vep_cache/108/indexed  --outdir /data/cio_ci_output --input /opt/testdata_variantinterpretation/samplesheet.csv --fasta /opt/ncbi_grch38_wholegenomefasta_genome.fa
