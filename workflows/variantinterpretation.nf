@@ -57,7 +57,7 @@ if ( params.allele_fraction ) {
             info_fields = info_fields ? info_fields + (',DP') : 'DP'
         }
     }
-    if (params.allele_fraction.contains('FORMAT_AD') || params.allele_fraction.contain('freebayes')) {
+    if (params.allele_fraction.contains('FORMAT_AD') || params.allele_fraction.contains('freebayes')) {
         format_fields = format_fields ? format_fields + (',AD[1]/DP') : 'AD[1]/DP'
     }
     if (params.allele_fraction.contains('strelka')) {
