@@ -54,8 +54,7 @@ process VEMBRANE_CREATE_FIELDS {
 
     info_vembrane=\$(create_vembrane_fields.py \\
         --column_name INFO \\
-        --fields_with_sampleindex all \\
-        --sampleindex 0 \\
+        --fields_with_sampleindex none \\
         "$info_field_withend")
 
     #convert annotation fields to vembrane format
