@@ -50,16 +50,19 @@ format_fields              = params.format_fields           ?: ''
 info_fields                = params.info_fields             ?: ''
 
 // Convert specific format field parameters of variant callers
-if ( params.format_fields ) {
-    if (params.format_fields == 'mutect2') {
-        format_fields = Channel.value('AF, AD, DP')
-    } else if (params.format_fields == 'freebayes') {
-        format_fields = Channel.value('AD, DP')
-    } else {
-        format_fields = params.format_fields
+if ( params.allele_fraction ) {
+    if (params.allele_fraction.contains('FORMAT_AF') || params.allele_fraction.contains('mutect2')) {
+        format_fields = format_fields ? format_fields + (',AF') : 'AF'
+        if (params.allele_fraction.contains('mutect2')) {
+            info_fields = info_fields ? info_fields + (',DP') : 'DP'
+        }
     }
-} else {
-    Channel.empty()
+    if (params.allele_fraction.contains('FORMAT_AD') || params.allele_fraction.contain('freebayes')) {
+        format_fields = format_fields ? format_fields + (',AD[1]/DP') : 'AD[1]/DP'
+    }
+    if (params.allele_fraction.contains('strelka')) {
+        format_fields = format_fields ? format_fields + (',DPI,AD[1]/DP,AD[1]/DPI') : 'DPI,AD[1]/DP,AD[1]/DPI'
+    }
 }
 
 // VEP extra files
