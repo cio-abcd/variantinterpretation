@@ -33,6 +33,7 @@ process VEMBRANE_CREATE_FIELDS {
     def info_field_withend   = info_fields   ? (info_fields.endsWith(",")    ? info_fields   : info_fields + ",")   : ''
 
     """
+    #get or set CSQ annotation fields
     if [[ '$annotation_fields' == 'all' ]]; then
         # get CSQ field names
         csq_string=\$($command1 $vcf | awk -F'Format: ' '/CSQ/ && /^#/{ \\
@@ -45,7 +46,7 @@ process VEMBRANE_CREATE_FIELDS {
         csq_string=$annotation_fields
     fi
 
-    #convert FORMAT fields to vembrane format
+    #convert FORMAT, INFO and CSQ annotation fields to vembrane format
     format_vembrane=\$(create_vembrane_fields.py \\
         --column_name FORMAT \\
         --fields_with_sampleindex all \\
@@ -57,13 +58,23 @@ process VEMBRANE_CREATE_FIELDS {
         --fields_with_sampleindex none \\
         "$info_field_withend")
 
-    #convert annotation fields to vembrane format
     csq_vembrane=\$(create_vembrane_fields.py \\
         --column_name CSQ \\
         "\$csq_string")
 
+    #convert format and info fields for header
+    format_header=\$(create_vembrane_fields.py \\
+        --column_name FORMAT \\
+        --header_prefix FORMAT \\
+        "$format_field_withend")
+
+    info_header=\$(create_vembrane_fields.py \\
+        --column_name INFO \\
+        --header_prefix INFO \\
+        "$info_field_withend")
+
     #output fields
     fields=`echo "$args" \$format_vembrane \$info_vembrane \$csq_vembrane` \\
-    header=`echo "$args" "$format_field_withend" "$info_field_withend" \$csq_string`
+    header=`echo "$args" \$format_header \$info_header \$csq_string`
     """
 }
