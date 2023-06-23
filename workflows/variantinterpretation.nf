@@ -36,6 +36,7 @@ ch_multiqc_config          = Channel.fromPath("$projectDir/assets/multiqc_config
 ch_multiqc_custom_config   = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
 ch_multiqc_logo            = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
 ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
+ch_multiqc_warnings_template = params.multiqc_warnings_template ? file(params.multiqc_warnings_template, checkIfExists: true) : file("$projectDir/assets/warnings_multiqc_template.yml", checkIfExists: true)
 
 // Initialize files channels from parameters
 
@@ -62,11 +63,13 @@ vep_extra_files            = []
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-//
-// SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
-//
 include { INPUT_CHECK           } from '../subworkflows/local/input_check'
 include { CHECKBEDFILE		    } from '../modules/local/checkbedfile'
+include { BCFTOOLS_INDEX        } from '../modules/nf-core/bcftools/index/main'
+include { SAMTOOLS_DICT         } from '../modules/nf-core/samtools/dict/main'
+include { SAMTOOLS_FAIDX        } from '../modules/nf-core/samtools/faidx/main'
+include { VCFTESTS              } from '../subworkflows/local/vcf/vcftests'
+include { VCFPROC               } from '../subworkflows/local/vcf/vcfproc'
 include { ENSEMBLVEP_FILTER     } from '../modules/local/ensemblvep/filter_vep/main'
 include { ENSEMBLVEP_VEP        } from '../modules/local/ensemblvep/vep/main'
 include { VEMBRANE_TABLE        } from '../subworkflows/local/vembrane_table/main'
@@ -79,13 +82,9 @@ include { TMB_CALCULATE	    	} from '../modules/local/tmbcalculation/main'
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-//
-// MODULE: Installed directly from nf-core/modules
-//
-include { BCFTOOLS_INDEX	          } from '../modules/nf-core/bcftools/index/main'
-include { BCFTOOLS_NORM               } from '../modules/nf-core/bcftools/norm/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
+include { DUMP_WARNINGS               } from '../modules/local/multiqcreport_warnings'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -98,7 +97,12 @@ def multiqc_report = []
 
 workflow VARIANTINTERPRETATION {
 
+    // gather versions of each process
     ch_versions = Channel.empty()
+    // gather QC reports for multiQC
+    ch_multiqc_reports = Channel.empty()
+    // gather warnings
+    ch_warnings = Channel.empty()
 
     //
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files
@@ -108,24 +112,34 @@ workflow VARIANTINTERPRETATION {
     )
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
-    ///
-    // bcftools index module
-    ///
+    //
+    // Index vcf and reference files
 
+    // create tbi index for vcf
     BCFTOOLS_INDEX ( input.variants )
     ch_versions = ch_versions.mix(BCFTOOLS_INDEX.out.versions)
+    vcf_tbi = input.variants.join(BCFTOOLS_INDEX.out.tbi)
 
-    ///
-    // splitting multiallelic sites into biallelic
-    ///
+    // create sequence dictionary and faidx index of reference FASTA
+    fasta_ref = fasta.map { fasta -> ['ref', fasta] }
+    SAMTOOLS_DICT( fasta_ref )
+    ch_versions = ch_versions.mix(SAMTOOLS_DICT.out.versions)
+    SAMTOOLS_FAIDX( fasta_ref, [[], []] )
+    ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
 
-    ch_norm = input.variants
-    ch_norm = ch_norm.join(BCFTOOLS_INDEX.out.tbi)
+    //
+    // VCF tests
+    //
 
-    BCFTOOLS_NORM ( ch_norm,
-                    fasta
+    VCFTESTS (
+        vcf_tbi,
+        fasta_ref,
+        SAMTOOLS_DICT.out.dict,
+        SAMTOOLS_FAIDX.out.fai
     )
-    ch_versions = ch_versions.mix(BCFTOOLS_NORM.out.versions)
+    ch_versions = ch_versions.mix(VCFTESTS.out.versions)
+    ch_warnings = ch_warnings.mix(VCFTESTS.out.warnings)
+    ch_multiqc_reports = ch_multiqc_reports.mix(VCFTESTS.out.multiqc_reports)
 
     //
     // Check bedfiles
@@ -135,11 +149,24 @@ workflow VARIANTINTERPRETATION {
         ch_versions = ch_versions.mix(CHECKBEDFILE.out.versions)
     }
 
-    ///
+    //
+    // VCF filtering and normalization
+    //
+
+    VCFPROC (
+        vcf_tbi,
+        fasta
+    )
+    ch_versions = ch_versions.mix(VCFPROC.out.versions)
+
+    //
     // VEP annotation module
     //
     if (params.vep) {
-        ENSEMBLVEP_VEP( BCFTOOLS_NORM.out.vcf,
+        proc_vcf=VCFPROC.out.vcf_norm_tbi
+            .map { meta, vcf, tbi -> tuple( meta, vcf) }
+
+        ENSEMBLVEP_VEP( proc_vcf,
                         vep_genome,
                         vep_species,
                         vep_cache_version,
@@ -147,6 +174,7 @@ workflow VARIANTINTERPRETATION {
                         fasta,
                         vep_extra_files)
         ch_versions = ch_versions.mix(ENSEMBLVEP_VEP.out.versions)
+        ch_multiqc_reports = ch_multiqc_reports.mix(ENSEMBLVEP_VEP.out.report)
 
         // Filtering for transcripts
         if ( params.transcriptfilter || (params.transcriptlist!=[]) ) {
@@ -202,22 +230,33 @@ workflow VARIANTINTERPRETATION {
 
     // dump software versions
     ch_version_yaml = Channel.empty()
-    CUSTOM_DUMPSOFTWAREVERSIONS(ch_versions.unique().collectFile(name: 'versions.yml'))
+    CUSTOM_DUMPSOFTWAREVERSIONS(ch_versions.unique().collectFile(name: 'collated_versions.yml'))
     ch_version_yaml = CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect()
+
+    // collect warnings
+    ch_warnings_yaml = Channel.empty()
+    DUMP_WARNINGS(ch_multiqc_warnings_template, ch_warnings.unique().collectFile(name: "collated_warnings.txt", newLine: true))
+    ch_warnings_yaml = DUMP_WARNINGS.out.mqc_yml.collect().ifEmpty([])
 
     //
     // MODULE: MultiQC
     //
+
+    // collect workflow parameter summary and add as section
     workflow_summary    = WorkflowVariantinterpretation.paramsSummaryMultiqc(workflow, summary_params)
     ch_workflow_summary = Channel.value(workflow_summary)
 
+    // collect custom methods description and add as section
     methods_description    = WorkflowVariantinterpretation.methodsDescriptionText(workflow, ch_multiqc_custom_methods_description)
     ch_methods_description = Channel.value(methods_description)
 
+    // collect all multiQC files for report
     ch_multiqc_files = Channel.empty()
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
-    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
+    ch_multiqc_files = ch_multiqc_files.mix(ch_version_yaml)
+    ch_multiqc_files = ch_multiqc_files.mix(ch_warnings_yaml)
+    ch_multiqc_files = ch_multiqc_files.mix(ch_multiqc_reports.collect().ifEmpty([]))
 
     MULTIQC (
         ch_multiqc_files.collect(),
