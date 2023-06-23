@@ -42,6 +42,22 @@
                 }
             }
         },
+        "vcf_normalization": {
+            "title": "VCF normalization",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "left_align_indels": {
+                    "type": "boolean",
+                    "description": "Enables left-alignment of Indels using bcftools norm."
+                },
+                "filter_vcf": {
+                    "type": "string",
+                    "description": "Only keep vcf entries which FILTER columns match the vcffilter expression. Leave empty to disable filtering."
+                }
+            }
+        },
         "reference_genome_options": {
             "title": "Reference genome options",
             "type": "object",
@@ -196,8 +212,8 @@
             },
             "fa_icon": "fas fa-scroll"
         },
-        "filtering_option": {
-            "title": "Filtering option",
+        "annotation_filtering_option": {
+            "title": "Annotation filtering option",
             "type": "object",
             "description": "Options for filtering VCF files",
             "default": "",
@@ -485,6 +501,11 @@
                     "description": "Custom MultiQC yaml file containing HTML including a methods description.",
                     "fa_icon": "fas fa-cog"
                 },
+                "multiqc_warnings_template": {
+                    "type": "string",
+                    "description": "Custom mutliQC template containing HTML coe to add warnings.",
+                    "fa_icon": "fas fa-cog"
+                },
                 "tracedir": {
                     "type": "string",
                     "description": "Directory to keep pipeline Nextflow logs and reports.",
@@ -499,17 +520,17 @@
                     "fa_icon": "fas fa-check-square",
                     "hidden": true
                 },
+                "schema_ignore_params": {
+                    "type": "string",
+                    "default": "genomes",
+                    "hidden": true
+                },
                 "show_hidden_params": {
                     "type": "boolean",
                     "fa_icon": "far fa-eye-slash",
                     "description": "Show all params when using `--help`",
                     "hidden": true,
                     "help_text": "By default, parameters set as _hidden_ in the schema are not shown on the command line when a user runs with `--help`. Specifying this option will tell the pipeline to show all parameters."
-                },
-                "schema_ignore_params": {
-                    "type": "string",
-                    "default": "genomes",
-                    "hidden": true
                 }
             }
         }
@@ -517,6 +538,9 @@
     "allOf": [
         {
             "$ref": "#/definitions/input_output_options"
+        },
+        {
+            "$ref": "#/definitions/vcf_normalization"
         },
         {
             "$ref": "#/definitions/reference_genome_options"
@@ -528,7 +552,7 @@
             "$ref": "#/definitions/annotation_options"
         },
         {
-            "$ref": "#/definitions/filtering_option"
+            "$ref": "#/definitions/annotation_filtering_option"
         },
         {
             "$ref": "#/definitions/tsv_conversion_options"

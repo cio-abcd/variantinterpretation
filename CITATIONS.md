@@ -10,7 +10,21 @@
 
 ## Pipeline tools
 
+- [bcftools](https://samtools.github.io/bcftools/bcftools.html)
+
+  > Danecek, P., Bonfield, J.K., Liddle, J., Marshall, J., Ohan, V., Pollard, M.O., Whitwham, A., Keane, T., McCarthy, S.A., Davies, R.M., Li, H. (2021): Twelve years of SAMtools and BCFtools. GigaScience. https://doi.org/10.1093/gigascience/giab008
+
+- [samtools](http://www.htslib.org/)
+
+  > Danecek, P., Bonfield, J.K., Liddle, J., Marshall, J., Ohan, V., Pollard, M.O., Whitwham, A., Keane, T., McCarthy, S.A., Davies, R.M., Li, H. (2021): Twelve years of SAMtools and BCFtools. GigaScience. https://doi.org/10.1093/gigascience/giab008
+
+- [GATK](https://gatk.broadinstitute.org/hc/en-us)
+
 - [VEP](https://www.ensembl.org/info/docs/tools/vep/index.html)
+
+- [vembrane](https://doi.org/10.1093/bioinformatics/btac810)
+
+  > Hartmann, T., Schröder, C., Kuthe, E., Lähnemann, D., & Köster, J. (2022). Insane in the vembrane: filtering and transforming VCF/BCF files. Bioinformatics. https://doi.org/10.1093/bioinformatics/btac810
 
 - [MultiQC](https://pubmed.ncbi.nlm.nih.gov/27312411/)
 

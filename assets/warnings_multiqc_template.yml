@@ -1,0 +1,9 @@
+id: "cio-abcd-variantinterpretation-warnings"
+section_name: "Warnings"
+plot_type: "html"
+data: |
+  <div class="alert alert-warning">
+    <ul>
+      PLACEHOLDER
+    </ul>
+  </div>
