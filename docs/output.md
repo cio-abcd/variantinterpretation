@@ -12,6 +12,8 @@ The directories listed below will be created in the results directory after the 
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
 
+- [vcf tests](#vcftests) - Checks vcf file for structure, integrity and several criteria.
+- [vcf proc](#vcfproc) - Filters and normalizes variant sin vcf file.
 - [ensemblvep](#ensemblvep) - Annotates VCF file and reports summary.
 - [transcriptfilter](#transcriptfilter) - Filters for specific transcripts.
 - [vembrane table](#vembranetable) - Generates TSV output based on provided VEP annotation fields
@@ -19,6 +21,53 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 - [TMB calculate](#tmbcalculate) - Calculates the TMB per sample based on provided cutoffs from vembrane TSV output
 - [MultiQC](#multiqc) - Aggregate report describing results and QC from the whole pipeline.
 - [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution.
+
+### VCF tests
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `vcftests/`
+  - `bcftools_stats/`: Statistics about the VCF file from `bcftools stats` as .txt file.
+  - `*_warnings.txt`: VCF check messages of WARNINGs that will be displayed in the multiQC report.
+
+</details>
+
+This module checks the VCf file for structure, integrity and several criteria to avoid wrongly annotated variants or misleading pipeline errors.
+It comprises of three tools:
+
+- [GATK4 ValidateVariants](https://gatk.broadinstitute.org/hc/en-us/articles/360037057272-ValidateVariants)
+- [bcftools stats](https://samtools.github.io/bcftools/bcftools.html#stats)
+- custom python script
+
+The following table gives an overview about the criteria and whether this gives an error crashing the pipeline or just a warning message in the multiQC report:
+
+| criteria                                     | log-level | description                                                                                                                                                                                                                  | tool                     |
+| -------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| VCF file format                              | ERROR     | Checks if general structure of vcf file is adherent to VCF file format.                                                                                                                                                      | `GATK4 ValidateVariants` |
+| uncompressed or bgzip compressed             | ERROR     | Checks if file is either uncompressed or bgzip compressed. gzipped files with `.vcf.gz` ending give an error during indexing.                                                                                                | `bcftools index`         |
+| single-sample VCF                            | ERROR     | multi-sample VCF files are not supported.                                                                                                                                                                                    | `bcftools stats`         |
+| "chr" prefix in CHROM column                 | ERROR     | Checks if each chromosome column in the vcf file contains the "chr" prefix.                                                                                                                                                  | `python script`          |
+| matching to reference genome                 | ERROR     | Checks if provided VCF file matches the provided FASTA reference genome. Especially can differentiate between GRCh37 and GRCh38. If left-alignment of indels is activated, `bcftools norm` also checks the reference genome. | `GATK4 ValidateVariants` |
+| only passed filters                          | WARNING   | Checks if the FILTER column contains entries other than "PASS" or ".". NOTE: These can be removed with the the `filter_pass` parameter in the vcfproc module.                                                                | `python script`          |
+| no-ALT entries                               | WARNING   | Genomic VCF files (gVCFs) are supported but can dramatically increase the runtime of VEP.                                                                                                                                    | `bcftools stats`         |
+| no multiallelic sites                        | WARNING   | Checks if the VCF file contains multiallelic variants and gives a warning. NOTE: These will be automatically split wiht `bcftools norm` in the vcfproc module.                                                               | `bcftools stats`         |
+| contains other variants than SNVs and InDels | WARNING   | Checks if VCF file contains other variants.                                                                                                                                                                                  | `bcftools stats`         |
+| previous VEP annotation present              | WARNING   | Checks if previous VEP annotation is present by checking for VEP in the header and if INFO column already contains a CSQ key.                                                                                                | `python script`          |
+
+### VCF proc
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `vcfproc/`
+  - `bcftools_norm/`: Normalized VCf input as gzipped vcf file using `bcftools norm`.
+  - `passfilter/`: If `filter_pass = true`, contains gzipped vcf files only with variants containing "PASS" or "." in the FILTER columns.
+
+</details>
+
+Can perform optional filtering for variants based on FILTER column entries with the `filter_vcf` parameter.
+Also runs variant normalization using `bcftools norm` with optional InDel left-alignment.
 
 ### Ensembl VEP
 

@@ -12,6 +12,7 @@ Initial release of cio-abcd/variantinterpretation, created with the [nf-core](ht
 - Added TSV conversion module with vembrane
 - Added allele fraction calculation
 - Added HTML report generation with datavzrd
+- Added VCF tests and processing steps
 
 ### `Added`
 
