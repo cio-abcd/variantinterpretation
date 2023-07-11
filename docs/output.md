@@ -15,6 +15,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 - [ensemblvep](#ensemblvep) - Annotates VCF file and reports summary.
 - [transcriptfilter](#transcriptfilter) - Filters for specific transcripts.
 - [vembrane table](#vembranetable) - Generates TSV output based on provided VEP annotation fields
+- [datavzrd](#datavzrd) - Generates HTML report based on TSV file.
 - [MultiQC](#multiqc) - Aggregate report describing results and QC from the whole pipeline.
 - [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution.
 
@@ -50,7 +51,20 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
   - `*.tsv`: TSV file containing all fields provided by --extraction_fields, default: CHROM, POS, REF, ALT
   </details>
 
-[Vembrane table](https://github.com/vembrane/vembrane) generates TSV files based on information found in the VCF header structure and can parse annotation information from CSQ strings in the INFO field. This module can extract all annotation fields found in the [VEP output documentation](https://www.ensembl.org/info/docs/tools/vep/vep_formats.html#output), which need to be provided by --annotation_fields as comma-separated values. Further, fields from the FORMAT and INFO columns of the VCF file can be extracted with the --format_fields and --info_fields parameter. In all these parameters, you can also specify mathematical operations between fields as shown for `vembrane table` examples. Those are used in the allele fraction calculation, for which some default fields are extracted when using the --allele_fraction parameter.
+[Vembrane table](https://github.com/vembrane/vembrane#readme) generates TSV files based on information found in the VCF header structure and can parse annotation information from CSQ strings in the INFO field. This module can extract all annotation fields found in the [VEP output documentation](https://www.ensembl.org/info/docs/tools/vep/vep_formats.html#output), which need to be provided by --annotation_fields as comma-separated values. Further, fields from the FORMAT and INFO columns of the VCF file can be extracted with the --format_fields and --info_fields parameter. In all these parameters, you can also specify mathematical operations between fields as shown for `vembrane table` examples. Those are used in the allele fraction calculation, for which some default fields are extracted when using the --allele_fraction parameter.
+
+### Datavzrd
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `datavzrd/`
+  - `report_*/`: Folder containing HTML and Excel file for final report. Index.html contains main HTML report file.
+  </details>
+
+[Datavzrd](https://github.com/datavzrd/datavzrd#readme) generates a HTML report from TSV files based on a YAML configuration file. The HTML report enables several features including interactive filtering, links within the data or to the internet, plotting, etc.
+The configuration file is rendered using the [YTE template engine](https://github.com/yte-template-engine/yte#readme) that enables usage of python code in YAML files for dynamic rendering.
+This module comes with two assets: The [datavzrd_config_template.yaml](../assets/datavzrd_config_template.yaml) which uses information about the annotation columns specified in [annotation_colinfo.tsv](../assets/annotation_colinfo.tsv) for rendering the datavzrd config. Find more information in the parameters help text.
 
 ### MultiQC
 
