@@ -235,11 +235,36 @@
                 "format_fields": {
                     "type": "string",
                     "default": "GT,AD[0],AD[1],DP",
-                    "description": "Comma-separated fields with FORMAT fields from VCF FORMAT column to include in TSV output. Can include, e.g., allelic depth, fraction and coverage. Also supports values \"mutect2\" and \"freebayes\" for automatic extraction."
+                    "description": "Comma-separated fields with FORMAT fields from VCF FORMAT column to include in TSV output. Can include, e.g., allelic depth, fraction and coverage."
                 },
                 "info_fields": {
                     "type": "string",
-                    "default": "None"
+                    "default": "None",
+                    "description": "Comma-separated fields with INFO fields from VCF INFO column to include in TSV output."
+                }
+            }
+        },
+        "html_report": {
+            "title": "HTML report",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "report": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Convert TSV file into HTML report using datavzrd."
+                },
+                "datavzrd_config": {
+                    "type": "string",
+                    "default": "null",
+                    "description": "YAML file storing the configurations for datavzrd. Will be rendered using YTE template engine interpreting python code. By default uses datavzrd_config_template.yaml in the workflow `assets/`.",
+                    "help_text": "YTE rendering adds group- and column-specific datavzrd configurations that are specified in annotation_colinfo (see help text of annotation_colinfo).\nDuring YAML rendering, the information from the annotation_colinfo file is accessible in the template config file.\nThese can be accessed through the respective column name. The column \"data_type_value\" will be converted to a dictionary."
+                },
+                "annotation_colinfo": {
+                    "type": "string",
+                    "description": "TSV file giving information about annotations and how to render them for HTML report.",
+                    "help_text": "This TSV file contains six unique columns:  \n- identifier: Name of the corresponding annotation column in the variant TSV file. This column is used to match the variant TSV columns. The variant TSV column names will be adapted for better matching that needs to be considered when defining those identifiers: The matching is case-insensitive, disregards \"CSQ_\" prefixes and only allows letters, numbers and underscores. Square brackets will be replaced with a \"-\", Mathematical operands in variant TSV column names will be replaced with literal strings: \"+\" is replaced with \"-plus-\", \"-\" with \"-minus-\", \"*\" with \"-times-\", \"/\" with \"-divided-by-\", \"%\" with \"-modulus-\". For example: If the variant TSV column name is FORMAT_AD[1]/FORMAT_DP, the identifier has to have the name FORMAT_AD-1--divided-by-FORMAT_DP and can have lower or upper cases.\n\n- label: new label that will be shown in HTML report if display = normal.  \n\n- group: The columns of the variant TSV file will be splitted into group-specific TSV files to make the report better accessible. This column defines the specific group names. Each group will be linked to each other. However, accessing columns between groups in the datavzrd_config file is not possible.  \n\n- display: Allows 'normal', 'detail' and 'hidden'  according to the display-mode parameter in datavzrd. \"normal\" shows the column, \"detail\" puts it in detail view accessible with \"+\", \"hidden\" does not show it in the HTML report, but in the exported excel table.  \n\n- data_type and data_type_value: Both columns determines implemented automatic rendering in this workflow:\n  - data_type=__integer or float__: Will create a [ticks plot](https://vega.github.io/vega-lite/docs/tick.html)\n    - if data_type_value=min=NUM1,max=NUM2 key-value pairs are specified, will set the range of tick plot.\n  - data_type=__string__: Creates heatmap plot if `data_type_value` has fieldname=color key=value pairs specifying the color literally or in hexcode.\n  - data_type=___link__: Creates a hyperlink if `data_type_value` provides name=url key=value pairs. Can refer to entries of the same row and group with the respective column name in curly brackets in lower cases.\n\nThe order of the rows in this file determines the order of columns shown in the HTML report.\nEach group report will always show the identifier columns \"chrom\", \"pos\", \"ref\", \"alt\", \"id\", and \"Feature\" that are needed to reference between group tables."
                 }
             }
         },
@@ -423,6 +448,11 @@
                     "description": "Show all params when using `--help`",
                     "hidden": true,
                     "help_text": "By default, parameters set as _hidden_ in the schema are not shown on the command line when a user runs with `--help`. Specifying this option will tell the pipeline to show all parameters."
+                },
+                "schema_ignore_params": {
+                    "type": "string",
+                    "default": "genomes",
+                    "hidden": true
                 }
             }
         }
@@ -442,6 +472,9 @@
         },
         {
             "$ref": "#/definitions/vembrane_table_options"
+        },
+        {
+            "$ref": "#/definitions/html_report"
         },
         {
             "$ref": "#/definitions/institutional_config_options"

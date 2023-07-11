@@ -1,6 +1,6 @@
 process VEMBRANE_VEMBRANETABLE {
     tag "$meta.id"
-    label 'process_single'
+    label 'process_low'
 
     conda "bioconda::vembrane=1.0.1"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -22,7 +22,7 @@ process VEMBRANE_VEMBRANETABLE {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    
+
     """
     vembrane table \\
         --output ${prefix}.tsv \\

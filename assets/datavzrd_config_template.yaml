@@ -1,0 +1,65 @@
+__definitions__:
+  - import pandas as pd
+
+name: variant report
+datasets:
+  #add the tsv file for each group as separate dataset
+  ?for group in groupnames:
+    ?f"{group}":
+      path: ?f"{prefix}-{group}.tsv"
+      offer-excel: true
+      separator: "\t"
+      headers: 1
+      #create links between all groups using the variant id to find the exact entry
+      links:
+        ?for other_group in [i for i in groupnames if i != group]:
+          ?f"link to {other_group}":
+            column: variant
+            table-row: ?f"{other_group}/variant"
+default-view: overview
+webview-controls: false
+max-in-memory-rows: 100000
+views:
+  #define columns for each group dataset
+  ?for group in groupnames:
+    ?f"{group}":
+      dataset: ?f"{group}"
+      hidden: false
+      max-in-memory-rows: 100000
+      page-size: 10
+      render-table:
+        columns:
+          variant:
+            display-mode: hidden
+          #define the label and display mode for each column
+          ?for col in colnames[group]:
+            ?f"{col}":
+              label: ?f"{label[col]}"
+              display-mode: ?f"{display[col]}"
+              #Add tick plots to all integer and float columns
+              ?if not pd.isna(data_type[col]) and data_type[col] in ["integer","float"] and display[col] == "normal":
+                plot:
+                  ticks:
+                    scale: linear
+                    #if min/max is given account for that.
+                    ?if not pd.isna(data_type_value[col]):
+                      domain:
+                        - ?int(data_type_value[col]['min'])
+                        - ?int(data_type_value[col]['max'])
+              #Add heatmaps to string columns with given colors
+              ?if not pd.isna(data_type[col]) and data_type[col] == "string" and not pd.isna(data_type_value[col]):
+                plot:
+                  heatmap:
+                    scale: ordinal
+                    domain:
+                      ?for dom in data_type_value[col].keys():
+                        - ?dom
+                    range:
+                      ?for dom in data_type_value[col].keys():
+                        - ?data_type_value[col][dom]
+              #Add link for link columns
+              ?if not pd.isna(data_type[col]) and data_type[col] == "link" and not pd.isna(data_type_value[col]):
+                link-to-url:
+                  ?for urlkey in data_type_value[col].keys():
+                    ?f"{urlkey}":
+                      url: ?data_type_value[col][urlkey]

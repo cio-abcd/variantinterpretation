@@ -11,12 +11,14 @@ WorkflowVariantinterpretation.initialise(params, log)
 
 // TODO nf-core: Add all file path parameters for the pipeline to the list below
 // Check input path parameters to see if they exist
-def checkPathParamList = [ 
-       params.input,
-       params.fasta,
-       params.multiqc_config,
-       params.vep_cache,
-       params.transcriptlist
+def checkPathParamList = [
+        params.input,
+        params.fasta,
+        params.multiqc_config,
+        params.vep_cache,
+        params.transcriptlist,
+        params.datavzrd_config,
+        params.annotation_colinfo
 ]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
@@ -39,6 +41,8 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 vep_cache                  = params.vep_cache          ? Channel.fromPath(params.vep_cache).collect()                : []
 fasta                      = params.fasta              ? Channel.fromPath(params.fasta).collect()                    : Channel.empty()
 transcriptlist             = params.transcriptlist     ? Channel.fromPath(params.transcriptlist).collect()           : []
+datavzrd_config            = params.datavzrd_config    ? Channel.fromPath(params.datavzrd_config).collect()          : Channel.fromPath("$projectDir/assets/datavzrd_config_template.yaml", checkIfExists: true)
+annotation_colinfo         = params.annotation_colinfo ? Channel.fromPath(params.annotation_colinfo).collect()       : Channel.fromPath("$projectDir/assets/annotation_colinfo.tsv", checkIfExists: true)
 
 // Initialize value channels from parameters
 
@@ -61,7 +65,7 @@ if ( params.allele_fraction ) {
         format_fields = format_fields ? format_fields + (' AD[1]/DP') : 'AD[1]/DP'
     }
     if (params.allele_fraction.contains('strelka')) {
-        format_fields = format_fields ? format_fields + (' DPI ,AD[1]/DP AD[1]/DPI') : 'DPI AD[1]/DP AD[1]/DPI'
+        format_fields = format_fields ? format_fields + (' DPI AD[1]/DP AD[1]/DPI') : 'DPI AD[1]/DP AD[1]/DPI'
     }
 }
 
@@ -81,6 +85,7 @@ include { INPUT_CHECK           } from '../subworkflows/local/input_check'
 include { ENSEMBLVEP_FILTER     } from '../modules/local/ensemblvep/filter_vep/main'
 include { ENSEMBLVEP_VEP        } from '../modules/local/ensemblvep/vep/main'
 include { VEMBRANE_TABLE        } from '../subworkflows/local/vembrane_table/main'
+include { HTML_REPORT           } from '../subworkflows/local/html_report/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -92,7 +97,7 @@ include { VEMBRANE_TABLE        } from '../subworkflows/local/vembrane_table/mai
 // MODULE: Installed directly from nf-core/modules
 //
 include { BCFTOOLS_INDEX	      } from '../modules/nf-core/bcftools/index/main'
-include { BCFTOOLS_NORM               } from '../modules/nf-core/bcftools/norm/main' 
+include { BCFTOOLS_NORM               } from '../modules/nf-core/bcftools/norm/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
@@ -115,14 +120,13 @@ workflow VARIANTINTERPRETATION {
     input = INPUT_CHECK (
         ch_input
     )
-    ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)    
+    ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
     ///
     // bcftools index module
     ///
 
-    BCFTOOLS_INDEX (	input.variants
-                   )
+    BCFTOOLS_INDEX ( input.variants )
     ch_versions = ch_versions.mix(BCFTOOLS_INDEX.out.versions)
 
     ///
@@ -132,9 +136,9 @@ workflow VARIANTINTERPRETATION {
     ch_norm = input.variants
     ch_norm = ch_norm.join(BCFTOOLS_INDEX.out.tbi)
 
-    BCFTOOLS_NORM (     ch_norm,
-                        fasta
-		  )
+    BCFTOOLS_NORM ( ch_norm,
+                    fasta
+    )
     ch_versions = ch_versions.mix(BCFTOOLS_NORM.out.versions)
 
     ///
@@ -152,8 +156,8 @@ workflow VARIANTINTERPRETATION {
 
         // Filtering for transcripts
         if ( params.transcriptfilter || (params.transcriptlist!=[]) ) {
-            ENSEMBLVEP_FILTER( ENSEMBLVEP_VEP.out.vcf,
-                               transcriptlist
+            ENSEMBLVEP_FILTER(  ENSEMBLVEP_VEP.out.vcf,
+                                transcriptlist
             )
             ch_versions = ch_versions.mix(ENSEMBLVEP_FILTER.out.versions)
         }
@@ -165,19 +169,33 @@ workflow VARIANTINTERPRETATION {
 
     if ( params.tsv ) {
         if ( params.transcriptfilter || (params.transcriptlist!=[]) ) {
-            VEMBRANE_TABLE ( ENSEMBLVEP_FILTER.out.vcf,
-                             annotation_fields,
-                             format_fields,
-                             info_fields
+            VEMBRANE_TABLE (ENSEMBLVEP_FILTER.out.vcf,
+                            annotation_fields,
+                            format_fields,
+                            info_fields
             )
         } else {
-            VEMBRANE_TABLE ( ENSEMBLVEP_VEP.out.vcf,
-                             annotation_fields,
-                             format_fields,
-                             info_fields
+            VEMBRANE_TABLE (ENSEMBLVEP_VEP.out.vcf,
+                            annotation_fields,
+                            format_fields,
+                            info_fields
             )
         }
         ch_versions = ch_versions.mix(VEMBRANE_TABLE.out.versions)
+
+        ///
+        // MODULE: HTML report with datavzrd
+        ///
+        if ( params.report ) {
+            // need to combine TSV file with datavzrd_config and annotation_col.tsv for report generation
+            tsv = VEMBRANE_TABLE.out.tsv
+            tsv_config = tsv.combine(datavzrd_config)
+            tsv_config_colinfo = tsv_config.combine(annotation_colinfo)
+            // generate report
+            HTML_REPORT ( tsv_config_colinfo )
+
+        ch_versions = ch_versions.mix(HTML_REPORT.out.versions)
+        }
     }
 
     // dump software versions
@@ -197,7 +215,7 @@ workflow VARIANTINTERPRETATION {
     ch_multiqc_files = Channel.empty()
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
-    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())    
+    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
 
     MULTIQC (
         ch_multiqc_files.collect(),

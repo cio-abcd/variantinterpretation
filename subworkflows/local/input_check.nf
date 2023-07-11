@@ -24,13 +24,13 @@ workflow INPUT_CHECK {
 def create_vcf_channel(LinkedHashMap row) {
     // create meta map
     def meta = [:]
-    meta.id         = row.sample    
+    meta.id = row.sample
 
     // add path(s) of the vcf file to the meta map
     def vcf_meta = []
     if (!file(row.vcf).exists()) {
         exit 1, "ERROR: Please check input samplesheet -> VCF file does not exist!\n${row.vcf}"
-    }        
+    }
     vcf_meta = [ meta, [ file(row.vcf) ] ]
 
     return vcf_meta

@@ -1,0 +1,98 @@
+identifier	label	group	display	data_type	data_type_value
+Consequence	consequence	overview	normal	string
+IMPACT	impact	overview	normal	string	HIGH=#FF0000,MODERATE=#D35400,LOW=#D4AC0D,MODIFIER=#5DADE2
+VARIANT_CLASS	variant class	overview	normal	string	{SNV=darkgreen,substitution=blue,deletion=yellow,indel=orange,insertion=red,sequence_alteration=purple}
+Existing_variation	variant ID	overview	normal	string
+SYMBOL	gene symbol	overview	normal	link	NCBI=https://www.ncbi.nlm.nih.gov/gene/{gene}
+EXON	exon	overview	normal	string
+format_ad-1--divided-by-format_dp	allele fraction	overview	normal	float	min=0,max=1
+format_dp	coverage	overview	normal	integer
+MAX_AF	population allele frequency	overview	normal	float	min=0,max=1
+MAX_AF_POPS	population allele frequency database	overview	normal	string
+CLIN_SIG	ClinVar	overview	normal	string
+format_ad-0-	ref reads	overview	detail	integer
+format_ad-1-	alt reads	overview	detail	integer
+format_gt	Genotype	overview	detail	string
+SOMATIC	somatic	overview	detail	integer	min=0,max=1
+PHENO	PHENO	overview	detail	integer	min=0,max=1
+PUBMED	PUBMED	overview	detail	integer
+VAR_SYNONYMS	VAR_SYNONYMS	overview	detail	string
+SYMBOL_SOURCE	gene symbol database	overview	detail	string
+Gene	gene ID	overview	detail	integer
+CHROM	chromosome	vcf	normal	string
+POS	position	vcf	normal	string
+ID	vcf id	vcf	normal	string
+REF	reference allele	vcf	normal	string
+ALT	alternative allele	vcf	normal	string
+QUAL	vcf qual	vcf	normal	string
+FILTER	vcf filter	vcf	normal	string	filter_vep_pass=#008000
+Feature_type	feature type	genome_feature	normal	string
+BIOTYPE	feature biotype	genome_feature	normal	string
+Feature	feature ID	genome_feature	normal	string
+MANE_SELECT	MANE transcript ID	genome_feature	detail	string
+MANE_PLUS_CLINICAL	MANE Plus Clinical transcript ID	genome_feature	detail	string
+INTRON	intron	genome_feature	detail	string
+HGVSc	HGVSc	genome_feature	normal	string
+HGVSp	HGVSp	genome_feature	normal	string
+hgnc_id	HGNC ID	genome_feature	detail	string
+cDNA_position	cDNA position	genome_feature	detail	string
+CDS_position	CDS position	genome_feature	detail	string
+Protein_position	protein position	genome_feature	detail	string
+Amino_acids	Amino acids	genome_feature	detail	string
+Codons	Codons	genome_feature	detail	string
+DISTANCE	transcript distance	genome_feature	detail	float
+STRAND	strand	genome_feature	detail	integer	min=-1,max=1
+FLAGS	flags	genome_feature	detail	string
+PICK	pick	genome_feature	detail	integer	min=0,max=1
+CANONICAL	canonical	genome_feature	detail	boolean
+TSL	transcript support level	genome_feature	detail
+APPRIS	APPRIS	genome_feature	detail
+CCDS	CCDS	genome_feature	detail
+REFSEQ_MATCH	Refseq match	genome_feature	detail
+REFSEQ_OFFSET	Refseq offset	genome_feature	detail
+miRNA	miRNA position	genome_feature	detail
+HGVS_OFFSET	HGVS offset	genome_feature	normal
+GENE_PHENO	GENE_PHENO	genome_feature	normal	string
+ENSP	Protein ID	protein_feature	normal	string
+SWISSPROT	Swissprot	protein_feature	detail	string
+TREMBL	Trembl	protein_feature	detail	string
+UNIPARC	Uniparc	protein_feature	detail	string
+UNIPROT_ISOFORM	Uniprot Isoform	protein_feature	detail
+SIFT	SIFT	protein_feature	normal	string
+PolyPhen	PolyPhen	protein_feature	normal	string
+DOMAINS	Protein domain	protein_feature	detail
+AF	1000G_AF	population_frequency	normal	float	min=0,max=1
+AFR_AF	1000G_AFR_AF	population_frequency	detail	float	min=0,max=1
+AMR_AF	1000G_AMR_AF	population_frequency	detail	float	min=0,max=1
+EUR_AF	1000G_EUR_AF	population_frequency	detail	float	min=0,max=1
+EAS_AF	1000G_EAS_AF	population_frequency	detail	float	min=0,max=1
+SAS_AF	1000G_SAS_AF	population_frequency	detail	float	min=0,max=1
+gnomADe_AF	gnomADe_AF	population_frequency	normal	float	min=0,max=1
+gnomADe_AFR_AF	gnomADe_AFR_AF	population_frequency	detail	float	min=0,max=1
+gnomADe_AMR_AF	gnomADe_AMR_AF	population_frequency	detail	float	min=0,max=1
+gnomADe_ASJ_AF	gnomADe_ASJ_AF	population_frequency	detail	float	min=0,max=1
+gnomADe_EAS_AF	gnomADe_EAS_AF	population_frequency	detail	float	min=0,max=1
+gnomADe_FIN_AF	gnomADe_FIN_AF	population_frequency	detail	float	min=0,max=1
+gnomADe_NFE_AF	gnomADe_NFE_AF	population_frequency	detail	float	min=0,max=1
+gnomADe_OTH_AF	gnomADe_OTH_AF	population_frequency	detail	float	min=0,max=1
+gnomADe_SAS_AF	gnomADe_SAS_AF	population_frequency	detail	float	min=0,max=1
+gnomADg_AF	gnomADg_AF	population_frequency	normal	float	min=0,max=1
+gnomADg_AFR_AF	gnomADg_AFR_AF	population_frequency	detail	float	min=0,max=1
+gnomADg_AMI_AF	gnomADg_AMI_AF	population_frequency	detail	float	min=0,max=1
+gnomADg_AMR_AF	gnomADg_AMR_AF	population_frequency	detail	float	min=0,max=1
+gnomADg_ASJ_AF	gnomADg_ASJ_AF	population_frequency	detail	float	min=0,max=1
+gnomADg_EAS_AF	gnomADg_EAS_AF	population_frequency	detail	float	min=0,max=1
+gnomADg_FIN_AF	gnomADg_FIN_AF	population_frequency	detail	float	min=0,max=1
+gnomADg_MID_AF	gnomADg_MID_AF	population_frequency	detail	float	min=0,max=1
+gnomADg_NFE_AF	gnomADg_NFE_AF	population_frequency	detail	float	min=0,max=1
+gnomADg_OTH_AF	gnomADg_OTH_AF	population_frequency	detail	float	min=0,max=1
+gnomADg_SAS_AF	gnomADg_SAS_AF	population_frequency	detail	float	min=0,max=1
+MOTIF_NAME	MOTIF_NAME	transcription_factor	normal	string
+MOTIF_POS	MOTIF_POS	transcription_factor	normal	integer
+HIGH_INF_POS	HIGH_INF_POS	transcription_factor	normal	boolean
+MOTIF_SCORE_CHANGE	MOTIF_SCORE_CHANGE	transcription_factor	normal	float
+TRANSCRIPTION_FACTORS	TRANSCRIPTION_FACTORS	transcription_factor	normal	string
+BAM_EDIT	BAM_EDIT	others	hidden	string
+allele	alt allele	others	normal	string
+used_ref	used ref	others	normal	string
+given_ref	given ref	others	normal	string

@@ -7,10 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Initial release of cio-abcd/variantinterpretation, created with the [nf-core](https://nf-co.re/) template.
 
-- Added esnembl VEP module for VCF annnotation.
+- Added ensembl VEP module for VCF annnotation.
 - Added transcript filtering module based in the vep filter script.
 - Added TSV conversion module with vembrane
 - Added allele fraction calculation
+- Added HTML report generation with datavzrd
 
 ### `Added`
 

@@ -16,16 +16,16 @@ workflow VEMBRANE_TABLE {
     main:
     ch_versions = Channel.empty()
 
-    VEMBRANE_CREATE_FIELDS ( vcf,
-                             annotation_fields,
-                             format_fields,
-                             info_fields
+    VEMBRANE_CREATE_FIELDS (vcf,
+                            annotation_fields,
+                            format_fields,
+                            info_fields
     )
     ch_versions = ch_versions.mix(VEMBRANE_CREATE_FIELDS.out.versions)
 
     VEMBRANE_VEMBRANETABLE ( vcf,
-                             VEMBRANE_CREATE_FIELDS.out.fields,
-                             VEMBRANE_CREATE_FIELDS.out.header
+                            VEMBRANE_CREATE_FIELDS.out.fields,
+                            VEMBRANE_CREATE_FIELDS.out.header
     )
     ch_versions = ch_versions.mix(VEMBRANE_VEMBRANETABLE.out.versions)
 
