@@ -53,10 +53,14 @@ def parse_arguments():
 
     return parser.parse_args()
 
+
 def input_check(input_strings):
     for input_string in input_strings:
         if re.match(r"^[A-Za-z0-9+\-*/\[\]_]+$", input_string) is None:
-            raise ValueError(f"Error: The input_field \"{input_string}\" should only contain letters, numbers, square brackets, mathematical operands or underscores.")
+            raise ValueError(
+                f'Error: The input_field "{input_string}" should only contain letters, numbers, square brackets, mathematical operands or underscores.'
+            )
+
 
 def format_field(
     input_field,
@@ -105,9 +109,12 @@ def format_field(
         if re.match(r"[0-9]", mathsplit_field) is not None:
             pass
         else:
-            input_field_formatted = process_field(mathsplit_field, input_field_formatted)
+            input_field_formatted = process_field(
+                mathsplit_field, input_field_formatted
+            )
 
     return input_field_formatted
+
 
 if __name__ == "__main__":
     args = parse_arguments()
@@ -125,9 +132,9 @@ if __name__ == "__main__":
             args.header,
         )
         output_string = output_string + input_field_formatted
-        if(input_field != args.input_fields[-1]):
+        if input_field != args.input_fields[-1]:
             output_string = output_string + ","
-        if(args.end_with_comma and input_field == args.input_fields[-1]):
+        if args.end_with_comma and input_field == args.input_fields[-1]:
             output_string = output_string + ","
 
     print(output_string)

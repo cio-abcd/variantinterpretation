@@ -52,16 +52,16 @@ info_fields                = params.info_fields             ?: ''
 // Convert specific format field parameters of variant callers
 if ( params.allele_fraction ) {
     if (params.allele_fraction.contains('FORMAT_AF') || params.allele_fraction.contains('mutect2')) {
-        format_fields = format_fields ? format_fields + (',AF') : 'AF'
+        format_fields = format_fields ? format_fields + (' AF') : 'AF'
         if (params.allele_fraction.contains('mutect2')) {
-            info_fields = info_fields ? info_fields + (',DP') : 'DP'
+            info_fields = info_fields ? info_fields + (' DP') : 'DP'
         }
     }
     if (params.allele_fraction.contains('FORMAT_AD') || params.allele_fraction.contains('freebayes')) {
-        format_fields = format_fields ? format_fields + (',AD[1]/DP') : 'AD[1]/DP'
+        format_fields = format_fields ? format_fields + (' AD[1]/DP') : 'AD[1]/DP'
     }
     if (params.allele_fraction.contains('strelka')) {
-        format_fields = format_fields ? format_fields + (',DPI,AD[1]/DP,AD[1]/DPI') : 'DPI,AD[1]/DP,AD[1]/DPI'
+        format_fields = format_fields ? format_fields + (' DPI ,AD[1]/DP AD[1]/DPI') : 'DPI AD[1]/DP AD[1]/DPI'
     }
 }
 
