@@ -14,7 +14,7 @@ def parse_arguments():
         Vembrane interprets this operation and divides the AD value by the DP value to get the allele fraction.'
     )
     parser.add_argument(
-        "input_fields",
+        "--input_fields",
         help="space-separated input fields. The fields only allow letters, numbers, underscores, square brackets and mathematical operands.",
         type=str,
         nargs="+",
@@ -45,13 +45,18 @@ def parse_arguments():
         help="if enabled, instead of formatting as described only outputs fields that can be used as header for vembrane.",
         action="store_true",
     )
+    parser.add_argument(
+        "--end_with_comma",
+        help="if enabled, prints a comma at the end of the string.",
+        action="store_true",
+    )
 
     return parser.parse_args()
 
 def input_check(input_strings):
     for input_string in input_strings:
         if re.match(r"^[A-Za-z0-9+\-*/\[\]_]+$", input_string) is None:
-            raise ValueError(f"Error: The input_fields {input_string} should only contain letters, numbers, square brackets, mathematical operands or underscores.")
+            raise ValueError(f"Error: The input_field \"{input_string}\" should only contain letters, numbers, square brackets, mathematical operands or underscores.")
 
 def format_field(
     input_field,
@@ -65,7 +70,7 @@ def format_field(
         result = f'{column_name[0]}["{field_string}"]'
         # if sampleindex is defined, it will be appended
         if field_string in fields_with_sampleindex or "all" in fields_with_sampleindex:
-            result += f"[{sampleindex[0]}]"
+            result += f"{sampleindex}"
         return result
 
     # Formatting fields for header lines: only column_name underscore field
@@ -73,7 +78,7 @@ def format_field(
         result = f"{column_name[0]}_{field_string}"
         # if sampleindex is defined, it will be appended
         if field_string in fields_with_sampleindex or "all" in fields_with_sampleindex:
-            result += f"[{sampleindex[0]}]"
+            result += f"{sampleindex}"
         return result
 
     def process_field(mathsplit_field, input_field_formatted):
@@ -121,6 +126,8 @@ if __name__ == "__main__":
         )
         output_string = output_string + input_field_formatted
         if(input_field != args.input_fields[-1]):
+            output_string = output_string + ","
+        if(args.end_with_comma and input_field == args.input_fields[-1]):
             output_string = output_string + ","
 
     print(output_string)
