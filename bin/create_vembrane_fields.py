@@ -95,9 +95,7 @@ def format_field(
             # create field format
             only_field_formatted = create_field(only_field)
         # replace from original field; this preserves brackets and numbers from the input.
-        input_field_formatted = re.sub(
-            only_field, only_field_formatted, input_field_formatted
-        )
+        input_field_formatted = re.sub(only_field, only_field_formatted, input_field_formatted)
         return input_field_formatted
 
     # first split input by mathematical operands
@@ -109,9 +107,7 @@ def format_field(
         if re.match(r"[0-9]", mathsplit_field) is not None:
             pass
         else:
-            input_field_formatted = process_field(
-                mathsplit_field, input_field_formatted
-            )
+            input_field_formatted = process_field(mathsplit_field, input_field_formatted)
 
     return input_field_formatted
 
