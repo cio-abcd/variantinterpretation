@@ -28,10 +28,6 @@ process VEMBRANE_CREATE_FIELDS {
     def vcf_zip  = vcf_list[0].endsWith('.gz')
     def command1 = vcf_zip ? 'zcat' : 'cat'
 
-    // check if strings have comma in the end
-    //def format_field_withend = format_fields ? (format_fields.endsWith(",")  ? format_fields : format_fields + ",") : ''
-    //def info_field_withend   = info_fields   ? (info_fields.endsWith(",")    ? info_fields   : info_fields + ",")   : ''
-
     """
     #CSQ annotation fields
     if [[ -n '$annotation_fields' ]]; then
@@ -93,7 +89,7 @@ process VEMBRANE_CREATE_FIELDS {
             --fields_with_sampleindex None \\
             --end_with_comma \\
             --input_fields $info_fields)
-        
+
         #extract header
         info_header=\$(create_vembrane_fields.py \\
             --header \\
