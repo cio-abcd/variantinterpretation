@@ -56,7 +56,7 @@ def parse_arguments():
 
 def input_check(input_strings):
     for input_string in input_strings:
-        if re.match(r"^[A-Za-z0-9+\-*/\[\]_]+$", input_string) is None:
+        if re.fullmatch(r"^[A-Za-z0-9+\-*/\[\]_]+$", input_string) is None:
             raise ValueError(
                 f'Error: The input_field "{input_string}" should only contain letters, numbers, square brackets, mathematical operands or underscores.'
             )
