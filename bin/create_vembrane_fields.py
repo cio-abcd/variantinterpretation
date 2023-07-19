@@ -118,7 +118,7 @@ if __name__ == "__main__":
     input_check(args.input_fields)
 
     # Format the input fields
-    output_string = ""
+    output_strings = []
     for input_field in args.input_fields:
         input_field_formatted = format_field(
             input_field,
@@ -127,10 +127,10 @@ if __name__ == "__main__":
             args.sampleindex,
             args.header,
         )
-        output_string = output_string + input_field_formatted
-        if input_field != args.input_fields[-1]:
-            output_string = output_string + ","
-        if args.end_with_comma and input_field == args.input_fields[-1]:
-            output_string = output_string + ","
+        output_strings.append(input_field_formatted)
 
-    print(output_string)
+    output = ",".join(output_strings)
+    if args.end_with_comma:
+        output += ","
+
+    print(output)
