@@ -2,6 +2,7 @@
 
 import re
 import argparse
+from typing import List, Union
 
 
 def parse_arguments():
@@ -63,37 +64,27 @@ def input_check(input_strings):
 
 
 def format_field(
-    input_field,
-    column_name,
+    input_field: str,
+    column_name: str,
     fields_with_sampleindex,
-    sampleindex,
-    header,
-):
-    # formatting fields for vembrane input
-    def create_field(field_string):
-        result = f'{column_name[0]}["{field_string}"]'
-        # if sampleindex is defined, it will be appended
-        if field_string in fields_with_sampleindex or "all" in fields_with_sampleindex:
-            result += f"{sampleindex}"
-        return result
-
-    # Formatting fields for header lines: only column_name underscore field
-    def create_header(field_string):
-        result = f"{column_name[0]}_{field_string}"
-        # if sampleindex is defined, it will be appended
-        if field_string in fields_with_sampleindex or "all" in fields_with_sampleindex:
-            result += f"{sampleindex}"
-        return result
-
-    def process_field(mathsplit_field, input_field_formatted):
+    sampleindex: int,
+    create_header: bool,
+) -> str:
+    def process_field(mathsplit_field: str, input_field_formatted: str) -> str:
         # only use letters and underscores (no brackets and numbers)
         only_field = re.sub(r"[^A-Za-z_]", "", mathsplit_field)
-        if header is True:
-            # create header format
-            only_field_formatted = create_header(only_field)
+
+        if create_header is True:
+            # Formatting fields for header lines: only column_name underscore field
+            only_field_formatted = f"{column_name[0]}_{only_field}"
         else:
-            # create field format
-            only_field_formatted = create_field(only_field)
+            # formatting fields for vembrane input
+            only_field_formatted = f'{column_name[0]}["{only_field}"]'
+
+        # if sampleindex is defined, it will be appended
+        if only_field in fields_with_sampleindex or "all" in fields_with_sampleindex:
+            only_field_formatted += f"{sampleindex}"
+
         # replace from original field; this preserves brackets and numbers from the input.
         input_field_formatted = re.sub(only_field, only_field_formatted, input_field_formatted)
         return input_field_formatted
@@ -114,7 +105,6 @@ def format_field(
 
 if __name__ == "__main__":
     args = parse_arguments()
-
     input_check(args.input_fields)
 
     # Format the input fields
