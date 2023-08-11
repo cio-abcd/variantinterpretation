@@ -13,8 +13,9 @@ process VEMBRANE_CREATE_FIELDS {
     val info_fields
 
     output:
-    env fields,     emit: fields
-    env header,     emit: header
+    env fields           , emit: fields
+    env header           , emit: header
+    path "versions.yml"  , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -102,10 +103,13 @@ process VEMBRANE_CREATE_FIELDS {
         info_header=""
     fi
 
-
-
     #output fields
     fields=`echo "$args" \$format_vembrane \$info_vembrane \$csq_vembrane` \\
     header=`echo "$args" \$format_header \$info_header \$csq_header`
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        python: \$(python --version | sed 's/Python //g')
+    END_VERSIONS
     """
 }
