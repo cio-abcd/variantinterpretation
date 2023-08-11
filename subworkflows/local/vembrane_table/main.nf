@@ -21,6 +21,8 @@ workflow VEMBRANE_TABLE {
                              format_fields,
                              info_fields
     )
+    ch_versions = ch_versions.mix(VEMBRANE_CREATE_FIELDS.out.versions)
+
     VEMBRANE_VEMBRANETABLE ( vcf,
                              VEMBRANE_CREATE_FIELDS.out.fields,
                              VEMBRANE_CREATE_FIELDS.out.header
