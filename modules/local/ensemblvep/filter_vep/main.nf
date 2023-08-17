@@ -21,14 +21,14 @@ process ENSEMBLVEP_FILTER {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def listfilter = transcriptlist ? "-f \"Feature in $transcriptlist\"" : ""
+    def listfilter = transcriptlist ? "--filter \"Feature in $transcriptlist\"" : ""
 
     """
     filter_vep \\
         $args \\
-        -i $vcf \\
+        --input_file $vcf \\
         --format vcf \\
-        -o ${prefix}.filt.vcf \\
+        --output_file ${prefix}.filt.vcf \\
         --soft_filter \\
         $listfilter \\
 
