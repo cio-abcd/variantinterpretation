@@ -5,7 +5,7 @@ VARIANT_CLASS	variant class	overview	normal	string	{SNV=darkgreen,substitution=b
 Existing_variation	variant ID	overview	normal	string
 SYMBOL	gene symbol	overview	normal	link	NCBI=https://www.ncbi.nlm.nih.gov/gene/{gene}
 EXON	exon	overview	normal	string
-format_ad-1--divided-by-format_dp	allele fraction	overview	normal	float	min=0,max=1
+allele_fraction	allele fraction	overview	normal	float	min=0,max=1
 format_dp	coverage	overview	normal	integer
 MAX_AF	population allele frequency	overview	normal	float	min=0,max=1
 MAX_AF_POPS	population allele frequency database	overview	normal	string

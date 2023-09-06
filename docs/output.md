@@ -51,7 +51,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
   - `*.tsv`: TSV file containing all fields provided by --extraction_fields, default: CHROM, POS, REF, ALT
   </details>
 
-[Vembrane table](https://github.com/vembrane/vembrane#readme) generates TSV files based on information found in the VCF header structure and can parse annotation information from CSQ strings in the INFO field. This module can extract all annotation fields found in the [VEP output documentation](https://www.ensembl.org/info/docs/tools/vep/vep_formats.html#output), which need to be provided by --annotation_fields as comma-separated values. Further, fields from the FORMAT and INFO columns of the VCF file can be extracted with the --format_fields and --info_fields parameter. In all these parameters, you can also specify mathematical operations between fields as shown for `vembrane table` examples. Those are used in the allele fraction calculation, for which some default fields are extracted when using the --allele_fraction parameter.
+[Vembrane table](https://github.com/vembrane/vembrane#readme) generates TSV files based on information found in the VCF header structure. It can parse Information from the FORMAT, INFO and other vcf columns and specifically parses annotation information from CSQ strings in the INFO field, see also the [VEP output documentation](https://www.ensembl.org/info/docs/tools/vep/vep_formats.html#output). It can also handle calculations between parameters and calculates the allele fraction.
 
 ### Datavzrd
 
