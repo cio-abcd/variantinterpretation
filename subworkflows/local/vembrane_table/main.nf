@@ -10,16 +10,12 @@ workflow VEMBRANE_TABLE {
     take:
     vcf                 // channel: [ val(meta), vcf ]
     annotation_fields   // value: Annotation fields in INFO column
-    format_fields       // value: FORMAT fields
-    info_fields         // value: INFO fields
 
     main:
     ch_versions = Channel.empty()
 
     VEMBRANE_CREATE_FIELDS (vcf,
-                            annotation_fields,
-                            format_fields,
-                            info_fields
+                            annotation_fields
     )
     ch_versions = ch_versions.mix(VEMBRANE_CREATE_FIELDS.out.versions)
 

@@ -108,7 +108,6 @@
                 },
                 "vep_cache": {
                     "type": "string",
-                    "default": "None",
                     "description": "Define offline cache used for VEP.",
                     "help_text": "Define offline cache used for VEP. Mandatory for running VEP. Has to be a file path."
                 },
@@ -120,7 +119,6 @@
                 },
                 "vep_cache_source": {
                     "type": "string",
-                    "default": "None",
                     "help_text": "Leave empty (null) if ensembl (standard) cache is used.",
                     "enum": ["None", "refseq", "merged"],
                     "description": "Specified VEP cache. Either Ensembl (default, null), Refseq or merged."
@@ -195,22 +193,20 @@
             "properties": {
                 "transcriptfilter": {
                     "type": "string",
-                    "default": "None",
                     "enum": ["None", "PICK", "CANONICAL", "MANE_SELECT"],
                     "description": "Transcript annotation column for filtering.",
                     "help_text": "If variant does not have any match, all annotation will be removed and variant is flagged in FILTER column.\nCan work simultaneously with \"transcriptfilter\" param."
                 },
                 "transcriptlist": {
                     "type": "string",
-                    "default": "None",
                     "help_text": "If variant does not have any match, all annotation will be removed and variant is flagged in FILTER column.\nCan work simultaneously with \"transcriptfilter\" param.",
                     "format": "file-path",
                     "description": "List of transcripts for filtering."
                 }
             }
         },
-        "vembrane_table_options": {
-            "title": "Vembrane table options",
+        "tsv_conversion_options": {
+            "title": "TSV conversion options",
             "type": "object",
             "description": "",
             "default": "",
@@ -224,8 +220,8 @@
                     "type": "string",
                     "default": "FORMAT_AD",
                     "description": "Specify how to extract and calculate the allele fraction from the VCF file.",
-                    "help_text": "The allele fraction (AF) of a variant is not always reported directly in the VCF file, but encoded indirectly in the FORMAT column. The AF is extracted or calculated  in the `vembrane table` module.   \nWithin the FORMAT column are some standard fields from which the AF can be calculated:   \n\n- **DP:** Depth or coverage, number of reads at this position.  \n- **AD:** Allelic depth, Number of reads supporting REF and ALT alleles (comma-separated, can be addressed with [0] or [1] as index)  \n\nDividing the allelic depth by the coverage gives the AF, which can be invoked with `FORMAT_AD`. Some VCF files also directly encode the AF in the FORMAT column as `AF` field, which can be invoked with `FORMAT_AF`.  \nFor the following variant callers, some defaults were specified that can be invoked by the name of the caller:  \n\n- **Freebayes** uses the `FORMAT_AD` method dividing ALT allele readnumbers (AD[1]) by depth (DP)   \n- **Mutect2** uses the AF field in the FORMAT column as defined in `FORMAT_AF` method. It is a probabilistic AF estimate, hence it is different compared to AF calculated with DP and AD column. Additionally, the DP field is also in the INFO column and will be extracted, which can be greater as the DP field in the FORMAT column as it also contains uninformative reads. So there can be three different ways of calculating the AF. Sources: [[1]](https://gatk.broadinstitute.org/hc/en-us/community/posts/4566282375835-Mutect2-AF-does-not-match-AD-and-DP),[[2]](https://github.com/broadinstitute/gatk/issues/6067),[[3]](https://gatk.broadinstitute.org/hc/en-us/articles/360035532252-Allele-Depth-AD-is-lower-than-expected).   \n- **Strelka:** Has DP values for SNVs and other coverage values for InDels in the DPI field, hence both are calculated.",
-                    "enum": ["FORMAT_AF", "mutect2", "FORMAT_AD", "strelka"]
+                    "help_text": "The allele fraction (AF) of a variant is not always reported directly in the VCF file, but encoded indirectly in the FORMAT column. The AF is extracted or calculated  in the `vembrane table` module.   \nWithin the FORMAT column are some standard fields from which the AF can be calculated:   \n\n- **DP:** Depth or coverage, number of reads at this position.  \n- **AD:** Allelic depth, Number of reads supporting REF and ALT alleles (comma-separated, can be addressed with [0] or [1] as index)  \n\nDividing the allelic depth by the coverage gives the AF, which can be invoked with `FORMAT_AD`. Some VCF files also directly encode the AF in the FORMAT column as `AF` field, which can be invoked with `FORMAT_AF`.  \nFor the following variant callers, some defaults were specified that can be invoked by the name of the caller:  \n\n- **Freebayes** uses the `FORMAT_AD` method dividing ALT allele readnumbers (AD[1]) by depth (DP)   \n- **Mutect2** uses the AF field in the FORMAT column as defined in `FORMAT_AF` method. It is a probabilistic AF estimate, hence it is different compared to AF calculated with DP and AD column. Additionally, the DP field is also in the INFO column and will be extracted, which can be greater as the DP field in the FORMAT column as it also contains uninformative reads. So there can be three different ways of calculating the AF. Sources: [[1]](https://gatk.broadinstitute.org/hc/en-us/community/posts/4566282375835-Mutect2-AF-does-not-match-AD-and-DP),[[2]](https://github.com/broadinstitute/gatk/issues/6067),[[3]](https://gatk.broadinstitute.org/hc/en-us/articles/360035532252-Allele-Depth-AD-is-lower-than-expected). ",
+                    "enum": ["FORMAT_AF", "mutect2", "FORMAT_AD", "freebayes"]
                 },
                 "annotation_fields": {
                     "type": "string",
@@ -239,7 +235,6 @@
                 },
                 "info_fields": {
                     "type": "string",
-                    "default": "None",
                     "description": "Comma-separated fields with INFO fields from VCF INFO column to include in TSV output."
                 }
             }
@@ -257,7 +252,6 @@
                 },
                 "datavzrd_config": {
                     "type": "string",
-                    "default": "null",
                     "description": "YAML file storing the configurations for datavzrd. Will be rendered using YTE template engine interpreting python code. By default uses datavzrd_config_template.yaml in the workflow `assets/`.",
                     "help_text": "YTE rendering adds group- and column-specific datavzrd configurations that are specified in annotation_colinfo (see help text of annotation_colinfo).\nDuring YAML rendering, the information from the annotation_colinfo file is accessible in the template config file.\nThese can be accessed through the respective column name. The column \"data_type_value\" will be converted to a dictionary."
                 },
@@ -471,7 +465,7 @@
             "$ref": "#/definitions/filtering_option"
         },
         {
-            "$ref": "#/definitions/vembrane_table_options"
+            "$ref": "#/definitions/tsv_conversion_options"
         },
         {
             "$ref": "#/definitions/html_report"

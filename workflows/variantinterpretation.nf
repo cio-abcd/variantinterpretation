@@ -50,24 +50,6 @@ vep_cache_version          = params.vep_cache_version       ?: Channel.empty()
 vep_genome                 = params.vep_genome              ?: Channel.empty()
 vep_species                = params.vep_species             ?: Channel.empty()
 annotation_fields          = params.annotation_fields       ?: ''
-format_fields              = params.format_fields           ?: ''
-info_fields                = params.info_fields             ?: ''
-
-// Convert specific format field parameters of variant callers
-if ( params.allele_fraction ) {
-    if (params.allele_fraction.contains('FORMAT_AF') || params.allele_fraction.contains('mutect2')) {
-        format_fields = format_fields ? format_fields + (' AF') : 'AF'
-        if (params.allele_fraction.contains('mutect2')) {
-            info_fields = info_fields ? info_fields + (' DP') : 'DP'
-        }
-    }
-    if (params.allele_fraction.contains('FORMAT_AD') || params.allele_fraction.contains('freebayes')) {
-        format_fields = format_fields ? format_fields + (' AD[1]/DP') : 'AD[1]/DP'
-    }
-    if (params.allele_fraction.contains('strelka')) {
-        format_fields = format_fields ? format_fields + (' DPI AD[1]/DP AD[1]/DPI') : 'DPI AD[1]/DP AD[1]/DPI'
-    }
-}
 
 // VEP extra files
 vep_extra_files            = []
@@ -170,15 +152,11 @@ workflow VARIANTINTERPRETATION {
     if ( params.tsv ) {
         if ( params.transcriptfilter || (params.transcriptlist!=[]) ) {
             VEMBRANE_TABLE (ENSEMBLVEP_FILTER.out.vcf,
-                            annotation_fields,
-                            format_fields,
-                            info_fields
+                            annotation_fields
             )
         } else {
             VEMBRANE_TABLE (ENSEMBLVEP_VEP.out.vcf,
-                            annotation_fields,
-                            format_fields,
-                            info_fields
+                            annotation_fields
             )
         }
         ch_versions = ch_versions.mix(VEMBRANE_TABLE.out.versions)

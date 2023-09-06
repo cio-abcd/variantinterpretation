@@ -9,8 +9,6 @@ process VEMBRANE_CREATE_FIELDS {
     input:
     tuple val(meta), path(vcf)
     val annotation_fields
-    val format_fields
-    val info_fields
 
     output:
     env fields           , emit: fields
@@ -21,7 +19,7 @@ process VEMBRANE_CREATE_FIELDS {
     task.ext.when == null || task.ext.when
 
     script:
-    def args   = task.ext.args   ? (task.ext.args.endsWith(",") ? task.ext.args : task.ext.args + ",") : ''
+    def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     // check if vcf file is gzipped
@@ -31,7 +29,6 @@ process VEMBRANE_CREATE_FIELDS {
 
     """
     #CSQ annotation fields
-    if [[ -n '$annotation_fields' ]]; then
     if [[ '$annotation_fields' == 'all' ]]; then
         # get all CSQ field names from VCF
         #short description of code
@@ -48,64 +45,14 @@ process VEMBRANE_CREATE_FIELDS {
     fi
 
     #create vembrane format
-    csq_vembrane=\$(create_vembrane_fields.py \\
-        --column_name CSQ \\
-        --fields_with_sampleindex None \\
-        --input_fields \$csq_string)
-
-    csq_header=\$(create_vembrane_fields.py \\
-        --column_name CSQ \\
-        --header \\
-        --fields_with_sampleindex None \\
-        --input_fields \$csq_string)
-    else
-        csq_vembrane=""
-        csq_header=""
-    fi
-
-    #FORMAT FIELDS
-    if [[ -n '$format_fields' ]]; then
-        format_vembrane=\$(create_vembrane_fields.py \\
-            --column_name FORMAT \\
-            --fields_with_sampleindex all \\
-            --sampleindex 0 \\
-            --end_with_comma \\
-            --input_fields $format_fields)
-        #extract header line
-        format_header=\$(create_vembrane_fields.py \\
-            --header \\
-            --fields_with_sampleindex None \\
-            --column_name FORMAT \\
-            --end_with_comma \\
-            --input_fields $format_fields)
-    else
-        format_vembrane=""
-        format_header=""
-    fi
-
-    #INFO FIELDS
-    if [[ -n '$info_fields' ]]; then
-        info_vembrane=\$(create_vembrane_fields.py \\
-            --column_name INFO \\
-            --fields_with_sampleindex None \\
-            --end_with_comma \\
-            --input_fields $info_fields)
-
-        #extract header
-        info_header=\$(create_vembrane_fields.py \\
-            --header \\
-            --fields_with_sampleindex None \\
-            --column_name INFO \\
-            --end_with_comma \\
-            --input_fields $info_fields)
-    else
-        info_vembrane=""
-        info_header=""
-    fi
+    create_vembrane_fields.py \\
+        --csq_fields \$csq_string \\
+        --file_out vembrane_string.txt \\
+        $args
 
     #output fields
-    fields=`echo "$args" \$format_vembrane \$info_vembrane \$csq_vembrane` \\
-    header=`echo "$args" \$format_header \$info_header \$csq_header`
+    fields=`head -n 1 vembrane_string.txt`
+    header=`tail -n 1 vembrane_string.txt`
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

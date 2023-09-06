@@ -8,48 +8,52 @@ from typing import List, Union
 def parse_arguments():
     parser = argparse.ArgumentParser(
         description='The general purpose of this script is to easily convert annotation fields into vembrane input parameters. \
-        The input are field names from the INFO/FORMAT column or annotation string as CSQ in the VCF file. \
-        The output has the format: column_name["input_field"][sampleindex] for each field of input_fields. \
+        The input are field names from the INFO/FORMAT column or CSQ annotation string in the VCF file. \
+        The output has the format: column_name["input_field"] FOR INFO and CSQ column and FORMAT["format_field"][sampleindex] for FORMAT column fields. \
         You can also directly perform calculation operations which will be transcribed to vembrane-compatible fields. \
-        , e.g. , AD[1]/DP will be converted to column_name["AD"][sampleindex][0]/column_name["DP"][sampleindex]. \
-        Vembrane interprets this operation and divides the AD value by the DP value to get the allele fraction.'
+        , e.g. , AD[1]/DP in --format_fields will be converted to FORMAT["AD"][sampleindex][0]/FORMAT["DP"][sampleindex]. \
+        Vembrane interprets this operation and divides the AD value by the DP value.'
     )
     parser.add_argument(
-        "--input_fields",
-        help="space-separated input fields. The fields only allow letters, numbers, underscores, square brackets and mathematical operands.",
+        "--csq_fields",
+        help="space-separated CSQ fields. The fields only allow letters, numbers, underscores, square brackets and mathematical operands.",
         type=str,
         nargs="+",
     )
     parser.add_argument(
-        "--column_name",
-        help="string that specifies the location of the input_field for vembrane, e.g., FORMAT, INFO or CSQ.",
-        type=str,
-        nargs=1,
-        default=None,
-    )
-    parser.add_argument(
-        "--fields_with_sampleindex",
-        help="fields to add the sampleindex parameter (options: None, all, [specific fields]).",
+        "--format_fields",
+        help="space-separated FORMAT fields. The fields only allow letters, numbers, underscores, square brackets and mathematical operands.",
         type=str,
         nargs="+",
-        default="all",
+    )
+    parser.add_argument(
+        "--info_fields",
+        help="space-separated INFO fields. The fields only allow letters, numbers, underscores, square brackets and mathematical operands.",
+        type=str,
+        nargs="+",
+    )
+    parser.add_argument(
+        "--other_fields",
+        help="comma-separated fields. This field will NOT be formatted and just added to vembrane and header line. The fields only allow letters, numbers, underscores, square brackets and mathematical operands.",
+        type=str,
+        nargs="+",
+    )
+    parser.add_argument(
+        "--allele_fraction",
+        help="Add here how to calculate allele_fraction. Only allows values: FORMAT_AF, FORMAT_AD, mutect2, freebayes ",
+        choices=["FORMAT_AF", "FORMAT_AD", "mutect2", "freebayes"],
+        type=str,
+    )
+    parser.add_argument(
+        "--file_out",
+        help="output file for temporary storing vembrane and header strings.",
+        type=str,
     )
     parser.add_argument(
         "--sampleindex",
-        help="integer sample index for all fields_with_sampleindex.",
+        help="integer sample index for FORMAT fields.",
         type=int,
-        nargs=1,
-        default=0,
-    )
-    parser.add_argument(
-        "--header",
-        help="if enabled, instead of formatting as described only outputs fields that can be used as header for vembrane.",
-        action="store_true",
-    )
-    parser.add_argument(
-        "--end_with_comma",
-        help="if enabled, prints a comma at the end of the string.",
-        action="store_true",
+        default=None,
     )
 
     return parser.parse_args()
@@ -63,64 +67,110 @@ def input_check(input_strings):
             )
 
 
-def format_field(
+def formatting_field(
     input_field: str,
     column_name: str,
-    fields_with_sampleindex,
     sampleindex: int,
-    create_header: bool,
 ) -> str:
-    def process_field(mathsplit_field: str, input_field_formatted: str) -> str:
+    """
+    This function formats a single field according to vembrane input. It generates an vembrane input string and header string.
+    The fields are split by mathematical operands, which are then processed by formatting_mathfield().
+    """
+
+    def formatting_mathfield(mathsplit_field: str, input_field: str) -> str:
         # only use letters and underscores (no brackets and numbers)
         only_field = re.sub(r"[^A-Za-z_]", "", mathsplit_field)
 
-        if create_header is True:
-            # Formatting fields for header lines: only column_name underscore field
-            only_field_formatted = f"{column_name[0]}_{only_field}"
-        else:
-            # formatting fields for vembrane input
-            only_field_formatted = f'{column_name[0]}["{only_field}"]'
+        # Formatting fields for header lines: only column_name underscore field
+        header_field = f"{column_name}_{only_field}"
+        # formatting fields for vembrane input
+        only_field_formatted = f'{column_name}["{only_field}"]'
 
         # if sampleindex is defined, it will be appended
-        if only_field in fields_with_sampleindex or "all" in fields_with_sampleindex:
-            only_field_formatted += f"{sampleindex}"
+        if sampleindex is not None:
+            header_field += f"[{sampleindex}]"
+            only_field_formatted += f"[{sampleindex}]"
 
         # replace from original field; this preserves brackets and numbers from the input.
-        input_field_formatted = re.sub(only_field, only_field_formatted, input_field_formatted)
-        return input_field_formatted
+        header_field = re.sub(only_field, header_field, input_field)
+        input_field_formatted = re.sub(only_field, only_field_formatted, input_field)
+        return input_field_formatted, header_field
 
     # first split input by mathematical operands
     mathsplit_fields = re.split(r"[+\-*/]", input_field)
     # define format_field that will be subsequently manipulated
-    input_field_formatted = input_field
     for mathsplit_field in mathsplit_fields:
         # allow number-only fields and do not format them
         if re.match(r"[0-9]", mathsplit_field) is not None:
             pass
         else:
-            input_field_formatted = process_field(mathsplit_field, input_field_formatted)
+            input_field, header_field = formatting_mathfield(mathsplit_field, input_field)
 
-    return input_field_formatted
+    return input_field, header_field
 
 
 if __name__ == "__main__":
     args = parse_arguments()
-    input_check(args.input_fields)
+    vembrane_strings = []
+    header_strings = []
 
-    # Format the input fields
-    output_strings = []
-    for input_field in args.input_fields:
-        input_field_formatted = format_field(
-            input_field,
-            args.column_name,
-            args.fields_with_sampleindex,
-            args.sampleindex,
-            args.header,
-        )
-        output_strings.append(input_field_formatted)
+    if args.other_fields:
+        # Formatting fields coming from external arguments.
+        for other_field in args.other_fields:
+            vembrane_strings.append(other_field)
+            header_strings.append(other_field)
 
-    output = ",".join(output_strings)
-    if args.end_with_comma:
-        output += ","
+    # add allele fraction in here
+    if args.allele_fraction:
+        if args.allele_fraction in ["mutect2", "FORMAT_AF"]:
+            vembrane_strings.append('FORMAT["AF"][' + str(args.sampleindex) + "]")
+            header_strings.append("allele_fraction")
+        elif args.allele_fraction in ["freebayes", "FORMAT_AD"]:
+            vembrane_strings.append(
+                'FORMAT["AD"][' + str(args.sampleindex) + '][1]/FORMAT["DP"][' + str(args.sampleindex) + "]"
+            )
+            header_strings.append("allele_fraction")
+        else:
+            raise ValueError("ERROR: Did not specify correct allele_fraction.")
 
-    print(output)
+    if args.format_fields:
+        # Formatting the FORMAT fields.
+        input_check(args.format_fields)
+        for format_field in args.format_fields:
+            format_field, format_header_field = formatting_field(
+                input_field=format_field,
+                column_name="FORMAT",
+                sampleindex=args.sampleindex,
+            )
+            vembrane_strings.append(format_field)
+            header_strings.append(format_header_field)
+
+    if args.info_fields:
+        # Formatting the INFO fields.
+        input_check(args.info_fields)
+        for info_field in args.info_fields:
+            info_field, info_header_field = formatting_field(
+                input_field=info_field,
+                column_name="INFO",
+                sampleindex=None,
+            )
+            vembrane_strings.append(info_field)
+            header_strings.append(info_header_field)
+
+    if args.csq_fields:
+        # Formatting the CSQ fields.
+        input_check(args.csq_fields)
+        for csq_field in args.csq_fields:
+            csq_field, csq_header_field = formatting_field(
+                input_field=csq_field,
+                column_name="CSQ",
+                sampleindex=None,
+            )
+            vembrane_strings.append(csq_field)
+            header_strings.append(csq_header_field)
+
+    vembrane_out = ",".join(vembrane_strings)
+    header_out = ",".join(header_strings)
+
+    with open(args.file_out, "wt") as f:
+        f.write(vembrane_out + "\n" + header_out)
