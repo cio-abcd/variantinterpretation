@@ -16,6 +16,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 - [vcf proc](#vcfproc) - Filters and normalizes variant sin vcf file.
 - [ensemblvep](#ensemblvep) - Annotates VCF file and reports summary.
 - [transcriptfilter](#transcriptfilter) - Filters for specific transcripts.
+- [variantfilter](#variantfilter) - Tags VCF file with custom filters and creates separate TSV and HTML files for defined VCF subsets.
 - [vembrane table](#vembranetable) - Generates TSV output based on provided VEP annotation fields
 - [datavzrd](#datavzrd) - Generates HTML report based on TSV file.
 - [TMB calculate](#tmbcalculate) - Calculates the TMB per sample based on provided cutoffs from vembrane TSV output
@@ -91,6 +92,19 @@ Also runs variant normalization using `bcftools norm` with optional InDel left-a
   </details>
 
 [VEP_filter](https://www.ensembl.org/info/docs/tools/vep/script/vep_filter.html) is a separate script in the Ensembl VEP package that separates the filter step form vep. This module has a hard-coded configuration "--soft_filter" to prevent silent dropping of variants, instead a flag "filter_vep_fail/filter_vep_pass" will be added to the FILTER column. A default external argument is also --only_matched, will results in annotation being dropped if it does not match the filtering criteria. That results in variants only having transcript annotations matching the filter criteria, variants without any matching transcript will be retained, but without any annotation.
+
+### Variantfilter
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `variantfilter/`
+  - `*_tag.vcf`: VCF file with all custom filters tagged in the FILTER column.
+  - `*_{filtername}.vcf`: VCF file subset only containing variants from specific filter subset.
+  </details>
+
+The variantfilter can tag specific filter based on custom criteria using [vembrane tag](https://github.com/vembrane/vembrane#vembrane-tag). Filters are defined in python format readable for vembrane within a separate TSV file provided with `--custom_filters` parameter an example is provided in `assets/custom_filters.tsv` and loaded per default.
+The custom_filters can also be used to create separate TSV files and HTML reports for a filter subset. If specified with the parameter `--used_filters` the filter tag is selected using [vembrane filter](https://github.com/vembrane/vembrane#vembrane-filter). This creates additional reports, while the full VCf file is always preserved.
 
 ### Vembrane table
 
