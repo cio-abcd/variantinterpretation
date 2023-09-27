@@ -19,7 +19,8 @@ def checkPathParamList = [
         params.transcriptlist,
         params.datavzrd_config,
         params.annotation_colinfo,
-        params.bedfile
+        params.bedfile,
+        params.custom_filters
 ]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
@@ -46,6 +47,7 @@ transcriptlist             = params.transcriptlist     ? Channel.fromPath(params
 datavzrd_config            = params.datavzrd_config    ? Channel.fromPath(params.datavzrd_config).collect()          : Channel.fromPath("$projectDir/assets/datavzrd_config_template.yaml", checkIfExists: true)
 annotation_colinfo         = params.annotation_colinfo ? Channel.fromPath(params.annotation_colinfo).collect()       : Channel.fromPath("$projectDir/assets/annotation_colinfo.tsv", checkIfExists: true)
 bedfile			           = params.bedfile 	       ? Channel.fromPath(params.bedfile).collect()		             : []
+custom_filters             = params.custom_filters     ? Channel.fromPath(params.custom_filters).collect()           : []
 
 // Initialize value channels from parameters
 
@@ -73,6 +75,7 @@ include { VCFPROC               } from '../subworkflows/local/vcf/vcfproc'
 include { ENSEMBLVEP_FILTER     } from '../modules/local/ensemblvep/filter_vep/main'
 include { ENSEMBLVEP_VEP        } from '../modules/local/ensemblvep/vep/main'
 include { VEMBRANE_TABLE        } from '../subworkflows/local/vembrane_table/main'
+include { VARIANTFILTER         } from '../subworkflows/local/variantfilter/main'
 include { HTML_REPORT           } from '../subworkflows/local/html_report/main'
 include { TMB_CALCULATE	    	} from '../modules/local/tmbcalculation/main'
 
@@ -159,13 +162,14 @@ workflow VARIANTINTERPRETATION {
     )
     ch_versions = ch_versions.mix(VCFPROC.out.versions)
 
-    //
-    // VEP annotation module
-    //
-    if (params.vep) {
-        proc_vcf=VCFPROC.out.vcf_norm_tbi
-            .map { meta, vcf, tbi -> tuple( meta, vcf) }
+    proc_vcf=VCFPROC.out.vcf_norm_tbi
+        .map { meta, vcf, tbi -> tuple( meta, vcf) }
 
+    //
+    // MODULE: VEP annotation
+    //
+
+    if (params.vep) {
         ENSEMBLVEP_VEP( proc_vcf,
                         vep_genome,
                         vep_species,
@@ -173,46 +177,57 @@ workflow VARIANTINTERPRETATION {
                         vep_cache,
                         fasta,
                         vep_extra_files)
+        ch_vcf = ENSEMBLVEP_VEP.out.vcf
         ch_versions = ch_versions.mix(ENSEMBLVEP_VEP.out.versions)
-        ch_multiqc_reports = ch_multiqc_reports.mix(ENSEMBLVEP_VEP.out.report)
-
-        // Filtering for transcripts
-        if ( params.transcriptfilter || (params.transcriptlist!=[]) ) {
-            ENSEMBLVEP_FILTER(  ENSEMBLVEP_VEP.out.vcf,
-                                transcriptlist
-            )
-            ch_versions = ch_versions.mix(ENSEMBLVEP_FILTER.out.versions)
-        }
+    } else {
+        ch_vcf = proc_vcf
     }
 
-    ///
+
+
+    // Filtering for transcripts
+    if ( params.transcriptfilter || (params.transcriptlist!=[]) ) {
+        ENSEMBLVEP_FILTER(  ch_vcf,
+                            transcriptlist
+        )
+        ch_vcf_tf = ENSEMBLVEP_FILTER.out.vcf
+        ch_versions = ch_versions.mix(ENSEMBLVEP_FILTER.out.versions)
+    } else {
+        ch_vcf_tf = ch_vcf
+    }
+
+    // Use custom filters to tag variants and create subsets
+    if (params.custom_filters) {
+        VARIANTFILTER ( ch_vcf_tf,
+                        custom_filters)
+        ch_vcf_tag = VARIANTFILTER.out.vcf
+        ch_versions = ch_versions.mix(VARIANTFILTER.out.versions)
+    } else {
+        ch_vcf_tag = ch_vcf_tf
+    }
+
+    //
     // MODULE: TSV conversion with vembrane table
-    ///
+    //
 
     if ( params.tsv ) {
-        if ( params.transcriptfilter || (params.transcriptlist!=[]) ) {
-            VEMBRANE_TABLE (ENSEMBLVEP_FILTER.out.vcf,
-                            annotation_fields
-            )
-        } else {
-            VEMBRANE_TABLE (ENSEMBLVEP_VEP.out.vcf,
-                            annotation_fields
-            )
-        }
+
+        VEMBRANE_TABLE (ch_vcf_tag,
+                        annotation_fields
+        )
+        ch_tsv = VEMBRANE_TABLE.out.tsv
         ch_versions = ch_versions.mix(VEMBRANE_TABLE.out.versions)
 
-        ///
+        //
         // MODULE: HTML report with datavzrd
-        ///
+        //
         if ( params.report ) {
             // need to combine TSV file with datavzrd_config and annotation_col.tsv for report generation
-            tsv = VEMBRANE_TABLE.out.tsv
-            tsv_config = tsv.combine(datavzrd_config)
+            tsv_config = ch_tsv.combine(datavzrd_config)
             tsv_config_colinfo = tsv_config.combine(annotation_colinfo)
             // generate report
             HTML_REPORT ( tsv_config_colinfo )
-
-        ch_versions = ch_versions.mix(HTML_REPORT.out.versions)
+            ch_versions = ch_versions.mix(HTML_REPORT.out.versions)
         }
     }
 
