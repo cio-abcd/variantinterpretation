@@ -9,6 +9,7 @@ Please use the pre-filled template to save time.
 However, don't be put off by this template - other more general issues and suggestions are welcome!
 Contributions to the code are even more welcome ;)
 
+
 ## Contribution workflow
 
 If you'd like to write some code for cio-abcd/variantinterpretation, the standard workflow is as follows:
@@ -110,4 +111,3 @@ To get started:
 Devcontainer specs:
 
 - [DevContainer config](.devcontainer/devcontainer.json)
-- [Dockerfile](.devcontainer/Dockerfile)
