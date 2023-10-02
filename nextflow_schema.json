@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
     "$id": "https://raw.githubusercontent.com/cio-abcd/variantinterpretation/master/nextflow_schema.json",
-    "title": "cio-abcd/variantinterpretation pipeline parameters",
+    "title": "variantinterpretation pipeline parameters",
     "description": "Pipeline to add biological and clinical knowledge to genomic variants.",
     "type": "object",
     "definitions": {
