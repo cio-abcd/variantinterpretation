@@ -10,7 +10,7 @@
 
 The pipeline takes as input SNVs and short InDels in VCF file format and annotates them using Ensembl variant effect predictor (VEP). Several parameters in VEP annotation can be configured through this workflow.
 
-**cio-abcd/variantinterpretation** is a bioinformatics best-practice analysis pipeline for adding biological and clinical knowledge to genomic variants.
+**variantinterpretation** is a bioinformatics best-practice analysis pipeline for adding biological and clinical knowledge to genomic variants.
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) in order to make them available to all nf-core pipelines, and to everyone within the Nextflow community!
 
@@ -40,7 +40,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 3. Download the pipeline and test it on a minimal dataset with a single command:
 
 ```bash
-nextflow run cio-abcd/variantinterpretation -profile test,YOURPROFILE --outdir <OUTDIR>
+nextflow run variantinterpretation -profile test,YOURPROFILE --outdir <OUTDIR>
 ```
 
 Note that some form of configuration will be needed so that Nextflow knows how to fetch the required software. This is usually done in the form of a config profile (`YOURPROFILE` in the example command above). You can chain multiple config profiles in a comma-separated string.
@@ -55,7 +55,7 @@ Note that some form of configuration will be needed so that Nextflow knows how t
 Specify parameters best using `nf-core launch` and add to run command.
 
 ```bash
-nextflow run cio-abcd/variantinterpretation -params-file nf-params.json -profile <docker/singularity/podman/shifter/charliecloud/conda/institute>
+nextflow run variantinterpretation -params-file nf-params.json -profile <docker/singularity/podman/shifter/charliecloud/conda/institute>
 ```
 
 ## Contributions and Support
@@ -78,7 +78,7 @@ TBA
 ## Citations
 
 <!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
-<!-- If you use  cio-abcd/variantinterpretation for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
+<!-- If you use  variantinterpretation for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
 
 <!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->
 
