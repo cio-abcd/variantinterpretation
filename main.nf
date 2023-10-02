@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    cio-abcd/variantinterpretation
+    variantinterpretation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Github : https://github.com/cio-abcd/variantinterpretation
 ----------------------------------------------------------------------------------------
@@ -34,7 +34,7 @@ WorkflowMain.initialise(workflow, params, log)
 include { VARIANTINTERPRETATION } from './workflows/variantinterpretation'
 
 //
-// WORKFLOW: Run main cio-abcd/variantinterpretation analysis pipeline
+// WORKFLOW: Run main variantinterpretation analysis pipeline
 //
 workflow CIOABCD_VARIANTINTERPRETATION {
     VARIANTINTERPRETATION ()
