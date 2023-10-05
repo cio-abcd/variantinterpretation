@@ -18,7 +18,8 @@ def checkPathParamList = [
         params.vep_cache,
         params.transcriptlist,
         params.datavzrd_config,
-        params.annotation_colinfo
+        params.annotation_colinfo,
+        params.bedfile
 ]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
@@ -43,6 +44,7 @@ fasta                      = params.fasta              ? Channel.fromPath(params
 transcriptlist             = params.transcriptlist     ? Channel.fromPath(params.transcriptlist).collect()           : []
 datavzrd_config            = params.datavzrd_config    ? Channel.fromPath(params.datavzrd_config).collect()          : Channel.fromPath("$projectDir/assets/datavzrd_config_template.yaml", checkIfExists: true)
 annotation_colinfo         = params.annotation_colinfo ? Channel.fromPath(params.annotation_colinfo).collect()       : Channel.fromPath("$projectDir/assets/annotation_colinfo.tsv", checkIfExists: true)
+bedfile			           = params.bedfile 	       ? Channel.fromPath(params.bedfile).collect()		             : []
 
 // Initialize value channels from parameters
 
@@ -64,10 +66,12 @@ vep_extra_files            = []
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
 include { INPUT_CHECK           } from '../subworkflows/local/input_check'
+include { CHECKBEDFILE		    } from '../modules/local/checkbedfile'
 include { ENSEMBLVEP_FILTER     } from '../modules/local/ensemblvep/filter_vep/main'
 include { ENSEMBLVEP_VEP        } from '../modules/local/ensemblvep/vep/main'
 include { VEMBRANE_TABLE        } from '../subworkflows/local/vembrane_table/main'
 include { HTML_REPORT           } from '../subworkflows/local/html_report/main'
+include { TMB_CALCULATE	    	} from '../modules/local/tmbcalculation/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -78,7 +82,7 @@ include { HTML_REPORT           } from '../subworkflows/local/html_report/main'
 //
 // MODULE: Installed directly from nf-core/modules
 //
-include { BCFTOOLS_INDEX	      } from '../modules/nf-core/bcftools/index/main'
+include { BCFTOOLS_INDEX	          } from '../modules/nf-core/bcftools/index/main'
 include { BCFTOOLS_NORM               } from '../modules/nf-core/bcftools/norm/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
@@ -122,6 +126,14 @@ workflow VARIANTINTERPRETATION {
                     fasta
     )
     ch_versions = ch_versions.mix(BCFTOOLS_NORM.out.versions)
+
+    //
+    // Check bedfiles
+    //
+    if (params.bedfile) {
+        CHECKBEDFILE ( bedfile )
+        ch_versions = ch_versions.mix(CHECKBEDFILE.out.versions)
+    }
 
     ///
     // VEP annotation module
@@ -173,6 +185,18 @@ workflow VARIANTINTERPRETATION {
             HTML_REPORT ( tsv_config_colinfo )
 
         ch_versions = ch_versions.mix(HTML_REPORT.out.versions)
+        }
+    }
+
+    ///
+    // MODULE: TMB calculation
+    ///
+    if ( params.bedfile && params.calculate_tmb ) {
+            if ( CHECKBEDFILE.out.bed_valid ) {
+                    TMB_CALCULATE ( VEMBRANE_TABLE.out.tsv,
+                                    bedfile
+                )
+                ch_versions = ch_versions.mix(TMB_CALCULATE.out.versions)
         }
     }
 
