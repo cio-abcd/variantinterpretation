@@ -223,6 +223,11 @@
                     "help_text": "The allele fraction (AF) of a variant is not always reported directly in the VCF file, but encoded indirectly in the FORMAT column. The AF is extracted or calculated  in the `vembrane table` module.   \nWithin the FORMAT column are some standard fields from which the AF can be calculated:   \n\n- **DP:** Depth or coverage, number of reads at this position.  \n- **AD:** Allelic depth, Number of reads supporting REF and ALT alleles (comma-separated, can be addressed with [0] or [1] as index)  \n\nDividing the allelic depth by the coverage gives the AF, which can be invoked with `FORMAT_AD`. Some VCF files also directly encode the AF in the FORMAT column as `AF` field, which can be invoked with `FORMAT_AF`.  \nFor the following variant callers, some defaults were specified that can be invoked by the name of the caller:  \n\n- **Freebayes** uses the `FORMAT_AD` method dividing ALT allele readnumbers (AD[1]) by depth (DP)   \n- **Mutect2** uses the AF field in the FORMAT column as defined in `FORMAT_AF` method. It is a probabilistic AF estimate, hence it is different compared to AF calculated with DP and AD column. Additionally, the DP field is also in the INFO column and will be extracted, which can be greater as the DP field in the FORMAT column as it also contains uninformative reads. So there can be three different ways of calculating the AF. Sources: [[1]](https://gatk.broadinstitute.org/hc/en-us/community/posts/4566282375835-Mutect2-AF-does-not-match-AD-and-DP),[[2]](https://github.com/broadinstitute/gatk/issues/6067),[[3]](https://gatk.broadinstitute.org/hc/en-us/articles/360035532252-Allele-Depth-AD-is-lower-than-expected). ",
                     "enum": ["FORMAT_AF", "mutect2", "FORMAT_AD", "freebayes"]
                 },
+                "read_depth": {
+                    "type": "string",
+                    "default": "DP",
+                    "description": "Specify from which FORMAT field to extract read depth.  This will specify the column named \"read_depth\" in the output report and TSV file.."
+                },
                 "annotation_fields": {
                     "type": "string",
                     "default": "all",
