@@ -40,8 +40,13 @@ def parse_arguments():
     )
     parser.add_argument(
         "--allele_fraction",
-        help="Add here how to calculate allele_fraction. Only allows values: FORMAT_AF, FORMAT_AD, mutect2, freebayes ",
+        help="Specify here how to calculate allele_fraction. Only allows values: FORMAT_AF, FORMAT_AD, mutect2, freebayes.",
         choices=["FORMAT_AF", "FORMAT_AD", "mutect2", "freebayes"],
+        type=str,
+    )
+    parser.add_argument(
+        "--read_depth",
+        help='Specify here from which FORMAT field to extract read depth. The column will always be named "read_depth" for downstream compatibility.',
         type=str,
     )
     parser.add_argument(
@@ -132,6 +137,11 @@ if __name__ == "__main__":
             header_strings.append("allele_fraction")
         else:
             raise ValueError("ERROR: Did not specify correct allele_fraction.")
+
+    # add read depth
+    if args.read_depth:
+        vembrane_strings.append('FORMAT["' + str(args.read_depth) + '"][' + str(args.sampleindex) + "]")
+        header_strings.append("read_depth")
 
     if args.format_fields:
         # Formatting the FORMAT fields.
