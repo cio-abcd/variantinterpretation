@@ -16,6 +16,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 - [transcriptfilter](#transcriptfilter) - Filters for specific transcripts.
 - [vembrane table](#vembranetable) - Generates TSV output based on provided VEP annotation fields
 - [datavzrd](#datavzrd) - Generates HTML report based on TSV file.
+- [TMB calculate](#tmbcalculate) - Calculates the TMB per sample based on provided cutoffs from vembrane TSV output
 - [MultiQC](#multiqc) - Aggregate report describing results and QC from the whole pipeline.
 - [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution.
 
@@ -65,6 +66,18 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 [Datavzrd](https://github.com/datavzrd/datavzrd#readme) generates a HTML report from TSV files based on a YAML configuration file. The HTML report enables several features including interactive filtering, links within the data or to the internet, plotting, etc.
 The configuration file is rendered using the [YTE template engine](https://github.com/yte-template-engine/yte#readme) that enables usage of python code in YAML files for dynamic rendering.
 This module comes with two assets: The [datavzrd_config_template.yaml](../assets/datavzrd_config_template.yaml) which uses information about the annotation columns specified in [annotation_colinfo.tsv](../assets/annotation_colinfo.tsv) for rendering the datavzrd config. Find more information in the parameters help text.
+
+### TMB calculation
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `tmb/`
+  - `*.txt`: Single value TXT file containing the TMB value calculated from the vembrane TSV output after applying allele frequency, coverage and population frequency thresholds.
+  - `*.png`: Non-interactive Barplot visualizing the count of mutations against their respective allele frequency
+  </details>
+
+[TMB calculation](bin/calculate_TMB.py) generates a single value TXT file containing the Tumor Mutational Burden (TMB) as single value. The calculation will be performed on the vembrane TSV output file, allowing for prefiltering of unwanted mutations using the vep-filter step prior to TMB calculation. TMB calculation will only be performed if a [well-formatted BED file](https://genome.ucsc.edu/FAQ/FAQformat.html#format1) covering at least 1 MBp in its target regions was provided to the workflow. TMB calculation is not a unified and standarized process, thus different thresholds can be provided including a lower and upper allele frequency boundary, a minimal threshold for coverage, a maximal threshold for presence in the [gnomAD global population frequency](https://gnomad.broadinstitute.org/) and a flag to filter InDels from the calculation procedure.
 
 ### MultiQC
 
