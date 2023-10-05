@@ -79,6 +79,18 @@
                 }
             }
         },
+        "preprocessing_options": {
+            "title": "Preprocessing options",
+            "type": "object",
+            "description": "Options related to prefiltering routines (e.g. BED file)",
+            "default": "",
+            "properties": {
+                "bedfile": {
+                    "type": "string",
+                    "description": "BED file of the sequencing panel used for VCF generation"
+                }
+            }
+        },
         "annotation_options": {
             "title": "Annotation options",
             "type": "object",
@@ -264,6 +276,52 @@
                     "type": "string",
                     "description": "TSV file giving information about annotations and how to render them for HTML report.",
                     "help_text": "This TSV file contains six unique columns:  \n- identifier: Name of the corresponding annotation column in the variant TSV file. This column is used to match the variant TSV columns. The variant TSV column names will be adapted for better matching that needs to be considered when defining those identifiers: The matching is case-insensitive, disregards \"CSQ_\" prefixes and only allows letters, numbers and underscores. Square brackets will be replaced with a \"-\", Mathematical operands in variant TSV column names will be replaced with literal strings: \"+\" is replaced with \"-plus-\", \"-\" with \"-minus-\", \"*\" with \"-times-\", \"/\" with \"-divided-by-\", \"%\" with \"-modulus-\". For example: If the variant TSV column name is FORMAT_AD[1]/FORMAT_DP, the identifier has to have the name FORMAT_AD-1--divided-by-FORMAT_DP and can have lower or upper cases.\n\n- label: new label that will be shown in HTML report if display = normal.  \n\n- group: The columns of the variant TSV file will be splitted into group-specific TSV files to make the report better accessible. This column defines the specific group names. Each group will be linked to each other. However, accessing columns between groups in the datavzrd_config file is not possible.  \n\n- display: Allows 'normal', 'detail' and 'hidden'  according to the display-mode parameter in datavzrd. \"normal\" shows the column, \"detail\" puts it in detail view accessible with \"+\", \"hidden\" does not show it in the HTML report, but in the exported excel table.  \n\n- data_type and data_type_value: Both columns determines implemented automatic rendering in this workflow:\n  - data_type=__integer or float__: Will create a [ticks plot](https://vega.github.io/vega-lite/docs/tick.html)\n    - if data_type_value=min=NUM1,max=NUM2 key-value pairs are specified, will set the range of tick plot.\n  - data_type=__string__: Creates heatmap plot if `data_type_value` has fieldname=color key=value pairs specifying the color literally or in hexcode.\n  - data_type=___link__: Creates a hyperlink if `data_type_value` provides name=url key=value pairs. Can refer to entries of the same row and group with the respective column name in curly brackets in lower cases.\n\nThe order of the rows in this file determines the order of columns shown in the HTML report.\nEach group report will always show the identifier columns \"chrom\", \"pos\", \"ref\", \"alt\", \"id\", and \"Feature\" that are needed to reference between group tables."
+                }
+            }
+        },
+        "tmb_calculation_options": {
+            "title": "TMB Calculation options",
+            "type": "object",
+            "description": "Options related to cutoffs in TMB calculation",
+            "default": "",
+            "properties": {
+                "calculate_tmb": {
+                    "type": "boolean",
+                    "description": "Enable TMB calculation"
+                },
+                "min_af": {
+                    "type": "number",
+                    "default": 0.0,
+                    "description": "Minimal allele frequency cutoff for TMB calculation"
+                },
+                "max_af": {
+                    "type": "number",
+                    "default": 1.0,
+                    "description": "Maximal allele frequency cutoff for TMB calculation"
+                },
+                "min_cov": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "Minimal coverage cutoff for TMB calculation"
+                },
+                "max_popfreq": {
+                    "type": "number",
+                    "default": 0.02,
+                    "description": "Maximal population allele frequency in the gnomAD global population for TMB calculation"
+                },
+                "filter_muttype": {
+                    "type": "string",
+                    "description": "Define if only SNVs, SNVs and MNVs or all mutation types should be selected for TMB calculation",
+                    "default": "snv"
+                },
+                "population_db": {
+                    "type": "string",
+                    "description": "Define an alternative population database to filter annotated mutations based on population frequency"
+                },
+                "panelsize_threshold": {
+                    "type": "integer",
+                    "default": 1000000,
+                    "description": "Expected panelsize threshold which should be surpassed to calculate TMB"
                 }
             }
         },
@@ -464,6 +522,9 @@
             "$ref": "#/definitions/reference_genome_options"
         },
         {
+            "$ref": "#/definitions/preprocessing_options"
+        },
+        {
             "$ref": "#/definitions/annotation_options"
         },
         {
@@ -474,6 +535,9 @@
         },
         {
             "$ref": "#/definitions/html_report"
+        },
+        {
+            "$ref": "#/definitions/tmb_calculation_options"
         },
         {
             "$ref": "#/definitions/institutional_config_options"
