@@ -1,66 +1,5 @@
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    VALIDATE INPUTS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
-
-// Validate input parameters
-WorkflowVariantinterpretation.initialise(params, log)
-
-// TODO nf-core: Add all file path parameters for the pipeline to the list below
-// Check input path parameters to see if they exist
-def checkPathParamList = [
-        params.input,
-        params.fasta,
-        params.multiqc_config,
-        params.vep_cache,
-        params.transcriptlist,
-        params.datavzrd_config,
-        params.annotation_colinfo,
-        params.bedfile,
-        params.custom_filters
-]
-for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
-
-// Check mandatory parameters
-if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    CONFIG FILES & INPUT CHANNELS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-ch_multiqc_config          = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
-ch_multiqc_custom_config   = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
-ch_multiqc_logo            = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
-ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-ch_multiqc_warnings_template = params.multiqc_warnings_template ? file(params.multiqc_warnings_template, checkIfExists: true) : file("$projectDir/assets/warnings_multiqc_template.yml", checkIfExists: true)
-
-// Initialize files channels from parameters
-
-vep_cache                  = params.vep_cache          ? Channel.fromPath(params.vep_cache).collect()                : []
-fasta                      = params.fasta              ? Channel.fromPath(params.fasta).collect()                    : Channel.empty()
-transcriptlist             = params.transcriptlist     ? Channel.fromPath(params.transcriptlist).collect()           : []
-datavzrd_config            = params.datavzrd_config    ? Channel.fromPath(params.datavzrd_config).collect()          : Channel.fromPath("$projectDir/assets/datavzrd_config_template.yaml", checkIfExists: true)
-annotation_colinfo         = params.annotation_colinfo ? Channel.fromPath(params.annotation_colinfo).collect()       : Channel.fromPath("$projectDir/assets/annotation_colinfo.tsv", checkIfExists: true)
-bedfile			           = params.bedfile 	       ? Channel.fromPath(params.bedfile).collect()		             : []
-custom_filters             = params.custom_filters     ? Channel.fromPath(params.custom_filters).collect()           : []
-
-// Initialize value channels from parameters
-
-vep_cache_version          = params.vep_cache_version       ?: Channel.empty()
-vep_genome                 = params.vep_genome              ?: Channel.empty()
-vep_species                = params.vep_species             ?: Channel.empty()
-annotation_fields          = params.annotation_fields       ?: ''
-
-// VEP extra files
-vep_extra_files            = []
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT LOCAL MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
@@ -95,10 +34,72 @@ include { DUMP_WARNINGS               } from '../modules/local/multiqcreport_war
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
+
+workflow VARIANTINTERPRETATION {
+    take:
+    args
+    main:
+
+
+def params = args
+println args.input
+
 // Info required for completion email and summary
 def multiqc_report = []
 
-workflow VARIANTINTERPRETATION {
+// TODO nf-core: Add all file path parameters for the pipeline to the list below
+// Check input path parameters to see if they exist
+def checkPathParamList = [
+        params.input,
+        params.fasta,
+        params.multiqc_config,
+        params.vep_cache,
+        params.transcriptlist,
+        params.datavzrd_config,
+        params.annotation_colinfo,
+        params.bedfile,
+        params.custom_filters
+]
+for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
+
+// Check mandatory parameters
+if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    CONFIG FILES & INPUT CHANNELS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+confdir = "$NEXTFLOW_MODULES/variantinterpretation"
+
+ch_multiqc_config          = Channel.fromPath("$confdir/assets/multiqc_config.yml", checkIfExists: true)
+ch_multiqc_custom_config   = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
+ch_multiqc_logo            = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
+ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$confdir/assets/methods_description_template.yml", checkIfExists: true)
+ch_multiqc_warnings_template = params.multiqc_warnings_template ? file(params.multiqc_warnings_template, checkIfExists: true) : file("$confdir/assets/warnings_multiqc_template.yml", checkIfExists: true)
+
+// Initialize files channels from parameters
+
+vep_cache                  = params.vep_cache          ? Channel.fromPath(params.vep_cache).collect()                : []
+fasta                      = params.fasta              ? Channel.fromPath(params.fasta).collect()                    : Channel.empty()
+transcriptlist             = params.transcriptlist     ? Channel.fromPath(params.transcriptlist).collect()           : []
+datavzrd_config            = params.datavzrd_config    ? Channel.fromPath(params.datavzrd_config).collect()          : Channel.fromPath("$confdir/assets/datavzrd_config_template.yaml", checkIfExists: true)
+annotation_colinfo         = params.annotation_colinfo ? Channel.fromPath(params.annotation_colinfo).collect()       : Channel.fromPath("$confdir/assets/annotation_colinfo.tsv", checkIfExists: true)
+bedfile			           = params.bedfile 	       ? Channel.fromPath(params.bedfile).collect()		             : []
+custom_filters             = params.custom_filters     ? Channel.fromPath(params.custom_filters).collect()           : []
+
+// Initialize value channels from parameters
+
+vep_cache_version          = params.vep_cache_version       ?: Channel.empty()
+vep_genome                 = params.vep_genome              ?: Channel.empty()
+vep_species                = params.vep_species             ?: Channel.empty()
+annotation_fields          = params.annotation_fields       ?: ''
+
+// VEP extra files
+vep_extra_files            = []
+
+
 
     // gather versions of each process
     ch_versions = Channel.empty()
@@ -258,17 +259,9 @@ workflow VARIANTINTERPRETATION {
     //
 
     // collect workflow parameter summary and add as section
-    workflow_summary    = WorkflowVariantinterpretation.paramsSummaryMultiqc(workflow, summary_params)
-    ch_workflow_summary = Channel.value(workflow_summary)
-
-    // collect custom methods description and add as section
-    methods_description    = WorkflowVariantinterpretation.methodsDescriptionText(workflow, ch_multiqc_custom_methods_description)
-    ch_methods_description = Channel.value(methods_description)
 
     // collect all multiQC files for report
     ch_multiqc_files = Channel.empty()
-    ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
-    ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(ch_version_yaml)
     ch_multiqc_files = ch_multiqc_files.mix(ch_warnings_yaml)
     ch_multiqc_files = ch_multiqc_files.mix(ch_multiqc_reports.collect().ifEmpty([]))
@@ -283,24 +276,3 @@ workflow VARIANTINTERPRETATION {
 
 }
 
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    COMPLETION EMAIL AND SUMMARY
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-workflow.onComplete {
-    if (params.email || params.email_on_fail) {
-        NfcoreTemplate.email(workflow, params, summary_params, projectDir, log, multiqc_report)
-    }
-    NfcoreTemplate.summary(workflow, params, log)
-    if (params.hook_url) {
-        NfcoreTemplate.IM_notification(workflow, params, summary_params, projectDir, log)
-    }
-}
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    THE END
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/

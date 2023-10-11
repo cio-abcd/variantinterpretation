@@ -15,7 +15,7 @@ nextflow.enable.dsl = 2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-params.fasta = WorkflowMain.getGenomeAttribute(params, 'fasta')
+//params.fasta = WorkflowMain.getGenomeAttribute(params, 'fasta')
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -23,7 +23,7 @@ params.fasta = WorkflowMain.getGenomeAttribute(params, 'fasta')
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-WorkflowMain.initialise(workflow, params, log)
+//WorkflowMain.initialise(workflow, params, log)
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -37,7 +37,10 @@ include { VARIANTINTERPRETATION } from './workflows/variantinterpretation'
 // WORKFLOW: Run main cio-abcd/variantinterpretation analysis pipeline
 //
 workflow CIOABCD_VARIANTINTERPRETATION {
-    VARIANTINTERPRETATION ()
+    take:
+        args
+    main:
+    VARIANTINTERPRETATION (args)
 }
 
 /*
@@ -51,6 +54,7 @@ workflow CIOABCD_VARIANTINTERPRETATION {
 // See: https://github.com/nf-core/rnaseq/issues/619
 //
 workflow {
+    def args = params
     CIOABCD_VARIANTINTERPRETATION ()
 }
 
