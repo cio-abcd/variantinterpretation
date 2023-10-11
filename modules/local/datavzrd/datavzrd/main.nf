@@ -5,7 +5,7 @@ process DATAVZRD {
     conda "conda-forge::datavzrd=2.22.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/datavzrd:2.23.2' :
-        'quay.io/biocontainers/datavzrd:2.23.2' }"
+        'biocontainers/datavzrd:2.23.2' }"
 
     input:
     tuple val(meta), path(split_tsv), path(datavzrd_config_rend)
