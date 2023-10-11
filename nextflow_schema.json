@@ -227,13 +227,11 @@
                 },
                 "custom_filters": {
                     "type": "string",
-                    "default": "None",
                     "description": "TSV file defining custom filters for VCF files. VCF files will be tagged with those filters in the FILTER column.",
                     "help_text": "The TSV files needs two columns: The first column contains the name of the filter (letters, numbers and underscores allowed), the second column a valid python expression defining the filter. The python expression has to follow the guidelines for vembrane, also see here: https://github.com/vembrane/vembrane#filter-expression. An example can be found in assets/custom_filters.tsv."
                 },
                 "used_filters": {
                     "type": "string",
-                    "default": "None",
                     "description": "Define which filters from `custom_filters` will be used to subset VCF files and create separate TSV and HTML files.",
                     "help_text": "Needs to match the filter name from `custom_filters`. Multiple filters can be defined (space-separated), but not combined."
                 }
@@ -313,12 +311,12 @@
                 },
                 "min_af": {
                     "type": "number",
-                    "default": 0.0,
+                    "default": 0,
                     "description": "Minimal allele frequency cutoff for TMB calculation"
                 },
                 "max_af": {
                     "type": "number",
-                    "default": 1.0,
+                    "default": 1,
                     "description": "Maximal allele frequency cutoff for TMB calculation"
                 },
                 "min_cov": {
