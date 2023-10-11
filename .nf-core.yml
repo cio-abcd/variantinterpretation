@@ -5,9 +5,6 @@ lint:
     - assets/nf-core-variantinterpretation_logo_light.png
     - docs/images/nf-core-variantinterpretation_logo_light.png
     - docs/images/nf-core-variantinterpretation_logo_dark.png
-    - .github/ISSUE_TEMPLATE/config.yml
-    - .github/workflows/awstest.yml
-    - .github/workflows/awsfulltest.yml
   nextflow_config:
     - manifest.name
     - manifest.homePage
