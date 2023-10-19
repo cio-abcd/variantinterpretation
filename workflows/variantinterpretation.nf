@@ -71,19 +71,19 @@ vep_extra_files            = []
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { INPUT_CHECK           } from '../subworkflows/local/input_check'
-include { CHECKBEDFILE		    } from '../modules/local/checkbedfile'
-include { BCFTOOLS_INDEX        } from '../modules/nf-core/bcftools/index/main'
-include { SAMTOOLS_DICT         } from '../modules/nf-core/samtools/dict/main'
-include { SAMTOOLS_FAIDX        } from '../modules/nf-core/samtools/faidx/main'
-include { VCFTESTS              } from '../subworkflows/local/vcf/vcftests'
-include { VCFPROC               } from '../subworkflows/local/vcf/vcfproc'
-include { ENSEMBLVEP_FILTER     } from '../modules/local/ensemblvep/filter_vep/main'
-include { ENSEMBLVEP_VEP        } from '../modules/local/ensemblvep/vep/main'
-include { VEMBRANE_TABLE        } from '../subworkflows/local/vembrane_table/main'
-include { VARIANTFILTER         } from '../subworkflows/local/variantfilter/main'
-include { HTML_REPORT           } from '../subworkflows/local/html_report/main'
-include { TMB_CALCULATE	    	} from '../modules/local/tmbcalculation/main'
+include { INPUT_CHECK                               } from '../subworkflows/local/input_check'
+include { CHECKBEDFILE		                        } from '../modules/local/checkbedfile'
+include { BCFTOOLS_INDEX                            } from '../modules/nf-core/bcftools/index/main'
+include { SAMTOOLS_DICT                             } from '../modules/nf-core/samtools/dict/main'
+include { SAMTOOLS_FAIDX                            } from '../modules/nf-core/samtools/faidx/main'
+include { VCFTESTS                                  } from '../subworkflows/local/vcf/vcftests'
+include { VCFPROC                                   } from '../subworkflows/local/vcf/vcfproc'
+include { ENSEMBLVEP_FILTERVEP as TRANSCRIPT_FILTER } from '../modules/nf-core/ensemblvep/filtervep/main'
+include { ENSEMBLVEP_VEP                            } from '../modules/nf-core/ensemblvep/vep/main'
+include { VEMBRANE_TABLE                            } from '../subworkflows/local/vembrane_table/main'
+include { VARIANTFILTER as PRESETS_FILTER_REPORT    } from '../subworkflows/local/variantfilter/main'
+include { HTML_REPORT                               } from '../subworkflows/local/html_report/main'
+include { TMB_CALCULATE	    	                    } from '../modules/local/tmbcalculation/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -112,6 +112,15 @@ workflow VARIANTINTERPRETATION {
     ch_multiqc_reports = Channel.empty()
     // gather warnings
     ch_warnings = Channel.empty()
+
+    //
+    // Check parameter combinations and give warnings
+    //
+    if (!params.vep) log.warn("WARNING: You deactivated VEP-based annotation. Downstream processes are working properly only with VEP-annotated VCF file as input!")
+    if (!params.tsv && params.report) error("ERROR: Needs to create TSV file for generating HTML report.")
+    if (!params.tsv && params.calculate_tmb) error("ERROR: Need to create TSV file for calculating TMB.")
+    if (!params.bedfile && params.calculate_tmb) error("ERROR: Need to specify bedfile for calculating TMB.")
+    if (!params.read_depth && params.calculate_tmb) error("ERROR: Need to specify the read_depth FORMAT field for calculating TMB.")
 
     //
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files
@@ -172,7 +181,7 @@ workflow VARIANTINTERPRETATION {
     ch_versions = ch_versions.mix(VCFPROC.out.versions)
 
     proc_vcf=VCFPROC.out.vcf_norm_tbi
-        .map { meta, vcf, tbi -> tuple( meta, vcf) }
+        .map { meta, vcf, tbi -> tuple( meta, vcf, []) }
 
     //
     // MODULE: VEP annotation
@@ -184,10 +193,11 @@ workflow VARIANTINTERPRETATION {
                         vep_species,
                         vep_cache_version,
                         vep_cache,
-                        fasta,
+                        fasta_ref,
                         vep_extra_files)
         ch_vcf = ENSEMBLVEP_VEP.out.vcf
         ch_versions = ch_versions.mix(ENSEMBLVEP_VEP.out.versions)
+        ch_multiqc_reports = ch_multiqc_reports.mix(ENSEMBLVEP_VEP.out.report)
     } else {
         ch_vcf = proc_vcf
     }
@@ -196,21 +206,21 @@ workflow VARIANTINTERPRETATION {
 
     // Filtering for transcripts
     if ( params.transcriptfilter || (params.transcriptlist!=[]) ) {
-        ENSEMBLVEP_FILTER(  ch_vcf,
+        TRANSCRIPT_FILTER(  ch_vcf,
                             transcriptlist
         )
-        ch_vcf_tf = ENSEMBLVEP_FILTER.out.vcf
-        ch_versions = ch_versions.mix(ENSEMBLVEP_FILTER.out.versions)
+        ch_vcf_tf = TRANSCRIPT_FILTER.out.output
+        ch_versions = ch_versions.mix(TRANSCRIPT_FILTER.out.versions)
     } else {
         ch_vcf_tf = ch_vcf
     }
 
     // Use custom filters to tag variants and create subsets
     if (params.custom_filters) {
-        VARIANTFILTER ( ch_vcf_tf,
-                        custom_filters)
-        ch_vcf_tag = VARIANTFILTER.out.vcf
-        ch_versions = ch_versions.mix(VARIANTFILTER.out.versions)
+        PRESETS_FILTER_REPORT ( ch_vcf_tf,
+                                custom_filters)
+        ch_vcf_tag = PRESETS_FILTER_REPORT.out.vcf
+        ch_versions = ch_versions.mix(PRESETS_FILTER_REPORT.out.versions)
     } else {
         ch_vcf_tag = ch_vcf_tf
     }
@@ -238,17 +248,17 @@ workflow VARIANTINTERPRETATION {
             HTML_REPORT ( tsv_config_colinfo )
             ch_versions = ch_versions.mix(HTML_REPORT.out.versions)
         }
-    }
 
-    ///
-    // MODULE: TMB calculation
-    ///
-    if ( params.bedfile && params.calculate_tmb ) {
-            if ( CHECKBEDFILE.out.bed_valid ) {
-                    TMB_CALCULATE ( VEMBRANE_TABLE.out.tsv,
-                                    bedfile
-                )
-                ch_versions = ch_versions.mix(TMB_CALCULATE.out.versions)
+        //
+        // MODULE: TMB calculation
+        //
+        if ( params.bedfile && params.calculate_tmb ) {
+                if ( CHECKBEDFILE.out.bed_valid ) {
+                        TMB_CALCULATE ( VEMBRANE_TABLE.out.tsv,
+                                        bedfile
+                    )
+                    ch_versions = ch_versions.mix(TMB_CALCULATE.out.versions)
+            }
         }
     }
 

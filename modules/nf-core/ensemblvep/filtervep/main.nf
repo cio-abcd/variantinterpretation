@@ -1,35 +1,34 @@
-process ENSEMBLVEP_FILTER {
+process ENSEMBLVEP_FILTERVEP {
     tag "$meta.id"
     label 'process_single'
 
-    conda "bioconda::ensembl-vep=108.2"
+    conda "bioconda::ensembl-vep=110.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/ensembl-vep:108.2--pl5321h4a94de4_0' :
-        'biocontainers/ensembl-vep:108.2--pl5321h4a94de4_0' }"
+        'https://depot.galaxyproject.org/singularity/ensembl-vep:110.0--pl5321h2a3209d_0' :
+        'biocontainers/ensembl-vep:110.0--pl5321h2a3209d_0' }"
 
     input:
-    tuple val(meta), path(vcf)
+    tuple val(meta), path(input)
     path transcriptlist
 
     output:
-    tuple val(meta), path("*.vcf")         , emit: vcf
+    tuple val(meta), path("*.${extension}"), emit: output
     path "versions.yml"                    , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
+    def args   = task.ext.args   ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+    extension  = task.ext.suffix ?: "vcf"
     def listfilter = transcriptlist ? "--filter \"Feature in $transcriptlist\"" : ""
 
     """
     filter_vep \\
         $args \\
-        --input_file $vcf \\
-        --format vcf \\
-        --output_file ${prefix}.filt.vcf \\
-        --soft_filter \\
+        --input_file $input \\
+        --output_file ${prefix}.filt.${extension} \\
         $listfilter \\
 
     cat <<-END_VERSIONS > versions.yml
@@ -40,9 +39,9 @@ process ENSEMBLVEP_FILTER {
 
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}"
+    extension  = task.ext.suffix ?: "vcf"
     """
-    touch ${prefix}.filt.vcf.gz
-    touch ${prefix}.summary.html
+    touch ${prefix}.filt.${extension}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
