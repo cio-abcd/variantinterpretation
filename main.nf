@@ -39,8 +39,9 @@ include { VARIANTINTERPRETATION } from './workflows/variantinterpretation'
 workflow CIOABCD_VARIANTINTERPRETATION {
     take:
         args
+	input
     main:
-    VARIANTINTERPRETATION (args)
+	VARIANTINTERPRETATION(args, input)
 }
 
 /*
@@ -55,7 +56,7 @@ workflow CIOABCD_VARIANTINTERPRETATION {
 //
 workflow {
     def args = params
-    CIOABCD_VARIANTINTERPRETATION ()
+    CIOABCD_VARIANTINTERPRETATION(args)
 }
 
 /*

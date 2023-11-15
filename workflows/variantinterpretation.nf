@@ -37,12 +37,12 @@ include { DUMP_WARNINGS               } from '../modules/local/multiqcreport_war
 
 workflow VARIANTINTERPRETATION {
     take:
-    args
+      args
+    input
     main:
 
 
 def params = args
-println args.input
 
 // Info required for completion email and summary
 def multiqc_report = []
@@ -50,7 +50,6 @@ def multiqc_report = []
 // TODO nf-core: Add all file path parameters for the pipeline to the list below
 // Check input path parameters to see if they exist
 def checkPathParamList = [
-        params.input,
         params.fasta,
         params.multiqc_config,
         params.vep_cache,
@@ -63,7 +62,8 @@ def checkPathParamList = [
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
 // Check mandatory parameters
-if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
+//if (input) { ch_input = file(input) } else { exit 1, 'Input samplesheet not specified!' }
+ch_input = input
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
