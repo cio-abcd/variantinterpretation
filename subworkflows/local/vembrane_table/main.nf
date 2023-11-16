@@ -4,6 +4,7 @@
 
 include { VEMBRANE_CREATE_FIELDS } from '../../../modules/local/vembrane/create-vembrane-fields/main'
 include { VEMBRANE_VEMBRANETABLE } from '../../../modules/local/vembrane/table/main'
+include { BCFTOOLS_INDEX        } from '../../../modules/nf-core/bcftools/index/main'
 
 
 workflow VEMBRANE_TABLE {
@@ -19,7 +20,11 @@ workflow VEMBRANE_TABLE {
     )
     ch_versions = ch_versions.mix(VEMBRANE_CREATE_FIELDS.out.versions)
 
-    VEMBRANE_VEMBRANETABLE ( vcf,
+    vcf_index  = BCFTOOLS_INDEX(vcf).tbi
+    vcf_index.view()
+    vcf_w_index = vcf.join(vcf_index)
+
+    VEMBRANE_VEMBRANETABLE ( vcf_w_index,
                             VEMBRANE_CREATE_FIELDS.out.fields,
                             VEMBRANE_CREATE_FIELDS.out.header
     )

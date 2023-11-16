@@ -1,6 +1,6 @@
 process ENSEMBLVEP_VEP {
     tag "$meta.id"
-    label 'process_medium'
+    //label 'process_medium'
 
     conda "bioconda::ensembl-vep=108.2"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -34,6 +34,8 @@ process ENSEMBLVEP_VEP {
     def dir_cache = cache ? "\${PWD}/${cache}" : "/.vep"
     def reference = fasta ? "--fasta $fasta" : ""
 
+    n_cpus = Runtime.runtime.availableProcessors()
+
     """
     vep \\
         -i $vcf \\
@@ -46,7 +48,7 @@ process ENSEMBLVEP_VEP {
         --cache \\
         --cache_version $cache_version \\
         --dir_cache $dir_cache \\
-        --fork $task.cpus \\
+        --fork $n_cpus \\
         --stats_file ${prefix}.summary.html \\
 
 

@@ -38,7 +38,8 @@ include { DUMP_WARNINGS               } from '../modules/local/multiqcreport_war
 workflow VARIANTINTERPRETATION {
     take:
       args
-    input
+      input
+      fasta
     main:
 
 
@@ -50,7 +51,6 @@ def multiqc_report = []
 // TODO nf-core: Add all file path parameters for the pipeline to the list below
 // Check input path parameters to see if they exist
 def checkPathParamList = [
-        params.fasta,
         params.multiqc_config,
         params.vep_cache,
         params.transcriptlist,
@@ -82,7 +82,7 @@ ch_multiqc_warnings_template = params.multiqc_warnings_template ? file(params.mu
 // Initialize files channels from parameters
 
 vep_cache                  = params.vep_cache          ? Channel.fromPath(params.vep_cache).collect()                : []
-fasta                      = params.fasta              ? Channel.fromPath(params.fasta).collect()                    : Channel.empty()
+//fasta                      = params.fasta              ? Channel.fromPath(params.fasta).collect()                    : Channel.empty()
 transcriptlist             = params.transcriptlist     ? Channel.fromPath(params.transcriptlist).collect()           : []
 datavzrd_config            = params.datavzrd_config    ? Channel.fromPath(params.datavzrd_config).collect()          : Channel.fromPath("$confdir/assets/datavzrd_config_template.yaml", checkIfExists: true)
 annotation_colinfo         = params.annotation_colinfo ? Channel.fromPath(params.annotation_colinfo).collect()       : Channel.fromPath("$confdir/assets/annotation_colinfo.tsv", checkIfExists: true)

@@ -8,7 +8,7 @@ process VEMBRANE_VEMBRANETABLE {
         'quay.io/biocontainers/vembrane:1.0.1--pyhdfd78af_0' }"
 
     input:
-    tuple val(meta), path(vcf)
+    tuple val(meta), path(vcf), path(vcf_index)
     val extraction_fields
     val header
 

@@ -40,8 +40,9 @@ workflow CIOABCD_VARIANTINTERPRETATION {
     take:
         args
 	input
+	fasta
     main:
-	VARIANTINTERPRETATION(args, input)
+	VARIANTINTERPRETATION(args, input, fasta)
 }
 
 /*
