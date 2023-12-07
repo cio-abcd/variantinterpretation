@@ -39,8 +39,10 @@ workflow VCFPROC {
     // optional arguments for left-align indels, remove duplicates, etc.
     //
 
+    fasta_meta = fasta.map { fasta -> tuple([ id:'genome' ], fasta) }
+
     BCFTOOLS_NORM ( proc_vcf_tbi,
-                    fasta
+                    fasta_meta
     )
     ch_versions = ch_versions.mix(BCFTOOLS_NORM.out.versions)
     // index

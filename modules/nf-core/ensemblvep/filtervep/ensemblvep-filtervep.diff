@@ -1,0 +1,45 @@
+Changes in module 'nf-core/ensemblvep/filtervep'
+--- modules/nf-core/ensemblvep/filtervep/main.nf
++++ modules/nf-core/ensemblvep/filtervep/main.nf
+@@ -9,7 +9,7 @@
+ 
+     input:
+     tuple val(meta), path(input)
+-    path (feature_file)
++    path transcriptlist
+ 
+     output:
+     tuple val(meta), path("*.${extension}"), emit: output
+@@ -22,12 +22,14 @@
+     def args   = task.ext.args   ?: ''
+     def prefix = task.ext.prefix ?: "${meta.id}"
+     extension  = task.ext.suffix ?: "vcf"
++    def listfilter = transcriptlist ? "--filter \"Feature in $transcriptlist\"" : ""
++
+     """
+     filter_vep \\
+         $args \\
+         --input_file $input \\
+-        --output_file ${prefix}.${extension} \\
+-        --only_matched
++        --output_file ${prefix}.filt.${extension} \\
++        $listfilter \\
+ 
+     cat <<-END_VERSIONS > versions.yml
+     "${task.process}":
+@@ -39,7 +41,7 @@
+     def prefix = task.ext.prefix ?: "${meta.id}"
+     extension  = task.ext.suffix ?: "vcf"
+     """
+-    touch ${prefix}.${extension}
++    touch ${prefix}.filt.${extension}
+ 
+     cat <<-END_VERSIONS > versions.yml
+     "${task.process}":
+@@ -47,4 +49,3 @@
+     END_VERSIONS
+     """
+ }
+-
+
+************************************************************
