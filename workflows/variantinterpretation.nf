@@ -146,10 +146,8 @@ vep_extra_files            = []
     //
     // Check bedfiles
     //
-    if (params.bedfile) {
         CHECKBEDFILE ( bedfile )
         ch_versions = ch_versions.mix(CHECKBEDFILE.out.versions)
-    }
 
     //
     // VCF filtering and normalization
@@ -210,7 +208,6 @@ vep_extra_files            = []
     // MODULE: TSV conversion with vembrane table
     //
 
-    if ( params.tsv ) {
 
         VEMBRANE_TABLE (ch_vcf_tag,
                         annotation_fields
@@ -233,15 +230,12 @@ vep_extra_files            = []
         //
         // MODULE: TMB calculation
         //
-        if ( params.bedfile && params.calculate_tmb ) {
                 if ( CHECKBEDFILE.out.bed_valid ) {
                         TMB_CALCULATE ( VEMBRANE_TABLE.out.tsv,
                                         bedfile
                     )
                     ch_versions = ch_versions.mix(TMB_CALCULATE.out.versions)
-            }
         }
-    }
 
     // dump software versions
     ch_version_yaml = Channel.empty()
