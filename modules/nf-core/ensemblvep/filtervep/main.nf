@@ -2,10 +2,10 @@ process ENSEMBLVEP_FILTERVEP {
     tag "$meta.id"
     label 'process_single'
 
-    conda "bioconda::ensembl-vep=110.0"
+    conda "bioconda::ensembl-vep=108.2"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/ensembl-vep:110.0--pl5321h2a3209d_0' :
-        'biocontainers/ensembl-vep:110.0--pl5321h2a3209d_0' }"
+        'biocontainers/ensembl-vep:108.2--pl5321h2a3209d_0' }"
 
     input:
     tuple val(meta), path(input)
