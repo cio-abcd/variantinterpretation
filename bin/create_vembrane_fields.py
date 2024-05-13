@@ -54,12 +54,6 @@ def parse_arguments():
         help="output file for temporary storing vembrane and header strings.",
         type=str,
     )
-    parser.add_argument(
-        "--sampleindex",
-        help="integer sample index for FORMAT fields.",
-        type=int,
-        default=None,
-    )
 
     return parser.parse_args()
 
@@ -75,7 +69,7 @@ def input_check(input_strings):
 def formatting_field(
     input_field: str,
     column_name: str,
-    sampleindex: int,
+    all_samples: bool,
 ) -> str:
     """
     This function formats a single field according to vembrane input. It generates an vembrane input string and header string.
@@ -91,14 +85,20 @@ def formatting_field(
         # formatting fields for vembrane input
         only_field_formatted = f'{column_name}["{only_field}"]'
 
-        # if sampleindex is defined, it will be appended
-        if sampleindex is not None:
-            header_field += f"[{sampleindex}]"
-            only_field_formatted += f"[{sampleindex}]"
+        #add sample index fields
+        if all_samples:
+            header_field += '[{sample}]'
+            only_field_formatted += "[s]"
 
         # replace from original field; this preserves brackets and numbers from the input.
         header_field = re.sub(only_field, header_field, input_field)
         input_field_formatted = re.sub(only_field, only_field_formatted, input_field)
+
+        # if all_samples is true, iterate through each sample in vembrane
+        if all_samples:
+            header_field = 'for_each_sample(lambda sample: f"' + header_field + '")'
+            input_field_formatted = "for_each_sample(lambda s: " + input_field_formatted + ")"
+
         return input_field_formatted, header_field
 
     # first split input by mathematical operands
@@ -128,20 +128,18 @@ if __name__ == "__main__":
     # add allele fraction in here
     if args.allele_fraction:
         if args.allele_fraction in ["mutect2", "FORMAT_AF"]:
-            vembrane_strings.append('FORMAT["AF"][' + str(args.sampleindex) + "]")
-            header_strings.append("allele_fraction")
+            vembrane_strings.append('for_each_sample(lambda s: FORMAT["AF"][s])')
+            header_strings.append('for_each_sample(lambda sample: f"{sample}_allele_fraction")')
         elif args.allele_fraction in ["freebayes", "FORMAT_AD"]:
-            vembrane_strings.append(
-                'FORMAT["AD"][' + str(args.sampleindex) + '][1]/FORMAT["DP"][' + str(args.sampleindex) + "]"
-            )
-            header_strings.append("allele_fraction")
+            vembrane_strings.append('for_each_sample(lambda s: FORMAT["AD"][s][1]/FORMAT["DP"][s])')
+            header_strings.append('for_each_sample(lambda sample: f"{sample}_allele_fraction")')
         else:
             raise ValueError("ERROR: Did not specify correct allele_fraction.")
 
     # add read depth
     if args.read_depth:
-        vembrane_strings.append('FORMAT["' + str(args.read_depth) + '"][' + str(args.sampleindex) + "]")
-        header_strings.append("read_depth")
+        vembrane_strings.append('for_each_sample(lambda s: FORMAT["' + str(args.read_depth) + '"][s])')
+        header_strings.append('for_each_sample(lambda sample: f"{sample}_read_depth")')
 
     if args.format_fields:
         # Formatting the FORMAT fields.
@@ -150,7 +148,7 @@ if __name__ == "__main__":
             format_field, format_header_field = formatting_field(
                 input_field=format_field,
                 column_name="FORMAT",
-                sampleindex=args.sampleindex,
+                all_samples=True,
             )
             vembrane_strings.append(format_field)
             header_strings.append(format_header_field)
@@ -162,7 +160,7 @@ if __name__ == "__main__":
             info_field, info_header_field = formatting_field(
                 input_field=info_field,
                 column_name="INFO",
-                sampleindex=None,
+                all_samples=False,
             )
             vembrane_strings.append(info_field)
             header_strings.append(info_header_field)
@@ -174,7 +172,7 @@ if __name__ == "__main__":
             csq_field, csq_header_field = formatting_field(
                 input_field=csq_field,
                 column_name="CSQ",
-                sampleindex=None,
+                all_samples=False,
             )
             vembrane_strings.append(csq_field)
             header_strings.append(csq_header_field)
