@@ -129,17 +129,17 @@ if __name__ == "__main__":
     if args.allele_fraction:
         if args.allele_fraction in ["mutect2", "FORMAT_AF"]:
             vembrane_strings.append('for_each_sample(lambda s: FORMAT["AF"][s])')
-            header_strings.append('for_each_sample(lambda sample: f"{sample}_allele_fraction")')
+            header_strings.append('for_each_sample(lambda sample: f"allele_fraction{sample}")')
         elif args.allele_fraction in ["freebayes", "FORMAT_AD"]:
             vembrane_strings.append('for_each_sample(lambda s: FORMAT["AD"][s][1]/FORMAT["DP"][s])')
-            header_strings.append('for_each_sample(lambda sample: f"{sample}_allele_fraction")')
+            header_strings.append('for_each_sample(lambda sample: f"allele_fraction{sample}")')
         else:
             raise ValueError("ERROR: Did not specify correct allele_fraction.")
 
     # add read depth
     if args.read_depth:
         vembrane_strings.append('for_each_sample(lambda s: FORMAT["' + str(args.read_depth) + '"][s])')
-        header_strings.append('for_each_sample(lambda sample: f"{sample}_read_depth")')
+        header_strings.append('for_each_sample(lambda sample: f"read_depth{sample}]")')
 
     if args.format_fields:
         # Formatting the FORMAT fields.
