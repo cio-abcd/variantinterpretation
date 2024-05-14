@@ -33,6 +33,12 @@ def parse_arguments():
         default="group",
     )
     parser.add_argument(
+        "--ann_label_column",
+        type=str,
+        help="Column name in colinfo_tsv containing the label information of column names of variant_tsv, that gives the name in the HTML report.",
+        default="label",
+    )
+    parser.add_argument(
         "--identifiers",
         type=str.lower,
         nargs="+",
@@ -46,7 +52,7 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def process_ann_cols(variant_df, colinfo_df, ann_name_column, ann_group_column, identifiers, id_name):
+def process_ann_cols(variant_df, colinfo_df, ann_name_column, ann_group_column, identifiers, id_name, ann_label_column):
     ### Processing of column names for matching colinfo table ###
     # removing CSQ prefixes from column names
     variant_df.columns = variant_df.columns.str.replace("CSQ_", "")
@@ -56,6 +62,7 @@ def process_ann_cols(variant_df, colinfo_df, ann_name_column, ann_group_column, 
     colinfo_df[ann_name_column] = colinfo_df[ann_name_column].str.lower()
 
     # replace mathematical operands and brackets with their literal names in variant TSV column names (compatibility with datavzrd)
+    # brackets are replaced with "-"
     variant_df.columns = replace_operands(variant_df.columns)
 
     # check for characters beyond letters, numbers and underscores in column names
@@ -65,6 +72,14 @@ def process_ann_cols(variant_df, colinfo_df, ann_name_column, ann_group_column, 
     # check for duplicated variant TSV columns or column info.
     check_for_duplicates(variant_df.columns, "variant TSV file column names")
     check_for_duplicates(colinfo_df[ann_name_column], "colinfo TSV file annotation name column")
+
+    # Here we check for colinfo columns that are sample-specific and duplicate them based on the sample names
+    colinfo_df = match_patterns_and_duplicate(variant_df, colinfo_df, "read_depth", ann_name_column, ann_label_column)
+    colinfo_df = match_patterns_and_duplicate(
+        variant_df, colinfo_df, "allele_fraction", ann_name_column, ann_label_column
+    )
+    colinfo_df = match_patterns_and_duplicate(variant_df, colinfo_df, "format", ann_name_column, ann_label_column)
+
     # Compare TSV files and add columns that are missing
     variant_df, colinfo_df = add_missing_columns(variant_df, colinfo_df, ann_name_column, ann_group_column)
 
@@ -110,6 +125,69 @@ def check_for_duplicates(strings_list, listname):
     if duplicates:
         duplicate_entries = ", ".join(duplicates)
         raise ValueError(f"Found duplicate entries in the {listname}: {duplicate_entries}")
+
+
+def duplicate_rows_with_pattern(variant_df, colinfo_df, matched_colname, ann_name_column, ann_label_column):
+
+    # Find columns in variant_df that match the pattern
+    # for format fields we may have the case of subsets, like FORMAT_AD[1] in the columns name.
+    # since the sample is in between (FORMAT_AD[sample][1]), we need special matching then
+
+    matched_rows = []
+    samplenames = []
+    if matched_colname.startswith("format") and matched_colname.endswith("-"):
+        for col in variant_df.columns:
+            prefix = matched_colname.split("-")[0]
+            number = matched_colname.split("-")[-2]
+            if col.startswith(prefix) and col.endswith(f"-{number}-"):
+                matched_rows.append(col)
+                samplenames.append(col.replace(prefix, "").replace(f"-{number}-", "").strip("-"))
+    else:
+        for col in variant_df.columns:
+            if re.search(matched_colname, col):
+                matched_rows.append(col)
+                samplenames.append(col.replace(matched_colname, "").strip("-"))
+
+    matching_rows_for_colname = colinfo_df[colinfo_df[ann_name_column] == matched_colname]
+
+    # Get the index of the matching row
+    match_index = matching_rows_for_colname.index[0]
+
+    # Duplicate the matching row for each column in variant_df that matches the pattern
+    new_rows = []
+    for col, samplename in zip(matched_rows, samplenames):
+        new_row = colinfo_df.loc[match_index].copy()
+        new_row[ann_name_column] = col
+        new_row[ann_label_column] = new_row[ann_label_column] + " " + samplename
+        new_rows.append(new_row)
+
+    # Create a new DataFrame from the new rows
+    new_colinfo_df = pd.DataFrame(new_rows)
+
+    # Insert the new rows back into the original colinfo_df at the correct position
+    colinfo_df = colinfo_df.drop(match_index).reset_index(drop=True)
+    new_colinfo_df.index = [match_index] * len(new_colinfo_df)
+    result_colinfo_df = pd.concat(
+        [colinfo_df.iloc[:match_index], new_colinfo_df, colinfo_df.iloc[match_index:]]
+    ).reset_index(drop=True)
+
+    return result_colinfo_df
+
+
+def match_patterns_and_duplicate(variant_df, colinfo_df, pattern, ann_name_column, ann_label_column):
+
+    # Get colnames matching the pattern
+    matched_colnames = [id for id in colinfo_df[ann_name_column] if re.search(pattern, id)]
+    if len(matched_colnames) < 1:
+        raise ValueError(f'There must be at least one entry matching "{pattern}" in the "{ann_name_column}".')
+
+    # Loop through each of the colnames and duplicate rows
+    for matched_colname in matched_colnames:
+        colinfo_df = duplicate_rows_with_pattern(
+            variant_df, colinfo_df, matched_colname, ann_name_column, ann_label_column
+        )
+
+    return colinfo_df
 
 
 def add_missing_columns(variant_df, colinfo_df, ann_name_column, ann_group_column):
@@ -222,7 +300,13 @@ if __name__ == "__main__":
 
     # Processing TSV file: column formatting + input checks
     variant_df, colinfo_df = process_ann_cols(
-        variant_df, colinfo_df, args.ann_name_column, args.ann_group_column, args.identifiers, "variant"
+        variant_df,
+        colinfo_df,
+        args.ann_name_column,
+        args.ann_group_column,
+        args.identifiers,
+        "variant",
+        args.ann_label_column,
     )
 
     # Split variant_tsv by groups defined in colinfo_tsv and save as TSV files
