@@ -19,7 +19,7 @@ process SAMTOOLS_DICT {
 
     script:
     def args = task.ext.args ?: ''
-    def dict = fasta.getSimpleName()
+    def dict = fasta.getBaseName()
     """
     samtools \\
         dict \\
