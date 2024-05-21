@@ -128,7 +128,6 @@ def check_for_duplicates(strings_list, listname):
 
 
 def duplicate_rows_with_pattern(variant_df, colinfo_df, matched_colname, ann_name_column, ann_label_column):
-
     # Find columns in variant_df that match the pattern
     # for format fields we may have the case of subsets, like FORMAT_AD[1] in the columns name.
     # since the sample is in between (FORMAT_AD[sample][1]), we need special matching then
@@ -175,7 +174,6 @@ def duplicate_rows_with_pattern(variant_df, colinfo_df, matched_colname, ann_nam
 
 
 def match_patterns_and_duplicate(variant_df, colinfo_df, pattern, ann_name_column, ann_label_column):
-
     # Get colnames matching the pattern
     matched_colnames = [id for id in colinfo_df[ann_name_column] if re.search(pattern, id)]
     if len(matched_colnames) < 1:
