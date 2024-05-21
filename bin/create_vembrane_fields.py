@@ -85,9 +85,9 @@ def formatting_field(
         # formatting fields for vembrane input
         only_field_formatted = f'{column_name}["{only_field}"]'
 
-        #add sample index fields
+        # add sample index fields
         if all_samples:
-            header_field += '[{sample}]'
+            header_field += "[{sample}]"
             only_field_formatted += "[s]"
 
         # replace from original field; this preserves brackets and numbers from the input.

@@ -71,9 +71,7 @@ def parse_arguments():
 def read_vcf(vcf_in):
     vcffile = pd.read_csv(vcf_in, sep="\t", comment="#", header=None)
     if len(vcffile.columns) < 10:
-        raise ValueError(
-            "ERROR: Your VCF file has less than 10 columns and may miss columns."
-        )
+        raise ValueError("ERROR: Your VCF file has less than 10 columns and may miss columns.")
     else:
         vcffile.columns = [
             "CHROM",
@@ -85,7 +83,7 @@ def read_vcf(vcf_in):
             "FILTER",
             "INFO",
             "FORMAT",
-        ] + ['SAMPLE{}'.format(i) for i in range(1, len(vcffile.columns) - 8)]
+        ] + ["SAMPLE{}".format(i) for i in range(1, len(vcffile.columns) - 8)]
     return vcffile
 
 
