@@ -35,11 +35,6 @@ def parse_arguments():
         action="store_true",
     )
     parser.add_argument(
-        "--check_single_sample",
-        help="Check if provided VCF only contains a single sample.",
-        action="store_true",
-    )
-    parser.add_argument(
         "--check_MNPs",
         help="Check if provided VCF contains multinucleotide variants.",
         action="store_true",
@@ -75,10 +70,8 @@ def parse_arguments():
 
 def read_vcf(vcf_in):
     vcffile = pd.read_csv(vcf_in, sep="\t", comment="#", header=None)
-    if len(vcffile.columns) != 10:
-        raise ValueError(
-            "ERROR: Your VCF file has more than 10 columns. Perhaps you submitted a multi-sample VCF file?"
-        )
+    if len(vcffile.columns) < 10:
+        raise ValueError("ERROR: Your VCF file has less than 10 columns and may miss columns.")
     else:
         vcffile.columns = [
             "CHROM",
@@ -90,8 +83,7 @@ def read_vcf(vcf_in):
             "FILTER",
             "INFO",
             "FORMAT",
-            "SAMPLE",
-        ]
+        ] + ["SAMPLE{}".format(i) for i in range(1, len(vcffile.columns) - 8)]
     return vcffile
 
 
@@ -254,18 +246,6 @@ if __name__ == "__main__":
         report_message = report_message + [check_FILTERs(vcffile, meta_id=args.meta_id, log_level="WARNING")]
 
     # Input checks based on bcftools stats output.
-    if args.check_single_sample:
-        report_message = report_message + [
-            check_stats_value(
-                args.bcftools_stats_in,
-                pattern="number of samples",
-                textsnippet="samples. The workflow only accepts single-sample VCFs",
-                intcheck=1,
-                meta_id=args.meta_id,
-                log_level="ERROR",
-            )
-        ]
-
     if args.check_MNPs:
         report_message = report_message + [
             check_stats_value(

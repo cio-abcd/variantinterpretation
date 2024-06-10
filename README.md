@@ -81,7 +81,6 @@ The following table gives an overview about the criteria that are checked and po
 | -------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
 | VCF file format                              | ERROR     | General structure of VCF file needs to stick to the [VCF file format](https://samtools.github.io/hts-specs/).                                                                                                                                                                               | `GATK4 ValidateVariants` |
 | uncompressed or bgzip compressed             | ERROR     | VCF files needs to be either uncompressed or bgzip compressed. Gzip-compressed files give an error during indexing.                                                                                                                                                                         | `bcftools index`         |
-| single-sample VCF                            | ERROR     | Multi-sample VCF files are currently not supported.                                                                                                                                                                                                                                         | `bcftools stats`         |
 | "chr" prefix in CHROM column                 | ERROR     | The chromosome column `CHROM` in the VCF file needs to contains the "chr" prefix. Please be aware that the provided reference genome also contains the "chr" prefix. This ensures compatibility with annnotation sources.                                                                   | `python script`          |
 | matching reference genome                    | ERROR     | Provided VCF file needs to match the provided reference genome. Especially this test can differentiate between GRCh37 and GRCh38 human reference genomes. If left-alignment of indels is activated, `bcftools norm` also additionally checks the reference genome.                          | `GATK4 ValidateVariants` |
 | only passed filters                          | WARNING   | Gives warning if the FILTER column contains entries other than "PASS" or ".". NOTE: These can be removed with the the `filter_pass` parameter in the VCF preprocessing module. Also, new flags might be added after annotation if additional filters are specified in the Filtering module. | `python script`          |
@@ -95,7 +94,8 @@ The following table gives an overview about the criteria that are checked and po
 This module uses [`bcftools norm`](https://samtools.github.io/bcftools/bcftools.html#norm) to split multi-allelic into bi-allelic sites.
 This step is required by vembrane as it cannot handle multi-allelic records (also see [vembrane documentation](https://github.com/vembrane/vembrane)).
 Optionally, the left-alignment of InDels can be activated using the `--left-align-indels` parameter.
-Note: When left-alignment is enabled, it performs an additional reference genome check (there is already a check in the `VCF checks` module).
+
+> NOTE: When left-alignment is enabled, it performs an additional reference genome check (there is already a check in the `VCF checks` module).
 
 #### Pre-annotation VCF filter
 
@@ -104,9 +104,7 @@ It can filter VCF files based on flags in the FILTER column using [`bcftools vie
 This can be enabled with the `--filter_vcf` parameter providing flag names for the VCF FILTER column to be kept (e.g., "PASS").
 This step is placed prior to annotation to improve runtime if, e.g., lots of low-quality variants are removed.
 
-:::warning
-WARNING: Variants filtered in this step will NOT be included in any output file!
-:::
+> WARNING: Variants filtered in this step will NOT be included in any output file!
 
 ### Ensembl VEP annotation
 
@@ -144,10 +142,8 @@ The first step after annotation is a (optional) filtering for transcripts using 
 VEP adds all possible transcripts and their annotations (e.g., consequence) to the variant records in the VCF file.
 For interpretation it is useful to filter for the most relevant or very specific transcripts.
 
-:::note
-The final TSV and HTML reports include each transcript from a variant as a separate row!
-For example: If you have a variant with 6 transcripts annotated, this results in 6 separate rows in the final TSV file for each transcript from the same variant.
-:::
+> NOTE: The final TSV and HTML reports include each transcript from a variant as a separate row!
+> For example: If you have a variant with 6 transcripts annotated, this results in 6 separate rows in the final TSV file for each transcript from the same variant.
 
 This module has a default external argument `--soft_filter` to prevent silent dropping of variants.
 Instead a flag "filter_vep_fail/filter_vep_pass" will be added to the FILTER column.
@@ -162,16 +158,14 @@ This module has two options to filter transcripts:
    - MANE_SELECT: [Matched annotation from NCBI and EBI](https://www.ensembl.org/info/genome/genebuild/mane.html).
 2. Filter by a specific list of transcripts provided by the `--transcriptlist` parameter. Can be combined with `--transcriptfilter`. The provided file needs to contain one transcript per row and matches the provided VEP cache transcript definitions (Refseq or Ensembl), see also the downloads section in [docs/usage.md](docs/usage.md). Please note that the annotation will be completely removed for variants that do not match any of the provided transcripts!
 
-:::warning
-WARNING: Transcripts filtered in this step will not be shown in any output file!
-:::
+> WARNING: Transcripts filtered in this step will not be shown in any output file!
 
 #### Custom filters
 
 This module can create additional reports in which preset filters are applied.
 These are very useful for interpretation as you can once define complex filters and do not have to enter these manually in your spreadsheet program or HTML report every single time.
 It can be used, e.g., for hopper-based interpretation strategies.
-[`Vembrane`]((https://github.com/vembrane/vembrane) is used for creating filtered subsets of the VCF files from which additional TSV files and HTML reports will be created.
+[`vembrane`](https://github.com/vembrane/vembrane) is used for creating filtered subsets of the VCF files from which additional TSV files and HTML reports will be created.
 The workflow always creates a report for the VCF file after transcript filtering.
 It can be configured as following:
 
@@ -204,9 +198,9 @@ The following parameters control the extracted TSV fields:
 - `format_fields` and `--info_fields`: Extract specific fields from INFO and FORMAT column as separate columns in the TSV output, e.g., DP in the FORMAT column. It can also handle mathematical operations, e.g. `AD[1] / DP` will divide allelic depth by read depth.
 - `--annotation_fields`: These extract CSQ strings of the FORMAT column added by VEP annotation. the value `all` results into extraction of all available fields (default).
 - `--allele_fraction`: Define how to extract the allele fraction from the VCF file.
-  Variant callers save this information in different ways, the allele fraction defined here will be used for downstream operations, e.g., filtering and TMB calculation. It will be extracted into the column named `allele_fraction`.
+  Variant callers save this information in different ways, the allele fraction defined here will be used for downstream operations, e.g., filtering and TMB calculation. It will be extracted into the column named `allele_fraction`. This will be done for each sample separately in the VCF file.
   You can find more information about available options in the [parameter help text](docs/params.md). If your option is not supported, please let us know!
-- `--read_depth`: Similar to allele fraction for the read depth. Specifies the FORMAT fields containing read depth information, which will be extracted into the `read_depth` column and used downstream.
+- `--read_depth`: Similar to allele fraction for the read depth. Specifies the FORMAT fields containing read depth information, which will be extracted into the `read_depth` column and used downstream. Also done for each sample in the VCF file.
 
 For an overview of CSQ fields included in the VEP-annotated VCF file, have a look into the [VEP output documentation](https://www.ensembl.org/info/docs/tools/vep/vep_formats.html#output).
 
@@ -281,7 +275,8 @@ If you would like to contribute to this pipeline, please see the [contributing g
 ## Citations
 
 <!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
-If you use  variantinterpretation for your analysis, please cite it using the following doi: [10.5281/zenodo.10036356](https://doi.org/10.5281/zenodo.10036356)
+
+If you use variantinterpretation for your analysis, please cite it using the following doi: [10.5281/zenodo.10036356](https://doi.org/10.5281/zenodo.10036356)
 An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
 
 You can cite the `nf-core` publication as follows:

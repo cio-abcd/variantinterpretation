@@ -1,13 +1,10 @@
 # cio-abcd/variantinterpretation: Usage
 
-:::note
-If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how
-to set-up Nextflow.
+> NOTE: If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how
+> to set-up Nextflow.
 
 <!-- Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline)
 with `-profile test` before running the workflow on actual data. -->
-
-:::
 
 ## Introduction
 
@@ -63,9 +60,7 @@ This version number will be logged in reports when you run the pipeline, so that
 
 To further assist in reproducbility, you can use share and re-use [parameter files](#running-the-pipeline) to repeat pipeline runs with the same settings without having to write out a command with every single parameter.
 
-:::tip
-If you wish to share such profile (such as upload as supplementary material for academic publications), make sure to NOT include cluster specific paths to files, nor institutional specific profiles.
-:::
+> TIP: If you wish to share such profile (such as upload as supplementary material for academic publications), make sure to NOT include cluster specific paths to files, nor institutional specific profiles.
 
 ### Download reference files
 
@@ -153,9 +148,7 @@ It is highly recommended to define these parameters with
 nf-core launch -ax vio-abcd/variantinterpretation
 ```
 
-:::note
-The flags `-a` saves all parameters, even defaults, for better reproducibility and `-x` also shows hidden parameters.
-:::
+**NOTE: The flags `-a` saves all parameters, even defaults, for better reproducibility and `-x` also shows hidden parameters.**
 
 It opens a web-based interface to define the parameters showing helpful descriptions, default values and constraints for each parameter. You can also find the description of parameters in [docs/params.md](../docs/params.md) and lots of additional information in the [README.md](../README.md).
 
@@ -171,16 +164,9 @@ nextflow run cio-abcd/variantinterpretation \
     --vep_cache $HOME/.vep
 ```
 
-:::note
-The `--vep_cache` parameter needs to be defined in the `nextflow run` command and _not_ within the nf-params.json file.
-If using the igenomes resource, the `--igenomes_base` parameter also needs to be specified in the `nextflow run` command and not in the `nf-params.json` file.
-:::
+> NOTE: The `--vep_cache` parameter needs to be defined in the `nextflow run` command and _not_ within the nf-params.json file. If using the igenomes resource, the `--igenomes_base` parameter also needs to be specified in the `nextflow run` command and not in the `nf-params.json` file.
 
-:::warning
-Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those
-provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_;
-see [docs](https://nf-co.re/usage/configuration#custom-configuration-files).
-:::
+> WARNING: Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/usage/configuration#custom-configuration-files).
 
 The pipeline will create the following files in your working directory:
 
