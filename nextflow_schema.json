@@ -345,6 +345,27 @@
                 }
             }
         },
+        "ukb_report": {
+            "title": "UKB report",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "UKB_report": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Convert TSV file into UKB specific report using custom python script."
+                },
+                "refseq_list": {
+                    "type": "string",
+                    "description": "Xlsx file containing current refseq transcripts used in tWES."
+                },
+                "variantDBi": {
+                    "type": "string",
+                    "descritption": "Xlsx file containing UKB internal interpretations to variants."
+                }
+            }
+        },
         "institutional_config_options": {
             "title": "Institutional config options",
             "type": "object",

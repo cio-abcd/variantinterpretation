@@ -51,7 +51,7 @@ fasta                      = params.fasta              ? Channel.fromPath(params
 transcriptlist             = params.transcriptlist     ? Channel.fromPath(params.transcriptlist).collect()           : []
 datavzrd_config            = params.datavzrd_config    ? Channel.fromPath(params.datavzrd_config).collect()          : Channel.fromPath("$projectDir/assets/datavzrd_config_template.yaml", checkIfExists: true)
 annotation_colinfo         = params.annotation_colinfo ? Channel.fromPath(params.annotation_colinfo).collect()       : Channel.fromPath("$projectDir/assets/annotation_colinfo.tsv", checkIfExists: true)
-bedfile			           = params.bedfile 	       ? Channel.fromPath(params.bedfile).collect()		             : []
+bedfile			   = params.bedfile	       ? Channel.fromPath(params.bedfile).collect()		             : []
 custom_filters             = params.custom_filters     ? Channel.fromPath(params.custom_filters).collect()           : []
 
 // Initialize value channels from parameters
@@ -60,6 +60,8 @@ vep_cache_version          = params.vep_cache_version       ?: Channel.empty()
 vep_genome                 = params.vep_genome              ?: Channel.empty()
 vep_species                = params.vep_species             ?: Channel.empty()
 annotation_fields          = params.annotation_fields       ?: ''
+refseq_list                = params.refseq_list        ? Channel.value(params.refseq_list)                           : []
+variantDBi                 = params.variantDBi         ? Channel.value(params.variantDBi)                            : []
 
 // VEP extra files
 vep_extra_files            = []
@@ -71,7 +73,7 @@ vep_extra_files            = []
 */
 
 include { INPUT_CHECK                               } from '../subworkflows/local/input_check'
-include { CHECKBEDFILE		                        } from '../modules/local/checkbedfile'
+include { CHECKBEDFILE		                    } from '../modules/local/checkbedfile'
 include { BCFTOOLS_INDEX                            } from '../modules/nf-core/bcftools/index/main'
 include { SAMTOOLS_DICT                             } from '../modules/nf-core/samtools/dict/main'
 include { SAMTOOLS_FAIDX                            } from '../modules/nf-core/samtools/faidx/main'
@@ -82,7 +84,8 @@ include { ENSEMBLVEP_VEP                            } from '../modules/nf-core/e
 include { VEMBRANE_TABLE                            } from '../subworkflows/local/vembrane_table/main'
 include { VARIANTFILTER as PRESETS_FILTER_REPORT    } from '../subworkflows/local/variantfilter/main'
 include { HTML_REPORT                               } from '../subworkflows/local/html_report/main'
-include { TMB_CALCULATE	    	                    } from '../modules/local/tmbcalculation/main'
+include { TMB_CALCULATE	                            } from '../modules/local/tmbcalculation/main'
+include { UKB_REPORT                                } from '../modules/local/UKB_report/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -255,6 +258,15 @@ workflow VARIANTINTERPRETATION {
                     )
                     ch_versions = ch_versions.mix(TMB_CALCULATE.out.versions)
             }
+        }
+
+        // 
+        //MODULE: UKB report
+        //
+        if ( params.UKB_report) {
+            ch_samplename_tsv = ch_tsv.map { meta, tsv -> [meta.id, tsv] }
+            UKB_REPORT (ch_samplename_tsv, refseq_list, variantDBi)
+            ch_versions = ch_versions.mix(UKB_REPORT.out.versions)
         }
     }
 

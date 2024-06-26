@@ -1,11 +1,11 @@
 process ENSEMBLVEP_VEP {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_single'
 
-    conda "bioconda::ensembl-vep=110.0"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/ensembl-vep:110.0--pl5321h2a3209d_0' :
-        'biocontainers/ensembl-vep:110.0--pl5321h2a3209d_0' }"
+    conda "bioconda::ensembl-vep=112.0"
+    //container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+    //    'https://depot.galaxyproject.org/singularity/ensembl-vep:110.0--pl5321h2a3209d_0' :
+    //    'biocontainers/ensembl-vep:110.0--pl5321h2a3209d_0' }"
 
     input:
     tuple val(meta), path(vcf), path(custom_extra_files)
@@ -46,7 +46,6 @@ process ENSEMBLVEP_VEP {
         --cache \\
         --cache_version $cache_version \\
         --dir_cache $dir_cache \\
-        --fork $task.cpus \\
         --stats_file ${prefix}.summary.html \\
 
 
