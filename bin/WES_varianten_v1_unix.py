@@ -205,12 +205,3 @@ date_time_now = datetime.now()
 # dd/mm/YY H:M:S
 dt_string = date_time_now.strftime("%d/%m/%Y %H:%M:%S")
 print("End:", dt_string)
-
-#------------------------------------------------------------------------------
-# position start end needed?
-# column names sytle DNPM MV64 own module
-# check normal vs tumor allele fraction?
-# check newest vep version
-# check QUAL Paramters
-# check if HGVsc HGVsp are correct
-# check the python files win and unix!!!
