@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import pandas as pd
+
 def concatenate_https_clinvar(rs):
     """
     Concatenate https_clinvar link with rs number
