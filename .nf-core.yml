@@ -10,3 +10,4 @@ lint:
     - manifest.homePage
   multiqc_config:
     - report_comment
+nf_core_version: "2.14.1"
