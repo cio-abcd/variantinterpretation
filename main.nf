@@ -11,65 +11,131 @@ nextflow.enable.dsl = 2
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    IMPORT FUNCTIONS / MODULES / SUBWORKFLOWS / WORKFLOWS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+include { VARIANTINTERPRETATION   } from './workflows/variantinterpretation'
+include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_variantinterpretation_pipeline'
+include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_variantinterpretation_pipeline'
+include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_variantinterpretation_pipeline'
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     GENOME PARAMETER VALUES
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
 //   This is an example of how to use getGenomeAttribute() to fetch parameters
 //   from igenomes.config using `--genome`
-params.fasta = WorkflowMain.getGenomeAttribute(params, 'fasta')
+params.fasta = getGenomeAttribute('fasta')
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    VALIDATE & PRINT PARAMETER SUMMARY
+    INPUT CHANNELS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { validateParameters; paramsHelp } from 'plugin/nf-validation'
+// Initialize files channels from parameters
 
-// Print help message if needed
-if (params.help) {
-    def logo = NfcoreTemplate.logo(workflow, params.monochrome_logs)
-    def citation = '\n' + WorkflowMain.citation(workflow) + '\n'
-    def String command = "nextflow run ${workflow.manifest.name} --input samplesheet.csv --genome GRCh37 -profile docker"
-    log.info logo + paramsHelp(command) + citation + NfcoreTemplate.dashedLine(params.monochrome_logs)
-    System.exit(0)
-}
+ch_vep_cache                  = params.vep_cache          ? Channel.fromPath(params.vep_cache).collect()                : []
+ch_fasta                      = params.fasta              ? Channel.fromPath(params.fasta).collect()                    : Channel.empty()
+ch_transcriptlist             = params.transcriptlist     ? Channel.fromPath(params.transcriptlist).collect()           : []
+ch_datavzrd_config            = params.datavzrd_config    ? Channel.fromPath(params.datavzrd_config).collect()          : Channel.fromPath("$projectDir/assets/datavzrd_config_template.yaml", checkIfExists: true)
+ch_annotation_colinfo         = params.annotation_colinfo ? Channel.fromPath(params.annotation_colinfo).collect()       : Channel.fromPath("$projectDir/assets/annotation_colinfo.tsv", checkIfExists: true)
+ch_bedfile			          = params.bedfile            ? Channel.fromPath(params.bedfile).collect()		             : []
+ch_custom_filters             = params.custom_filters     ? Channel.fromPath(params.custom_filters).collect()           : []
 
-// Validate input parameters
-if (params.validate_params) {
-    validateParameters()
-}
+// Initialize value channels from parameters
 
-WorkflowMain.initialise(workflow, params, log)
+ch_vep_cache_version          = params.vep_cache_version       ?: Channel.empty()
+ch_vep_genome                 = params.vep_genome              ?: Channel.empty()
+ch_vep_species                = params.vep_species             ?: Channel.empty()
+ch_annotation_fields          = params.annotation_fields       ?: ''
+
+// VEP extra files
+ch_vep_extra_files            = []
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    NAMED WORKFLOW FOR PIPELINE
+    NAMED WORKFLOWS FOR PIPELINE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-
-include { VARIANTINTERPRETATION } from './workflows/variantinterpretation'
 
 //
-// WORKFLOW: Run main variantinterpretation analysis pipeline
+// WORKFLOW: Run main analysis pipeline depending on type of input
 //
 workflow CIOABCD_VARIANTINTERPRETATION {
-    VARIANTINTERPRETATION ()
-}
 
+    take:
+    ch_samplesheet        // channel: samplesheet read in from --input
+
+
+    main:
+
+    //
+    // WORKFLOW: Run pipeline
+    //
+    VARIANTINTERPRETATION (
+        ch_samplesheet,
+        ch_fasta,
+        ch_vep_cache,
+        ch_vep_cache_version,
+        ch_vep_genome,
+        ch_vep_species,
+        ch_vep_extra_files,
+        ch_annotation_fields,
+        ch_transcriptlist,
+        ch_datavzrd_config,
+        ch_annotation_colinfo,
+        ch_bedfile,
+        ch_custom_filters
+    )
+
+    emit:
+    ch_multiqc_report = VARIANTINTERPRETATION.out.multiqc_report // channel: /path/to/multiqc_report.html
+
+}
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    RUN ALL WORKFLOWS
+    RUN MAIN WORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-//
-// WORKFLOW: Execute a single named workflow for the pipeline
-// See: https://github.com/nf-core/rnaseq/issues/619
-//
 workflow {
-    CIOABCD_VARIANTINTERPRETATION ()
+
+    main:
+
+    //
+    // SUBWORKFLOW: Run initialisation tasks
+    //
+    PIPELINE_INITIALISATION (
+        params.version,
+        params.help,
+        params.validate_params,
+        params.monochrome_logs,
+        args,
+        params.outdir,
+        params.input
+    )
+
+    //
+    // WORKFLOW: Run main workflow
+    //
+    CIOABCD_VARIANTINTERPRETATION (PIPELINE_INITIALISATION.out.samplesheet)
+
+    //
+    // SUBWORKFLOW: Run completion tasks
+    //
+    PIPELINE_COMPLETION (
+        params.email,
+        params.email_on_fail,
+        params.plaintext_email,
+        params.outdir,
+        params.monochrome_logs,
+        params.hook_url,
+        CIOABCD_VARIANTINTERPRETATION.out.multiqc_report
+    )
 }
 
 /*
