@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import pandas as pd
@@ -32,8 +32,8 @@ print("Script: WES_varianten_v1_unix.py")
 
 # Get VEMBRANE_TABLE.out data
 VEMBRANE_TABLE_OUT = args.vembrane_table
-VEMBRANE_TABLE_OUT_data = pd.read_table(VEMBRANE_TABLE_OUT, low_memory=False)
-
+#VEMBRANE_TABLE_OUT_data = pd.read_table(VEMBRANE_TABLE_OUT, low_memory=False)
+VEMBRANE_TABLE_OUT_data = pd.read_csv(VEMBRANE_TABLE_OUT, sep="\t")
 # Get PASS variants and others
 vs_PASS = []
 vs_other = []
