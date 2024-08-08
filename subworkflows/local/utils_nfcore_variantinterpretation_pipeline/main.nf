@@ -81,15 +81,17 @@ workflow PIPELINE_INITIALISATION {
     // Create channel from input file provided through params.input
     //
     Channel
-        .fromSamplesheet("input")
-        .map {
-            meta, vcf -> [ meta.id, meta, [ vcf ] ]
-
+        .fromSamplesheet("input") // read in Samplesheet with nf-validation plugin
+        .map { meta, vcf ->
+            if (meta.group && meta.sample) {
+                meta = meta + [id: "${meta.group}-${meta.sample}".toString()] /// set ID to be a combination of group and sample if group is set
+            } else if (meta.sample) {
+                meta = meta + [id: meta.sample] /// set ID to be the sample if group is not set
+            }
+            return [meta.id, meta, [vcf] ]
         }
-        .groupTuple()
-        .map {
-            validateInputSamplesheet(it)
-        }
+        .groupTuple() //group by each group-sample combination
+        .map { validateInputSamplesheet(it)}
         .map {
             meta, vcfs ->
                 return [ meta, vcfs.flatten() ]

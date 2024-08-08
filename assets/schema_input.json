@@ -7,11 +7,18 @@
     "items": {
         "type": "object",
         "properties": {
-            "sample": {
+            "group": {
                 "type": "string",
                 "pattern": "^\\S+$",
-                "errorMessage": "Sample name must be provided and cannot contain spaces",
-                "meta": ["id"]
+                "errorMessage": "Group name, cannot contain spaces.",
+                "meta": ["group"]
+            },
+            "sample": {
+                "type": "string",
+                "unique": ["group"],
+                "pattern": "^\\S+$",
+                "errorMessage": "Sample name must be provided and cannot contain spaces. Needs to be unique within group name.",
+                "meta": ["sample"]
             },
             "vcf": {
                 "type": "string",
