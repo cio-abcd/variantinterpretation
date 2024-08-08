@@ -8,11 +8,11 @@ include { CHECKBEDFILE		                        } from '../modules/local/checkbe
 include { BCFTOOLS_INDEX                            } from '../modules/nf-core/bcftools/index/main'
 include { SAMTOOLS_DICT                             } from '../modules/nf-core/samtools/dict/main'
 include { SAMTOOLS_FAIDX                            } from '../modules/nf-core/samtools/faidx/main'
-include { VCFTESTS                                  } from '../subworkflows/local/vcf/vcftests'
-include { VCFPROC                                   } from '../subworkflows/local/vcf/vcfproc'
+include { CHECKVCF                                  } from '../subworkflows/local/check_vcf/main'
+include { VCFPROC                                   } from '../subworkflows/local/process_vcf/main'
 include { ENSEMBLVEP_FILTERVEP as TRANSCRIPT_FILTER } from '../modules/nf-core/ensemblvep/filtervep/main'
 include { ENSEMBLVEP_VEP                            } from '../modules/nf-core/ensemblvep/vep/main'
-include { VEMBRANE_TABLE                            } from '../subworkflows/local/vembrane_table/main'
+include { TSV_CONVERSION                            } from '../subworkflows/local/tsv_conversion/main'
 include { VARIANTFILTER as PRESETS_FILTER_REPORT    } from '../subworkflows/local/variantfilter/main'
 include { HTML_REPORT                               } from '../subworkflows/local/html_report/main'
 include { TMB_CALCULATE	    	                    } from '../modules/local/tmbcalculation/main'
@@ -91,15 +91,15 @@ workflow VARIANTINTERPRETATION {
     // VCF tests
     //
 
-    VCFTESTS (
+    CHECKVCF (
         vcf_tbi,
         fasta_ref,
         SAMTOOLS_DICT.out.dict,
         SAMTOOLS_FAIDX.out.fai
     )
-    ch_versions = ch_versions.mix(VCFTESTS.out.versions)
-    ch_warnings = ch_warnings.mix(VCFTESTS.out.warnings)
-    ch_multiqc_files = ch_multiqc_files.mix(VCFTESTS.out.multiqc_reports)
+    ch_versions = ch_versions.mix(CHECKVCF.out.versions)
+    ch_warnings = ch_warnings.mix(CHECKVCF.out.warnings)
+    ch_multiqc_files = ch_multiqc_files.mix(CHECKVCF.out.multiqc_reports)
 
     //
     // Check bedfiles
@@ -168,11 +168,11 @@ workflow VARIANTINTERPRETATION {
 
     if ( params.tsv ) {
 
-        VEMBRANE_TABLE (ch_vcf_tag,
+        TSV_CONVERSION (ch_vcf_tag,
                         ch_annotation_fields
         )
-        ch_tsv = VEMBRANE_TABLE.out.tsv
-        ch_versions = ch_versions.mix(VEMBRANE_TABLE.out.versions)
+        ch_tsv = TSV_CONVERSION.out.tsv
+        ch_versions = ch_versions.mix(TSV_CONVERSION.out.versions)
 
         //
         // MODULE: HTML report with datavzrd
@@ -191,7 +191,7 @@ workflow VARIANTINTERPRETATION {
         //
         if ( params.bedfile && params.calculate_tmb ) {
                 if ( CHECKBEDFILE.out.bed_valid ) {
-                        TMB_CALCULATE ( VEMBRANE_TABLE.out.tsv,
+                        TMB_CALCULATE ( TSV_CONVERSION.out.tsv,
                                         ch_bedfile
                     )
                     ch_versions = ch_versions.mix(TMB_CALCULATE.out.versions)

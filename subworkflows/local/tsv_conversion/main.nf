@@ -6,7 +6,7 @@ include { VEMBRANE_CREATE_FIELDS } from '../../../modules/local/vembrane/create-
 include { VEMBRANE_VEMBRANETABLE } from '../../../modules/local/vembrane/table/main'
 
 
-workflow VEMBRANE_TABLE {
+workflow TSV_CONVERSION {
     take:
     vcf                 // channel: [ val(meta), vcf ]
     annotation_fields   // value: Annotation fields in INFO column

@@ -1,5 +1,5 @@
 //
-// Convert into TSV format
+// Index, pre-filter and normalize VCF variant files
 //
 
 include { BCFTOOLS_INDEX as INDEX_FILT    } from '../../../modules/nf-core/bcftools/index/main'

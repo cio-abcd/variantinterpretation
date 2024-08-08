@@ -1,12 +1,12 @@
 //
-// Convert into TSV format
+// Check VCF files for structure and integrity
 //
 
 include { GATK4_VALIDATEVARIANTS          } from '../../../modules/local/gatk4/validatevariants/main'
 include { BCFTOOLS_STATS                  } from '../../../modules/nf-core/bcftools/stats/main'
 include { VCFCHECKS                       } from '../../../modules/local/vcfchecks/main'
 
-workflow VCFTESTS {
+workflow CHECKVCF {
     take:
     vcf_tbi              // channel: [ val(meta), path(vcf), path(tbi) ]
     fasta_ref            // path: fasta file
