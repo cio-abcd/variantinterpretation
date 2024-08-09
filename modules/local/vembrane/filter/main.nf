@@ -2,10 +2,10 @@ process VEMBRANE_FILTER {
     tag "$meta.id"
     label 'process_low'
 
-    conda "bioconda::vembrane=1.0.1"
+    conda "bioconda::vembrane=1.0.6"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/vembrane:1.0.1--pyhdfd78af_0':
-        'biocontainers/vembrane:1.0.1--pyhdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/vembrane:1.0.6--pyhdfd78af_0':
+        'biocontainers/vembrane:1.0.6--pyhdfd78af_0' }"
 
     input:
     tuple val(meta), path(vcf)
