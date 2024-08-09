@@ -88,7 +88,7 @@ workflow PIPELINE_INITIALISATION {
             } else if (meta.sample) {
                 meta = meta + [id: meta.sample] /// set ID to be the sample if group is not set
             }
-            return [meta.id, meta, [vcf] ]
+            return [meta.id, meta, vcf ]
         }
         .groupTuple() //group by each group-sample combination
         .map { validateInputSamplesheet(it)}

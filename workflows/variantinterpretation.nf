@@ -10,6 +10,7 @@ include { SAMTOOLS_DICT                             } from '../modules/nf-core/s
 include { SAMTOOLS_FAIDX                            } from '../modules/nf-core/samtools/faidx/main'
 include { CHECKVCF                                  } from '../subworkflows/local/check_vcf/main'
 include { VCFPROC                                   } from '../subworkflows/local/process_vcf/main'
+include { MERGE_VCFS                                } from '../subworkflows/local/merge_vcfs/main'
 include { ENSEMBLVEP_FILTERVEP as TRANSCRIPT_FILTER } from '../modules/nf-core/ensemblvep/filtervep/main'
 include { ENSEMBLVEP_VEP                            } from '../modules/nf-core/ensemblvep/vep/main'
 include { TSV_CONVERSION                            } from '../subworkflows/local/tsv_conversion/main'
@@ -104,6 +105,7 @@ workflow VARIANTINTERPRETATION {
     //
     // Check bedfiles
     //
+
     if (params.bedfile) {
         CHECKBEDFILE ( ch_bedfile )
         ch_versions = ch_versions.mix(CHECKBEDFILE.out.versions)
@@ -119,12 +121,27 @@ workflow VARIANTINTERPRETATION {
     )
     ch_versions = ch_versions.mix(VCFPROC.out.versions)
 
-    proc_vcf=VCFPROC.out.vcf_norm_tbi
-        .map { meta, vcf, tbi -> tuple( meta, vcf, []) }
+    //
+    // Merging VCF files by groups
+    //
+
+    if (params.merge_vcfs) {
+        MERGE_VCFS (
+            VCFPROC.out.vcf
+        )
+        ch_versions = ch_versions.mix(VCFPROC.out.versions)
+
+        proc_vcf=MERGE_VCFS.out.vcf
+    } else {
+        proc_vcf=VCFPROC.out.vcf
+    }
 
     //
     // MODULE: VEP annotation
     //
+
+    proc_vcf=proc_vcf
+        .map { meta, vcf -> tuple( meta, vcf, []) }
 
     if (params.vep) {
         ENSEMBLVEP_VEP( proc_vcf,

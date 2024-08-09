@@ -3,7 +3,6 @@
 //
 
 include { BCFTOOLS_INDEX as INDEX_FILT    } from '../../../modules/nf-core/bcftools/index/main'
-include { BCFTOOLS_INDEX as INDEX_NORM    } from '../../../modules/nf-core/bcftools/index/main'
 include { BCFTOOLS_VIEW  as VCFFILTER     } from '../../../modules/nf-core/bcftools/view/main'
 include { BCFTOOLS_NORM                   } from '../../../modules/nf-core/bcftools/norm/main'
 
@@ -45,13 +44,8 @@ workflow VCFPROC {
                     fasta_meta
     )
     ch_versions = ch_versions.mix(BCFTOOLS_NORM.out.versions)
-    // index
-    INDEX_NORM ( BCFTOOLS_NORM.out.vcf )
-    ch_versions = ch_versions.mix(INDEX_NORM.out.versions)
-    // merge channels
-    vcf_norm_tbi = BCFTOOLS_NORM.out.vcf.join(INDEX_NORM.out.tbi)
 
     emit:
-    vcf_norm_tbi    =   vcf_norm_tbi                   // channel: [ val(meta), .vcf, .tbi ]
-    versions        =   ch_versions                    // path: versions.yml
+    vcf         =   BCFTOOLS_NORM.out.vcf                   // channel: [ meta, .vcf ]
+    versions    =   ch_versions                             // path: versions.yml
 }

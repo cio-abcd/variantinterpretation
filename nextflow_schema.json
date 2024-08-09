@@ -56,6 +56,10 @@
                 "filter_vcf": {
                     "type": "string",
                     "description": "Only keep vcf entries which FILTER columns match the vcffilter expression. Leave empty to disable filtering."
+                },
+                "merge_vcfs": {
+                    "type": "boolean",
+                    "description": "If true, uses bcftools merge to create multi-sample VCF files of all files within the same group. The group can be specified as additional column in the samplesheet.csv."
                 }
             }
         },
@@ -136,7 +140,7 @@
                 },
                 "vep_cache_version": {
                     "type": "string",
-                    "default": "110",
+                    "default": 110,
                     "description": "Version of VEP cache to use.",
                     "help_text": "Should always match the implemented VEP tool version."
                 },
@@ -224,7 +228,8 @@
                     "type": "string",
                     "help_text": "If variant does not have any match, all annotation will be removed and variant is flagged in FILTER column.\nCan work simultaneously with \"transcriptfilter\" param.",
                     "format": "file-path",
-                    "description": "List of transcripts for filtering."
+                    "description": "List of transcripts for filtering.",
+                    "default": "[]"
                 },
                 "custom_filters": {
                     "type": "string",
