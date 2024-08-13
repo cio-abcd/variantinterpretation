@@ -2,10 +2,10 @@ process ENSEMBLVEP_FILTERVEP {
     tag "$meta.id"
     label 'process_single'
 
-    conda "bioconda::ensembl-vep=110.0"
+    conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/ensembl-vep:110.0--pl5321h2a3209d_0' :
-        'biocontainers/ensembl-vep:110.0--pl5321h2a3209d_0' }"
+        'https://depot.galaxyproject.org/singularity/ensembl-vep:112.0--pl5321h2a3209d_0' :
+        'biocontainers/ensembl-vep:112.0--pl5321h2a3209d_0' }"
 
     input:
     tuple val(meta), path(input)
@@ -23,7 +23,6 @@ process ENSEMBLVEP_FILTERVEP {
     def prefix = task.ext.prefix ?: "${meta.id}"
     extension  = task.ext.suffix ?: "vcf"
     def listfilter = transcriptlist ? "--filter \"Feature in $transcriptlist\"" : ""
-
     """
     filter_vep \\
         $args \\

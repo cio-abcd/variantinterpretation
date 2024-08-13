@@ -1,4 +1,4 @@
-name: "ensemblvep_filtervep"
+name: ensemblvep_filtervep
 description: Filter variants based on Ensembl Variant Effect Predictor (VEP) annotations.
 keywords:
   - annotation
@@ -23,9 +23,9 @@ input:
       type: file
       description: VCF/TAB file annotated with vep
       pattern: "*.{vcf,tab,tsv,txt}"
-  - feature_file:
+  - transcriptlist:
       type: file
-      description: File containing features on separate lines. To be used with --filter option.
+      description: File containing transcript IDs on separate lines. To be used with --filter option.
 output:
   - meta:
       type: map

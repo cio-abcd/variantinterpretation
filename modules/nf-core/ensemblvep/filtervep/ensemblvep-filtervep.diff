@@ -1,7 +1,29 @@
 Changes in module 'nf-core/ensemblvep/filtervep'
+--- modules/nf-core/ensemblvep/filtervep/meta.yml
++++ modules/nf-core/ensemblvep/filtervep/meta.yml
+@@ -23,9 +23,9 @@
+       type: file
+       description: VCF/TAB file annotated with vep
+       pattern: "*.{vcf,tab,tsv,txt}"
+-  - feature_file:
++  - transcriptlist:
+       type: file
+-      description: File containing features on separate lines. To be used with --filter option.
++      description: File containing transcript IDs on separate lines. To be used with --filter option.
+ output:
+   - meta:
+       type: map
+
 --- modules/nf-core/ensemblvep/filtervep/main.nf
 +++ modules/nf-core/ensemblvep/filtervep/main.nf
-@@ -9,7 +9,7 @@
+@@ -4,12 +4,12 @@
+ 
+     conda "${moduleDir}/environment.yml"
+     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+-        'https://depot.galaxyproject.org/singularity/ensembl-vep:111.0--pl5321h2a3209d_0' :
+-        'biocontainers/ensembl-vep:111.0--pl5321h2a3209d_0' }"
++        'https://depot.galaxyproject.org/singularity/ensembl-vep:112.0--pl5321h2a3209d_0' :
++        'biocontainers/ensembl-vep:112.0--pl5321h2a3209d_0' }"
  
      input:
      tuple val(meta), path(input)
@@ -10,12 +32,11 @@ Changes in module 'nf-core/ensemblvep/filtervep'
  
      output:
      tuple val(meta), path("*.${extension}"), emit: output
-@@ -22,12 +22,14 @@
+@@ -22,12 +22,13 @@
      def args   = task.ext.args   ?: ''
      def prefix = task.ext.prefix ?: "${meta.id}"
      extension  = task.ext.suffix ?: "vcf"
 +    def listfilter = transcriptlist ? "--filter \"Feature in $transcriptlist\"" : ""
-+
      """
      filter_vep \\
          $args \\
@@ -27,7 +48,7 @@ Changes in module 'nf-core/ensemblvep/filtervep'
  
      cat <<-END_VERSIONS > versions.yml
      "${task.process}":
-@@ -39,7 +41,7 @@
+@@ -39,7 +40,7 @@
      def prefix = task.ext.prefix ?: "${meta.id}"
      extension  = task.ext.suffix ?: "vcf"
      """
@@ -36,10 +57,14 @@ Changes in module 'nf-core/ensemblvep/filtervep'
  
      cat <<-END_VERSIONS > versions.yml
      "${task.process}":
-@@ -47,4 +49,3 @@
-     END_VERSIONS
-     """
- }
--
+
+--- modules/nf-core/ensemblvep/filtervep/environment.yml
++++ modules/nf-core/ensemblvep/filtervep/environment.yml
+@@ -4,4 +4,4 @@
+   - bioconda
+   - defaults
+ dependencies:
+-  - bioconda::ensembl-vep=111.0
++  - bioconda::ensembl-vep=112.0
 
 ************************************************************

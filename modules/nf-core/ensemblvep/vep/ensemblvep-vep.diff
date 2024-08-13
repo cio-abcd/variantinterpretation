@@ -1,11 +1,18 @@
 Changes in module 'nf-core/ensemblvep/vep'
 --- modules/nf-core/ensemblvep/vep/main.nf
 +++ modules/nf-core/ensemblvep/vep/main.nf
-@@ -33,10 +33,11 @@
-     def prefix = task.ext.prefix ?: "${meta.id}"
-     def dir_cache = cache ? "\${PWD}/${cache}" : "/.vep"
-     def reference = fasta ? "--fasta $fasta" : ""
-+
+@@ -4,8 +4,8 @@
+ 
+     conda "${moduleDir}/environment.yml"
+     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+-        'https://depot.galaxyproject.org/singularity/ensembl-vep:111.0--pl5321h2a3209d_0' :
+-        'biocontainers/ensembl-vep:111.0--pl5321h2a3209d_0' }"
++        'https://depot.galaxyproject.org/singularity/ensembl-vep:112.0--pl5321h2a3209d_0' :
++        'biocontainers/ensembl-vep:112.0--pl5321h2a3209d_0' }"
+ 
+     input:
+     tuple val(meta), path(vcf), path(custom_extra_files)
+@@ -36,7 +36,7 @@
      """
      vep \\
          -i $vcf \\
@@ -14,18 +21,27 @@ Changes in module 'nf-core/ensemblvep/vep'
          $args \\
          $compress_cmd \\
          $reference \\
-@@ -58,9 +59,9 @@
+@@ -57,9 +57,9 @@
      stub:
      def prefix = task.ext.prefix ?: "${meta.id}"
      """
--    touch ${prefix}.vcf.gz
--    touch ${prefix}.tab.gz
--    touch ${prefix}.json.gz
-+    touch ${prefix}.ann.vcf.gz
-+    touch ${prefix}.ann.tab.gz
-+    touch ${prefix}.ann.json.gz
-     touch ${prefix}.summary.html
+-    echo "" | gzip > ${prefix}.vcf.gz
+-    echo "" | gzip > ${prefix}.tab.gz
+-    echo "" | gzip > ${prefix}.json.gz
++    echo "" | gzip > ${prefix}.ann.vcf.gz
++    echo "" | gzip > ${prefix}.ann.tab.gz
++    echo "" | gzip > ${prefix}.ann.json.gz
+     touch ${prefix}_summary.html
  
      cat <<-END_VERSIONS > versions.yml
+
+--- modules/nf-core/ensemblvep/vep/environment.yml
++++ modules/nf-core/ensemblvep/vep/environment.yml
+@@ -4,4 +4,4 @@
+   - bioconda
+   - defaults
+ dependencies:
+-  - bioconda::ensembl-vep=111.0
++  - bioconda::ensembl-vep=112.0
 
 ************************************************************
