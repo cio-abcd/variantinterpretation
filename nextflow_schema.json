@@ -569,41 +569,17 @@
         }
     },
     "allOf": [
-        {
-            "$ref": "#/definitions/input_output_options"
-        },
-        {
-            "$ref": "#/definitions/vcf_normalization"
-        },
-        {
-            "$ref": "#/definitions/reference_genome_options"
-        },
-        {
-            "$ref": "#/definitions/preprocessing_options"
-        },
-        {
-            "$ref": "#/definitions/annotation_options"
-        },
-        {
-            "$ref": "#/definitions/annotation_filtering_option"
-        },
-        {
-            "$ref": "#/definitions/tsv_conversion_options"
-        },
-        {
-            "$ref": "#/definitions/html_report"
-        },
-        {
-            "$ref": "#/definitions/tmb_calculation_options"
-        },
-        {
-            "$ref": "#/definitions/institutional_config_options"
-        },
-        {
-            "$ref": "#/definitions/max_job_request_options"
-        },
-        {
-            "$ref": "#/definitions/generic_options"
-        }
+        { "$ref": "#/definitions/input_output_options" },
+        { "$ref": "#/definitions/vcf_normalization" },
+        { "$ref": "#/definitions/reference_genome_options" },
+        { "$ref": "#/definitions/preprocessing_options" },
+        { "$ref": "#/definitions/annotation_options" },
+        { "$ref": "#/definitions/annotation_filtering_option" },
+        { "$ref": "#/definitions/tsv_conversion_options" },
+        { "$ref": "#/definitions/html_report" },
+        { "$ref": "#/definitions/tmb_calculation_options" },
+        { "$ref": "#/definitions/institutional_config_options" },
+        { "$ref": "#/definitions/max_job_request_options" },
+        { "$ref": "#/definitions/generic_options" }
     ]
 }

@@ -71,7 +71,9 @@ def parse_arguments():
 def read_vcf(vcf_in):
     vcffile = pd.read_csv(vcf_in, sep="\t", comment="#", header=None)
     if len(vcffile.columns) < 10:
-        raise ValueError("ERROR: Your VCF file has less than 10 columns and may miss columns.")
+        raise ValueError(
+            "ERROR: Your VCF file has less than 10 columns and may miss columns."
+        )
     else:
         vcffile.columns = [
             "CHROM",
@@ -116,7 +118,9 @@ def check_chrom_def(vcffile, meta_id, log_level):
         pattern = re.compile(r"^chr.*")
         chrmatch = [bool(pattern.match(c)) for c in chromosomes]
         if all(chrmatch):
-            report_message = f'CHECK: {meta_id} always contains "chr" prefix in the CHROM column.'
+            report_message = (
+                f'CHECK: {meta_id} always contains "chr" prefix in the CHROM column.'
+            )
         else:
             error_indices = [idx for idx, result in enumerate(chrmatch) if not result]
             report_message = (
@@ -163,7 +167,9 @@ def check_FILTERs(vcffile, meta_id, log_level, passfilters={"PASS", "."}):
     def check_pass(filters):
         otherfilters = filters.difference(passfilters)
         if not otherfilters:
-            report_message = f'CHECK: {meta_id} contains only "." or "PASS" values in FILTER column.'
+            report_message = (
+                f'CHECK: {meta_id} contains only "." or "PASS" values in FILTER column.'
+            )
         else:
             # if anything else than "PASS" or "." is present, report.
             report_message = f"{log_level}: {meta_id} contains other FILTER values than \"PASS\" or \".\": {','.join(otherfilters)}. If pass_filter = true, these will be filtered."
@@ -213,7 +219,9 @@ def check_stats_value(
     if int(matches[0]) > intcheck:
         report_message = f"{log_level}: {meta_id} contains {matches[0]} {textsnippet}."
     else:
-        report_message = f"CHECK: {meta_id} contains equal or less than {intcheck} {textsnippet}."
+        report_message = (
+            f"CHECK: {meta_id} contains equal or less than {intcheck} {textsnippet}."
+        )
     return report_message
 
 
@@ -237,13 +245,19 @@ if __name__ == "__main__":
     # Checks through VCF file:
     # The input for all functions needs to be a PyVCF reader class object.
     if args.check_chr_prefix:
-        report_message = report_message + [check_chrom_def(vcffile, meta_id=args.meta_id, log_level="ERROR")]
+        report_message = report_message + [
+            check_chrom_def(vcffile, meta_id=args.meta_id, log_level="ERROR")
+        ]
 
     if args.check_vep_annotation:
-        report_message = report_message + [check_VEP(vcffile, vcfheader, meta_id=args.meta_id, log_level="WARNING")]
+        report_message = report_message + [
+            check_VEP(vcffile, vcfheader, meta_id=args.meta_id, log_level="WARNING")
+        ]
 
     if args.check_FILTERs:
-        report_message = report_message + [check_FILTERs(vcffile, meta_id=args.meta_id, log_level="WARNING")]
+        report_message = report_message + [
+            check_FILTERs(vcffile, meta_id=args.meta_id, log_level="WARNING")
+        ]
 
     # Input checks based on bcftools stats output.
     if args.check_MNPs:

@@ -138,7 +138,8 @@ def preprocess_vembraneout(file_in, filter_muttype, population_db):
 
 def filter_onlySNV(TMB_inputfile):
     TMB_onlySNV = TMB_inputfile[
-        (TMB_inputfile["REF"].isin(["A", "G", "T", "C"])) & (TMB_inputfile["ALT"].isin(["A", "G", "T", "C"]))
+        (TMB_inputfile["REF"].isin(["A", "G", "T", "C"]))
+        & (TMB_inputfile["ALT"].isin(["A", "G", "T", "C"]))
     ].reset_index(drop=True)
     if TMB_onlySNV["CSQ_VARIANT_CLASS"].eq("SNV").all():
         return TMB_onlySNV
@@ -149,9 +150,12 @@ def filter_onlySNV(TMB_inputfile):
 
 def filter_retainMNV(TMB_inputfile):
     TMB_SNVs = TMB_inputfile[
-        (TMB_inputfile["REF"].isin(["A", "G", "T", "C"])) & (TMB_inputfile["ALT"].isin(["A", "G", "T", "C"]))
+        (TMB_inputfile["REF"].isin(["A", "G", "T", "C"]))
+        & (TMB_inputfile["ALT"].isin(["A", "G", "T", "C"]))
     ].reset_index(drop=True)
-    TMB_MNVs = TMB_inputfile[(TMB_inputfile["CSQ_VARIANT_CLASS"] == "substitution")].reset_index(
+    TMB_MNVs = TMB_inputfile[
+        (TMB_inputfile["CSQ_VARIANT_CLASS"] == "substitution")
+    ].reset_index(
         drop=True
     )  ### contains DBS, SNVs close to repeats and non-normalized SNVs close to InDels
     TMB_return = pd.concat([TMB_SNVs, TMB_MNVs])
@@ -201,7 +205,8 @@ def coverage_filter(input, threshold):
 
 def allelefrequency_filter(input, lower_threshold, higher_threshold):
     TMB_AFboundariesfilt = input[
-        (input["allele_fraction"] >= lower_threshold) & (input["allele_fraction"] <= higher_threshold)
+        (input["allele_fraction"] >= lower_threshold)
+        & (input["allele_fraction"] <= higher_threshold)
     ].reset_index(drop=True)
     filtering_rates = len(TMB_AFboundariesfilt["Mut_ID"])
     return (TMB_AFboundariesfilt, filtering_rates)
@@ -220,15 +225,28 @@ def calculate_TMB(input, panel_size):
 
 def plot_TMB(input, name_convention, lower_af, higher_af):
     ### Preprocess for plotting
-    counts_consequence = input.groupby(input.columns.tolist(), as_index=False, dropna=False).size()
-    index_filter = counts_consequence.groupby("Mut_ID")["size"].transform("max").ne(counts_consequence["size"])
+    counts_consequence = input.groupby(
+        input.columns.tolist(), as_index=False, dropna=False
+    ).size()
+    index_filter = (
+        counts_consequence.groupby("Mut_ID")["size"]
+        .transform("max")
+        .ne(counts_consequence["size"])
+    )
     most_prevalent_con = counts_consequence[~index_filter.values]
     TMB_forplot = (
-        pd.DataFrame({"Mut_ID": most_prevalent_con["Mut_ID"], "CSQ_Consequence": most_prevalent_con["CSQ_Consequence"]})
+        pd.DataFrame(
+            {
+                "Mut_ID": most_prevalent_con["Mut_ID"],
+                "CSQ_Consequence": most_prevalent_con["CSQ_Consequence"],
+            }
+        )
         .merge(input)
         .drop_duplicates()
     )
-    TMB_forplot["CSQ_Consequence"] = TMB_forplot["CSQ_Consequence"].str.split("&").str[0]  ## beautification
+    TMB_forplot["CSQ_Consequence"] = (
+        TMB_forplot["CSQ_Consequence"].str.split("&").str[0]
+    )  ## beautification
     TMB_forplot = TMB_forplot.drop_duplicates("Mut_ID", keep="first")
 
     ### Draw the plot
@@ -248,7 +266,9 @@ def plot_TMB(input, name_convention, lower_af, higher_af):
     )
 
     ### Control the legend
-    sns.move_legend(p, loc="center right", bbox_to_anchor=(1.35, 0.5), ncol=1, fontsize=6)
+    sns.move_legend(
+        p, loc="center right", bbox_to_anchor=(1.35, 0.5), ncol=1, fontsize=6
+    )
 
     ### Show filtering parameters
     plt.axvline(x=lower_af, color="grey", linestyle="dotted")
@@ -277,12 +297,18 @@ def main(argv=None):
     if args.panelsize_threshold is None:
         args.panelsize_threshold = 0
 
-    TMB_df, filtering_rates_total = preprocess_vembraneout(args.file_in, args.filter_muttype, args.population_db)
+    TMB_df, filtering_rates_total = preprocess_vembraneout(
+        args.file_in, args.filter_muttype, args.population_db
+    )
     eligibility, panel_size = check_bed_size(args.bedfile, args.panelsize_threshold)
     if eligibility == True:
         TMB_covfilt, filtering_rates_cov = coverage_filter(TMB_df, args.min_cov)
-        TMB_affilt, filtering_rates_af = allelefrequency_filter(TMB_covfilt, args.min_AF, args.max_AF)
-        TMB_popfilt, filtering_rates_popfreq = popfrequency_filter(TMB_affilt, args.population_db, args.popfreq_max)
+        TMB_affilt, filtering_rates_af = allelefrequency_filter(
+            TMB_covfilt, args.min_AF, args.max_AF
+        )
+        TMB_popfilt, filtering_rates_popfreq = popfrequency_filter(
+            TMB_affilt, args.population_db, args.popfreq_max
+        )
         TMB_value = calculate_TMB(TMB_popfilt, panel_size)
         filtering_rates_total = filtering_rates_total + [
             filtering_rates_cov,
@@ -293,7 +319,9 @@ def main(argv=None):
             TMB_covfilt, args.plot_out, args.min_AF, args.max_AF
         )  ### Use coverage filtered data as non-filtered data compresses plot to uselessness...
         with open(args.file_out, "w") as file:
-            file.write(f"Inital amount of unique mutations: {filtering_rates_total[0]} mutations\n")
+            file.write(
+                f"Inital amount of unique mutations: {filtering_rates_total[0]} mutations\n"
+            )
             if args.filter_muttype in ["snv", "snvs", "mnv", "mnvs"]:
                 file.write(
                     f"Retained mutations after filtering for mutation type {args.filter_muttype}: {filtering_rates_total[1]} mutations\n"
@@ -311,7 +339,9 @@ def main(argv=None):
                 f"The final TMB based on these filtering conditions and a panel size of {panel_size}: {TMB_value} mutations/Mbp"
             )
     else:
-        logger.info("The calculation was not performed as the panel_size is below the allowed threshold.")
+        logger.info(
+            "The calculation was not performed as the panel_size is below the allowed threshold."
+        )
 
 
 if __name__ == "__main__":

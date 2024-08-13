@@ -45,7 +45,9 @@ if __name__ == "__main__":
     input_check(filterdef_df["name"])
 
     # format for tagging
-    filter_argument = "--tag=" + filterdef_df["name"] + "='" + filterdef_df["filter"] + "'"
+    filter_argument = (
+        "--tag=" + filterdef_df["name"] + "='" + filterdef_df["filter"] + "'"
+    )
 
     # concatenate
     filters = " ".join(filter_argument)

@@ -148,7 +148,9 @@ def main(argv=None):
     else:
         bed_well_structured = check_bed_structure(args.file_in)
         if bed_well_structured == True:
-            structured_out = pd.DataFrame({"bed_well_structured": [bed_well_structured]})
+            structured_out = pd.DataFrame(
+                {"bed_well_structured": [bed_well_structured]}
+            )
             structured_out.to_csv("bed_stats_structure.txt", header=False, index=False)
         else:
             raise ValueError(

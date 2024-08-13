@@ -97,7 +97,9 @@ def formatting_field(
         # if all_samples is true, iterate through each sample in vembrane
         if all_samples:
             header_field = 'for_each_sample(lambda sample: f"' + header_field + '")'
-            input_field_formatted = "for_each_sample(lambda s: " + input_field_formatted + ")"
+            input_field_formatted = (
+                "for_each_sample(lambda s: " + input_field_formatted + ")"
+            )
 
         return input_field_formatted, header_field
 
@@ -109,7 +111,9 @@ def formatting_field(
         if re.match(r"[0-9]", mathsplit_field) is not None:
             pass
         else:
-            input_field, header_field = formatting_mathfield(mathsplit_field, input_field)
+            input_field, header_field = formatting_mathfield(
+                mathsplit_field, input_field
+            )
 
     return input_field, header_field
 
@@ -128,17 +132,27 @@ if __name__ == "__main__":
     # add allele fraction in here
     if args.allele_fraction:
         if args.allele_fraction in ["mutect2", "FORMAT_AF"]:
-            vembrane_strings.append('for_each_sample(lambda s: FORMAT["AF"][s] if FORMAT["AF"][s] else None)')
-            header_strings.append('for_each_sample(lambda sample: f"allele_fraction{sample}")')
+            vembrane_strings.append(
+                'for_each_sample(lambda s: FORMAT["AF"][s] if FORMAT["AF"][s] else None)'
+            )
+            header_strings.append(
+                'for_each_sample(lambda sample: f"allele_fraction{sample}")'
+            )
         elif args.allele_fraction in ["freebayes", "FORMAT_AD"]:
-            vembrane_strings.append('for_each_sample(lambda s: FORMAT["AD"][s][1]/FORMAT["DP"][s] if FORMAT["AD"][s][1] and FORMAT["DP"][s] else None)')
-            header_strings.append('for_each_sample(lambda sample: f"allele_fraction{sample}")')
+            vembrane_strings.append(
+                'for_each_sample(lambda s: FORMAT["AD"][s][1]/FORMAT["DP"][s] if FORMAT["AD"][s][1] and FORMAT["DP"][s] else None)'
+            )
+            header_strings.append(
+                'for_each_sample(lambda sample: f"allele_fraction{sample}")'
+            )
         else:
             raise ValueError("ERROR: Did not specify correct allele_fraction.")
 
     # add read depth
     if args.read_depth:
-        vembrane_strings.append('for_each_sample(lambda s: FORMAT["' + str(args.read_depth) + '"][s])')
+        vembrane_strings.append(
+            'for_each_sample(lambda s: FORMAT["' + str(args.read_depth) + '"][s])'
+        )
         header_strings.append('for_each_sample(lambda sample: f"read_depth{sample}]")')
 
     if args.format_fields:
