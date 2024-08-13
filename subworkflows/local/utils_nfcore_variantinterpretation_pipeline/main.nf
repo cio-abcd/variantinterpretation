@@ -82,6 +82,11 @@ workflow PIPELINE_INITIALISATION {
     //
     Channel
         .fromSamplesheet("input") // read in Samplesheet with nf-validation plugin
+        .toList () //here starts adding of index to preserve samplesheet order for bcftools merge. Need to convert to list to get indexing across channel element instead of within each element.
+        .flatMap { it.withIndex().collect { samplesheet_entry, idx ->  //add indeces to List, then use collect function to format it
+            samplesheet_entry[0] = samplesheet_entry[0] + [index: idx] // add index to metadata
+            return samplesheet_entry
+        }}
         .map { meta, vcf ->
             if (meta.group && meta.sample) {
                 meta = meta + [id: "${meta.group}-${meta.sample}".toString()] /// set ID to be a combination of group and sample if group is set

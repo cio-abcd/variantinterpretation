@@ -24,10 +24,14 @@ workflow MERGE_VCFS {
 
     // first need to merge the channel them by group
     vcf_tbi
-        .map {meta, vcf, tbi ->
-                [meta.group, [meta, vcf, tbi]] // first set group as first element and group tuples by group
+        .toList()
+        .flatMap { list ->
+            list.sort { it[0].index } // sort channel by index giving the samplesheet order. Important for bcftools merge.
         }
-        .groupTuple()
+        .map {meta, vcf, tbi ->
+                [meta.group, [meta, vcf, tbi]] // set group as first element for .groupTuple
+        }
+        .groupTuple(by: 0) // group the tuple by this group
         .map {group, ch_vcfs ->
             def metadata = [group: group, samples: ch_vcfs.collect { it[0].sample }, id: group] // collect sample names, set meta.id to group
             def vcfs = ch_vcfs.collect { it[1] }.flatten() // collect vcfs
