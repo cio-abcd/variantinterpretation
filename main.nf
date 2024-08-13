@@ -93,7 +93,7 @@ workflow CIOABCD_VARIANTINTERPRETATION {
     )
 
     emit:
-    ch_multiqc_report = VARIANTINTERPRETATION.out.multiqc_report // channel: /path/to/multiqc_report.html
+    multiqc_report = VARIANTINTERPRETATION.out.multiqc_report // channel: /path/to/multiqc_report.html
 
 }
 /*
