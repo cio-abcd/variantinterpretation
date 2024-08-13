@@ -49,8 +49,9 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
      - Checks samplesheet integrity with modified [nf-core script](bin/check_samplesheet.py)
      - Checks VCF file requirements and integrity with `GATK4 ValidateVariants`, `bcftools` and a custom python script.
      - Runs optional BED file format check using a [python script](bin/check_bedfiles.py)
-   - [Variant normalization](#variant-normalization): Splitting of multi-allelic into bi-allelic variants and optional left-alignment of InDels using `bcftools norm`.
    - [Pre-annotation VCF filtering](#pre-annotation-vcf-filter) based on FILTER column entries using `bcftools view`.
+   - [VCF normalization](#vcf-normalization): Splitting of multi-allelic into bi-allelic variants and optional left-alignment of InDels using `bcftools norm`.
+   - [VCF merging](#vcf-merging): Optional merging of VCF file based on 'group' column in samplesheet into multi-sample VCF files.
 2. [Variant annotation](#ensembl-vep-annotation) using the ensembl variant effect predictor (VEP).
 3. [Filtering](#filtering)
    - [Transcript filtering](#transcript-filtering) using the filter_vep script.
@@ -95,14 +96,6 @@ The following table gives an overview about the criteria that are checked and po
 | contains other variants than SNVs and InDels | WARNING   | Gives warning if VCF file contains other variants than SNVs and InDels.                                                                                                                                                                                                                     | `bcftools stats`         |
 | previous VEP annotation present              | WARNING   | Gives warning if previous VEP annotation is present. The test checks for VEP in the header and if the INFO column already contains a `CSQ` key.                                                                                                                                             |
 
-#### Variant normalization
-
-This module uses [`bcftools norm`](https://samtools.github.io/bcftools/bcftools.html#norm) to split multi-allelic into bi-allelic sites.
-This step is required by vembrane as it cannot handle multi-allelic records (also see [vembrane documentation](https://github.com/vembrane/vembrane)).
-Optionally, the left-alignment of InDels can be activated using the `--left-align-indels` parameter.
-
-> NOTE: When left-alignment is enabled, it performs an additional reference genome check (there is already a check in the `VCF checks` module).
-
 #### Pre-annotation VCF filter
 
 This is an optional step activated and controlled through the `--filter_vcf` parameter.
@@ -111,6 +104,25 @@ This can be enabled with the `--filter_vcf` parameter providing flag names for t
 This step is placed prior to annotation to improve runtime if, e.g., lots of low-quality variants are removed.
 
 > WARNING: Variants filtered in this step will NOT be included in any output file!
+
+#### VCF normalization
+
+This module uses [`bcftools norm`](https://samtools.github.io/bcftools/bcftools.html#norm) to split multi-allelic into bi-allelic sites.
+This step is required by vembrane as it cannot handle multi-allelic records (also see [vembrane documentation](https://github.com/vembrane/vembrane)).
+Optionally, the left-alignment of InDels can be activated using the `--left-align-indels` parameter.
+
+> NOTE: When left-alignment is enabled, it performs an additional reference genome check (there is already a check in the `VCF checks` module).
+
+#### VCF Merging
+
+This is an optional step activated with the `--merge_vcfs` parameter.
+It requires an additional column in the `samplesheet.csv` named 'group' that specifies which VCF files to merge.
+This column can consist of arbitrary name or number that will be used to name the respective output.
+The module uses `bcftools merge` to create a multi-sample VCF file from the input VCF files. The sample names within the original VCFs will be preserved with an additional prefix that contains the samplename from the 'sample' column of the `samplesheet.csv`.
+
+> NOTE: The order of VCF input files to `bcftools merge` is important for merging the VCF header.
+> Hence, the order of VCF files within the samplesheet is preserved as input for `bcftools merge` to ensure reproducibility.
+> If you encounter an pipeline error downstream hinting towards malformatted VCF header, you can try changing the order of VCF files.
 
 ### Ensembl VEP annotation
 

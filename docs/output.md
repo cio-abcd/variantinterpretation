@@ -13,6 +13,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 - [Pre-annotation output](#pre-annotation-output)
   - [vcf checks](#vcf-checks) - Checks VCF files for structure, integrity and several other criteria.
   - [vcf preprocessing](#vcf-preprocessing) - Filters and normalizes variants.
+  - [vcf merging](#vcf-merging) - Merges VCF files based on groups.
 - [Post-annotation output](#post-annotation-output)
   - [ensemblvep](#ensembl-vep) - Annotates VCF files and reports summary.
   - [transcriptfilter](#transcriptfilter) - Optional filters for specific transcripts.
@@ -44,13 +45,25 @@ This module checks the VCF file for structure, integrity and several criteria to
 <details markdown="1">
 <summary>Output files</summary>
 
-- `reports/multiqc/input/bcftools_norm/`: Normalized VCf input as gzipped vcf file using `bcftools norm`.
+- `reports/multiqc/input/bcftools_norm/`: Normalized VCF input as gzipped vcf file using `bcftools norm`.
 - `vcfs/preannotation_filter/`: If `filter_pass = true`, contains gzipped vcf files only with variants filtered prior to annotation in the FILTER columns.
 
 </details>
 
 Can perform optional filtering for variants based on FILTER column entries with the `filter_vcf` parameter.
 Also runs variant normalization using `bcftools norm` with optional InDel left-alignment.
+
+#### VCF merging
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `vcfs/merged_vcfs/`: Contains vcf files with merged samples based on the 'group' column within the `samplesheet.csv`.
+
+</details>
+
+Can optionally merge VCF files based on the 'group' column in the `samplesheet.csv` file.
+Activated via the `--merge_vcfs` parameter.
 
 ### Post-annotation output
 

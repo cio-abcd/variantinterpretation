@@ -5,22 +5,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## dev
 
-### Added
+### `Added`
 
 - support multi-sample VCF files according to issue #35
 - updated nf-core template and restructured workflow
-
-### Fixed
-- fixed vembrane error by updating vembrane to 1.0.6 (Issue #46)
-
-## v1.0.0 - [24th October 2023]
-
-Initial release of cio-abcd/variantinterpretation, created with the [nf-core](https://nf-co.re/) template.
-
-### `Added`
+- support merging of vcf files according to issue #36
 
 ### `Fixed`
+
+- fixed vembrane error by updating vembrane to 1.0.6 (Issue #46)
 
 ### `Dependencies`
 
 ### `Deprecated`
+
+## v1.0.0 - [24th October 2023]
+
+Initial release of cio-abcd/variantinterpretation, created with the [nf-core](https://nf-co.re/) template.
