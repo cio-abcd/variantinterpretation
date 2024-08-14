@@ -135,21 +135,21 @@ You can easily enable/disable VEP options using several parameter, also see the 
 The databases and their respective version is documentated within the VCF file under the VEP flag.
 Currently, we use VEP version 110 and hence using the VEP cache from v10 is highly recommended. It contains the following databases:
 
-- ensembl=110
-- 1000genomes="phase3"
-- COSMIC="97"
-- ClinVar="202301"
-- HGMD-PUBLIC="20204"
+- ensembl=112
 - assembly="GRCh38.p14"
-- dbSNP="154"
-- gencode="GENCODE 44"
-- genebuild="2014-07"
-- gnomADe="r2.1.1"
-- gnomADg="v3.1.2"
-- polyphen="2.2.3"
-- refseq="110 - GCF_000001405.40_GRCh38.p14_genomic.gff"
+- MANE=v1.3
+- gencode="46"
+- refseq="GCF_000001405.40-RS_2023_10 (GCF_000001405.40_GRCh38.p14_genomic.gff)"
 - regbuild="1.0"
-- sift="sift6.2.1"
+- polyphen="2.2.3"
+- sift="6.2.1"
+- dbSNP="156"
+- COSMIC="98"
+- HGMD-PUBLIC="2020.4"
+- ClinVar="202310"
+- 1000genomes="phase3 (remapped)"
+- gnomADe="r2.1.1, exomes only"
+- gnomADg="v3.1.2, genomes only"
 
 ### Filtering
 

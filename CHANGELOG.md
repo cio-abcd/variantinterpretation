@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support multi-sample VCF files according to issue #35
 - updated nf-core template and restructured workflow
 - support merging of vcf files according to issue #36
+- updated nf-core modules
 
 ### `Fixed`
 
