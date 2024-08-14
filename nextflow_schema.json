@@ -140,7 +140,7 @@
                 },
                 "vep_cache_version": {
                     "type": "string",
-                    "default": 110,
+                    "default": 112,
                     "description": "Version of VEP cache to use.",
                     "help_text": "Should always match the implemented VEP tool version."
                 },
