@@ -103,6 +103,10 @@
                 "bedfile": {
                     "type": "string",
                     "description": "BED file of the sequencing panel used for VCF generation"
+                },
+                "tag_roi": {
+                    "type": "boolean",
+                    "description": "Tag variant calls outside of the region-of-interest"
                 }
             }
         },
@@ -139,7 +143,7 @@
                     "help_text": "Define offline cache used for VEP. Mandatory for running VEP. Has to be a file path."
                 },
                 "vep_cache_version": {
-                    "type": "string",
+                    "type": "integer",
                     "default": 113,
                     "description": "Version of VEP cache to use.",
                     "help_text": "Should always match the implemented VEP tool version."
