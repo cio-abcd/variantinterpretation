@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - updated nf-core template and restructured workflow (PR #47)
 - support merging of vcf files (PR #49, Issue #36)
 - updated nf-core modules (PR #50)
+- support for "region-of-interest" tagging of variant calls outside of provided BED file
+- added bcftools annotate/tabix/bgzip as nf-core modules
 
 ### Changed
 

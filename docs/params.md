@@ -37,9 +37,10 @@ Reference genome related files and options required for the workflow.
 
 Options related to prefiltering routines (e.g. BED file)
 
-| Parameter | Description | Type | Default | Required | Hidden |
-|-----------|-----------|-----------|-----------|-----------|-----------|
-| `bedfile` | BED file of the sequencing panel used for VCF generation | `string` |  |  |  |
+| Parameter | Description                                                                                      | Type      | Default | Required | Hidden |
+| --------- | ------------------------------------------------------------------------------------------------ | --------- | ------- | -------- | ------ |
+| `bedfile` | BED file of the sequencing panel used for VCF generation                                         | `string`  |         |          |        |
+| `tag_roi` | Enables tagging of variant calls outside of "regions-of-interest". Requires a provided `bedfile` | `boolean` | `false` |          |        |
 
 ## Annotation options
 
