@@ -98,7 +98,6 @@ The following table gives an overview about the criteria that are checked and po
 
 #### Pre-annotation VCF filter
 
-This is an optional step activated and controlled through the `--filter_vcf` parameter.
 It can filter VCF files based on flags in the FILTER column using [`bcftools view`](https://samtools.github.io/bcftools/bcftools.html#view).
 This can be enabled with the `--filter_vcf` parameter providing flag names for the VCF FILTER column to be kept (e.g., "PASS").
 This step is placed prior to annotation to improve runtime if, e.g., lots of low-quality variants are removed.
