@@ -39,7 +39,7 @@
                     },
                     "ensemblvep/vep": {
                         "branch": "master",
-                        "git_sha": "e1938f8ecb13b9b82ff488d4b35269c84aa965e8",
+                        "git_sha": "54c183cba37cac58860d9967feaae54acf9cc3e0",
                         "installed_by": ["modules"],
                         "patch": "modules/nf-core/ensemblvep/vep/ensemblvep-vep.diff"
                     },

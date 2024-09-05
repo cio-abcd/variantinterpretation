@@ -45,7 +45,8 @@ process ENSEMBLVEP_VEP {
         --cache \\
         --cache_version $cache_version \\
         --dir_cache $dir_cache \\
-        --fork $task.cpus
+        --fork $task.cpus \\
+        --stats_file ${prefix}.summary.html
 
 
     cat <<-END_VERSIONS > versions.yml

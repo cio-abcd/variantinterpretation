@@ -1,17 +1,6 @@
 Changes in module 'nf-core/ensemblvep/vep'
 --- modules/nf-core/ensemblvep/vep/main.nf
 +++ modules/nf-core/ensemblvep/vep/main.nf
-@@ -4,8 +4,8 @@
- 
-     conda "${moduleDir}/environment.yml"
-     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
--        'https://depot.galaxyproject.org/singularity/ensembl-vep:111.0--pl5321h2a3209d_0' :
--        'biocontainers/ensembl-vep:111.0--pl5321h2a3209d_0' }"
-+        'https://depot.galaxyproject.org/singularity/ensembl-vep:112.0--pl5321h2a3209d_0' :
-+        'biocontainers/ensembl-vep:112.0--pl5321h2a3209d_0' }"
- 
-     input:
-     tuple val(meta), path(vcf), path(custom_extra_files)
 @@ -36,7 +36,7 @@
      """
      vep \\
@@ -21,7 +10,17 @@ Changes in module 'nf-core/ensemblvep/vep'
          $args \\
          $compress_cmd \\
          $reference \\
-@@ -57,9 +57,9 @@
+@@ -45,7 +45,8 @@
+         --cache \\
+         --cache_version $cache_version \\
+         --dir_cache $dir_cache \\
+-        --fork $task.cpus
++        --fork $task.cpus \\
++        --stats_file ${prefix}.summary.html
+ 
+ 
+     cat <<-END_VERSIONS > versions.yml
+@@ -57,9 +58,9 @@
      stub:
      def prefix = task.ext.prefix ?: "${meta.id}"
      """
@@ -34,14 +33,5 @@ Changes in module 'nf-core/ensemblvep/vep'
      touch ${prefix}_summary.html
  
      cat <<-END_VERSIONS > versions.yml
-
---- modules/nf-core/ensemblvep/vep/environment.yml
-+++ modules/nf-core/ensemblvep/vep/environment.yml
-@@ -4,4 +4,4 @@
-   - bioconda
-   - defaults
- dependencies:
--  - bioconda::ensembl-vep=111.0
-+  - bioconda::ensembl-vep=112.0
 
 ************************************************************
