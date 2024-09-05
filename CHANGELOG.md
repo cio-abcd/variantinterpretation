@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support merging of vcf files according to issue #36
 - updated nf-core modules
 
+### Changed
+
+- moved scripts from bin/ to their respective module/resources/usr/bin
+- factored out VARIANTINTERPRETATION_CORE without MULTIQC from VARIANTINTERPRETATION workflow
+
 ### `Fixed`
 
 - fixed vembrane error by updating vembrane to 1.0.6 (Issue #46)
