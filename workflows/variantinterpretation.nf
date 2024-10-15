@@ -39,8 +39,8 @@ include { DUMP_WARNINGS               } from '../modules/local/multiqcreport_war
 workflow VARIANTINTERPRETATION {
 
     take:
-    ch_samplesheet  // channel: samplesheet read in from --input
-    ch_fasta           // channel: fasta file
+    ch_samplesheet
+    ch_fasta
     ch_vep_cache
     ch_vep_cache_version
     ch_vep_genome
