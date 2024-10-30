@@ -36,7 +36,6 @@ include { DUMP_WARNINGS               } from '../modules/local/multiqcreport_war
     RUN MAIN WORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-
 workflow VARIANTINTERPRETATION {
 
     take:
@@ -55,7 +54,6 @@ workflow VARIANTINTERPRETATION {
     ch_custom_filters
 
     main:
-
     // gather versions of each process
     ch_versions = Channel.empty()
     // gather QC reports for multiQC
@@ -71,6 +69,7 @@ workflow VARIANTINTERPRETATION {
     if (!params.tsv && params.calculate_tmb) error("ERROR: Need to create TSV file for calculating TMB.")
     if (!params.bedfile && params.calculate_tmb) error("ERROR: Need to specify bedfile for calculating TMB.")
     if (!params.read_depth && params.calculate_tmb) error("ERROR: Need to specify the read_depth FORMAT field for calculating TMB.")
+
 
     //
     // Index vcf and reference files
@@ -215,6 +214,29 @@ workflow VARIANTINTERPRETATION {
             }
         }
     }
+
+    emit:
+    ch_versions
+    ch_multiqc_files
+    ch_warnings
+
+}
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    RUN MAIN WORKFLOW WITH MULTIQC
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+workflow MULTIQC_REPORT {
+
+    take:
+
+    ch_versions
+    ch_multiqc_files
+    ch_warnings
+
+    main:
 
     //
     // Collate and save software versions

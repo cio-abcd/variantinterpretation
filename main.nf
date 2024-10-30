@@ -15,7 +15,7 @@ nextflow.enable.dsl = 2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { VARIANTINTERPRETATION   } from './workflows/variantinterpretation'
+include { VARIANTINTERPRETATION; MULTIQC_REPORT   } from './workflows/variantinterpretation'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_variantinterpretation_pipeline'
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_variantinterpretation_pipeline'
 include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_variantinterpretation_pipeline'
@@ -92,8 +92,18 @@ workflow CIOABCD_VARIANTINTERPRETATION {
         ch_custom_filters
     )
 
+    ch_versions = VARIANTINTERPRETATION.out.ch_versions
+    ch_multiqc_files = VARIANTINTERPRETATION.out.ch_multiqc_files
+    ch_warnings = VARIANTINTERPRETATION.out.ch_warnings
+
+    MULTIQC_REPORT (
+        ch_versions,
+        ch_multiqc_files,
+        ch_warnings,
+    )
+
     emit:
-    multiqc_report = VARIANTINTERPRETATION.out.multiqc_report // channel: /path/to/multiqc_report.html
+    multiqc_report = MULTIQC_REPORT.out.multiqc_report // channel: /path/to/multiqc_report.html
 
 }
 /*
