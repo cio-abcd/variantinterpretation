@@ -52,7 +52,7 @@ VEP-related options for annotation of VCF files
 | `vep_genome` | Specify the genome used for VEP. | `string` | GRCh38 |  |  |
 | `vep_species` | Specify the species used for VEP | `string` | homo_sapiens |  |  |
 | `vep_cache` | Define offline cache used for VEP. <details><summary>Help</summary><small>Define offline cache used for VEP. Mandatory for running VEP. Has to be a file path.</small></details>| `string` |  |  |  |
-| `vep_cache_version` | Version of VEP cache to use. <details><summary>Help</summary><small>Should always match the implemented VEP tool version.</small></details>| `string` | 110 |  |  |
+| `vep_cache_version` | Version of VEP cache to use. <details><summary>Help</summary><small>Should always match the implemented VEP tool version.</small></details>| `string` | 113 |  |  |
 | `vep_cache_source` | Specified VEP cache. Either Ensembl (default, null), Refseq or merged. <details><summary>Help</summary><small>Leave empty (null) if ensembl (standard) cache is used.</small></details>| `string` |  |  |  |
 | `check_existing` | Annotate dbSNP or other co-located databases. | `boolean` | True |  |  |
 | `everything` | Adds lots of standard flags for annotation with VEP. | `boolean` | True |  |  |

@@ -140,7 +140,7 @@
                 },
                 "vep_cache_version": {
                     "type": "string",
-                    "default": 112,
+                    "default": 113,
                     "description": "Version of VEP cache to use.",
                     "help_text": "Should always match the implemented VEP tool version."
                 },
@@ -317,12 +317,12 @@
                 },
                 "min_af": {
                     "type": "number",
-                    "default": 0,
+                    "default": 0.0,
                     "description": "Minimal allele frequency cutoff for TMB calculation"
                 },
                 "max_af": {
                     "type": "number",
-                    "default": 1,
+                    "default": 1.0,
                     "description": "Maximal allele frequency cutoff for TMB calculation"
                 },
                 "min_cov": {
@@ -569,17 +569,41 @@
         }
     },
     "allOf": [
-        { "$ref": "#/definitions/input_output_options" },
-        { "$ref": "#/definitions/vcf_normalization" },
-        { "$ref": "#/definitions/reference_genome_options" },
-        { "$ref": "#/definitions/preprocessing_options" },
-        { "$ref": "#/definitions/annotation_options" },
-        { "$ref": "#/definitions/annotation_filtering_option" },
-        { "$ref": "#/definitions/tsv_conversion_options" },
-        { "$ref": "#/definitions/html_report" },
-        { "$ref": "#/definitions/tmb_calculation_options" },
-        { "$ref": "#/definitions/institutional_config_options" },
-        { "$ref": "#/definitions/max_job_request_options" },
-        { "$ref": "#/definitions/generic_options" }
+        {
+            "$ref": "#/definitions/input_output_options"
+        },
+        {
+            "$ref": "#/definitions/vcf_normalization"
+        },
+        {
+            "$ref": "#/definitions/reference_genome_options"
+        },
+        {
+            "$ref": "#/definitions/preprocessing_options"
+        },
+        {
+            "$ref": "#/definitions/annotation_options"
+        },
+        {
+            "$ref": "#/definitions/annotation_filtering_option"
+        },
+        {
+            "$ref": "#/definitions/tsv_conversion_options"
+        },
+        {
+            "$ref": "#/definitions/html_report"
+        },
+        {
+            "$ref": "#/definitions/tmb_calculation_options"
+        },
+        {
+            "$ref": "#/definitions/institutional_config_options"
+        },
+        {
+            "$ref": "#/definitions/max_job_request_options"
+        },
+        {
+            "$ref": "#/definitions/generic_options"
+        }
     ]
 }

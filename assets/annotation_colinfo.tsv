@@ -29,6 +29,7 @@ FILTER	vcf filter	vcf	normal	string	filter_vep_pass=#008000
 Feature_type	feature type	genome_feature	normal	string
 BIOTYPE	feature biotype	genome_feature	normal	string
 Feature	feature ID	genome_feature	normal	string
+MANE	MANE	genome_feature	normal	string	MANE_Select=#008000
 MANE_SELECT	MANE transcript ID	genome_feature	detail	string
 MANE_PLUS_CLINICAL	MANE Plus Clinical transcript ID	genome_feature	detail	string
 INTRON	intron	genome_feature	detail	string
@@ -74,7 +75,8 @@ gnomADe_ASJ_AF	gnomADe_ASJ_AF	population_frequency	detail	float	min=0,max=1
 gnomADe_EAS_AF	gnomADe_EAS_AF	population_frequency	detail	float	min=0,max=1
 gnomADe_FIN_AF	gnomADe_FIN_AF	population_frequency	detail	float	min=0,max=1
 gnomADe_NFE_AF	gnomADe_NFE_AF	population_frequency	detail	float	min=0,max=1
-gnomADe_OTH_AF	gnomADe_OTH_AF	population_frequency	detail	float	min=0,max=1
+gnomADe_REMAINING_AF	gnomADe_REMAINING_AF	population_frequency	detail	float	min=0,max=1
+gnomADe_MID_AF	gnomADe_MID_AF	population_frequency	detail	float	min=0,max=1
 gnomADe_SAS_AF	gnomADe_SAS_AF	population_frequency	detail	float	min=0,max=1
 gnomADg_AF	gnomADg_AF	population_frequency	normal	float	min=0,max=1
 gnomADg_AFR_AF	gnomADg_AFR_AF	population_frequency	detail	float	min=0,max=1
@@ -85,7 +87,7 @@ gnomADg_EAS_AF	gnomADg_EAS_AF	population_frequency	detail	float	min=0,max=1
 gnomADg_FIN_AF	gnomADg_FIN_AF	population_frequency	detail	float	min=0,max=1
 gnomADg_MID_AF	gnomADg_MID_AF	population_frequency	detail	float	min=0,max=1
 gnomADg_NFE_AF	gnomADg_NFE_AF	population_frequency	detail	float	min=0,max=1
-gnomADg_OTH_AF	gnomADg_OTH_AF	population_frequency	detail	float	min=0,max=1
+gnomADg_REMAINING_AF	gnomADg_REMAINING_AF	population_frequency	detail	float	min=0,max=1
 gnomADg_SAS_AF	gnomADg_SAS_AF	population_frequency	detail	float	min=0,max=1
 MOTIF_NAME	MOTIF_NAME	transcription_factor	normal	string
 MOTIF_POS	MOTIF_POS	transcription_factor	normal	integer
