@@ -239,7 +239,7 @@
                 "used_filters": {
                     "type": "string",
                     "description": "Define which filters from `custom_filters` will be used to subset VCF files and create separate TSV and HTML files.",
-                    "help_text": "Needs to match the filter name from `custom_filters`. Multiple filters can be defined (space-separated), but not combined."
+                    "help_text": "Needs to match the filter name from `custom_filters`. Multiple filters can be defined (comma-separated), but not combined."
                 }
             }
         },
@@ -269,16 +269,16 @@
                 "annotation_fields": {
                     "type": "string",
                     "default": "all",
-                    "description": "Comma-separated CSQ string with annotation fields from VEP annotation to include in TSV output. Can extract all annotation fields with 'all' (default)."
+                    "description": "Comma-separated CSQ field name with annotation fields from VEP annotation to include in TSV output. Can extract all annotation fields with 'all' (default)."
                 },
                 "format_fields": {
                     "type": "string",
-                    "default": "GT AD[0] AD[1]",
-                    "description": "Comma-separated fields with FORMAT fields from VCF FORMAT column to include in TSV output. Can include, e.g., allelic depth, fraction and coverage."
+                    "default": "GT,AD[0],AD[1]",
+                    "description": "Comma-separated FORMAT field name from VCF FORMAT column to include in TSV output. Can include, e.g., allelic depth, fraction and coverage."
                 },
                 "info_fields": {
                     "type": "string",
-                    "description": "Comma-separated fields with INFO fields from VCF INFO column to include in TSV output."
+                    "description": "Comma-separated INFO field name from VCF INFO column to include in TSV output."
                 }
             }
         },
