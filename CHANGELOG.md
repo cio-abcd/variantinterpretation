@@ -3,6 +3,12 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## dev
+
+### `Fixed`
+
+- fixed comma-separated input from parameters `used_filter`, `annotation_fields`, `info_fields` and `format_fields` (Issue #39)
+
 ## v1.1.0 - [1st September 2025]
 
 ### `Added`
