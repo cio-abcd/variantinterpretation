@@ -29,7 +29,7 @@ workflow VARIANTFILTER {
     ch_versions = ch_versions.mix(VEMBRANE_TAG.out.versions)
 
     // split VCF files by used filters
-    ch_filters = Channel.of(params.used_filters.split())
+    ch_filters = Channel.of(params.used_filters.split(","))
     VEMBRANE_FILTER(VEMBRANE_TAG.out.vcf,
                     ch_filters
     )

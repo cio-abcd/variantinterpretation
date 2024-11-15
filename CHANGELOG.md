@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - fixed vembrane error by updating vembrane to 1.0.6 (PR #48, Issue #46)
 - fixed samtools dict from getSimpleName to getBaseName (PR #43, Issue #42)
+- fixed comma-separated input from parameters `used_filter`, `annotation_fields`, `info_fields` and `format_fields` (Issue #39)
 
 ### `Dependencies`
 
