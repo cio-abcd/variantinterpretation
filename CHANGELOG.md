@@ -7,15 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Added`
 
-- support multi-sample VCF files according to issue #35
-- updated nf-core template and restructured workflow
-- support merging of vcf files according to issue #36
-- updated nf-core modules
+- support multi-sample VCF files (Issue #35)
+- updated nf-core template and restructured workflow (PR #47)
+- support merging of vcf files (Issue #36)
+- updated nf-core modules (PR #50)
 
 ### Changed
 
-- moved scripts from bin/ to their respective module/resources/usr/bin
-- factored out VARIANTINTERPRETATION_CORE without MULTIQC from VARIANTINTERPRETATION workflow
+- increase compatibility with calling workflow from another pipeline (PR #52)
+    - moved scripts from bin/ to their respective module/resources/usr/bin
+    - factored out MULTIQC from VARIANTINTERPRETATION workflow and called separately in main.nf
 
 ### `Fixed`
 
