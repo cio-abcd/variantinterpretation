@@ -20,7 +20,7 @@ Define where the pipeline should find input data and save output data.
 | Parameter | Description | Type | Default | Required | Hidden |
 |-----------|-----------|-----------|-----------|-----------|-----------|
 | `left_align_indels` | Enables left-alignment of Indels using bcftools norm. | `boolean` |  |  |  |
-| `filter_vcf` | Only keep vcf entries which FILTER columns match the vcffilter expression. Leave empty to disable filtering. | `string` |  |  |  |
+| `filter_vcf` | Only keep vcf entries which FILTER columns match the specified single string. Set to null to disable filtering. | `string` |  |  |  |
 | `merge_vcfs` | If true, uses bcftools merge to create multi-sample VCF files of all files within the same group. The group can be specified as additional column in the samplesheet.csv. | `boolean` |  |  |  |
 
 ## Reference genome options
@@ -51,9 +51,9 @@ VEP-related options for annotation of VCF files
 | `vep_out_format` | Output format for VEP | `string` | vcf |  |  |
 | `vep_genome` | Specify the genome used for VEP. | `string` | GRCh38 |  |  |
 | `vep_species` | Specify the species used for VEP | `string` | homo_sapiens |  |  |
-| `vep_cache` | Define offline cache used for VEP. <details><summary>Help</summary><small>Define offline cache used for VEP. Mandatory for running VEP. Has to be a file path.</small></details>| `string` |  |  |  |
+| `vep_cache` | Define path to offline cache used for VEP. <details><summary>Help</summary><small>Define offline cache used for VEP. Mandatory for running VEP. Has to be a file path.</small></details>| `string` |  |  |  |
 | `vep_cache_version` | Version of VEP cache to use. <details><summary>Help</summary><small>Should always match the implemented VEP tool version.</small></details>| `string` | 113 |  |  |
-| `vep_cache_source` | Specified VEP cache. Either Ensembl (default, null), Refseq or merged. <details><summary>Help</summary><small>Leave empty (null) if ensembl (standard) cache is used.</small></details>| `string` |  |  |  |
+| `vep_cache_source` | Specified VEP cache type. Either Ensembl (default, null), Refseq or merged. <details><summary>Help</summary><small>Leave empty (null) if ensembl (standard) cache is used.</small></details>| `string` |  |  |  |
 | `check_existing` | Annotate dbSNP or other co-located databases. | `boolean` | True |  |  |
 | `everything` | Adds lots of standard flags for annotation with VEP. | `boolean` | True |  |  |
 | `no_escape` | Do not escape characters as "=" in HGSV strings. | `boolean` | True |  |  |
@@ -72,10 +72,10 @@ Options for filtering VCF files
 
 | Parameter | Description | Type | Default | Required | Hidden |
 |-----------|-----------|-----------|-----------|-----------|-----------|
-| `transcriptfilter` | Transcript annotation column for filtering. <details><summary>Help</summary><small>If variant does not have any match, all annotation will be removed and variant is flagged in FILTER column.<br>Can work simultaneously with "transcriptfilter" param.</small></details>| `string` |  |  |  |
-| `transcriptlist` | List of transcripts for filtering. <details><summary>Help</summary><small>If variant does not have any match, all annotation will be removed and variant is flagged in FILTER column.<br>Can work simultaneously with "transcriptfilter" param.</small></details>| `string` | [] |  |  |
+| `transcriptfilter` | Name of annotation column that should be used to filter for transcripts, e.g. 'PICK' in the VEP cache. <details><summary>Help</summary><small>If the variant does not have any transcript annotation in the respective column, all annotations will be removed and variant is flagged in FILTER column.<br>Can work simultaneously with "transcriptlist" parameter.</small></details>| `string` |  |  |  |
+| `transcriptlist` | List of transcripts for filtering. <details><summary>Help</summary><small>If the variant does not have any matching transcript, all annotations will be removed and variant is flagged in FILTER column.<br>Can work simultaneously with "transcriptfilter" parameter.</small></details>| `string` | [] |  |  |
 | `custom_filters` | TSV file defining custom filters for VCF files. VCF files will be tagged with those filters in the FILTER column. <details><summary>Help</summary><small>The TSV files needs two columns: The first column contains the name of the filter (letters, numbers and underscores allowed), the second column a valid python expression defining the filter. The python expression has to follow the guidelines for vembrane, also see here: https://github.com/vembrane/vembrane#filter-expression. An example can be found in assets/custom_filters.tsv.</small></details>| `string` |  |  |  |
-| `used_filters` | Define which filters from `custom_filters` will be used to subset VCF files and create separate TSV and HTML files. <details><summary>Help</summary><small>Needs to match the filter name from `custom_filters`. Multiple filters can be defined (space-separated), but not combined.</small></details>| `string` |  |  |  |
+| `used_filters` | Define which filters from `custom_filters` will be used to subset VCF files and create separate TSV and HTML files. <details><summary>Help</summary><small>Needs to match the filter name from `custom_filters`. Multiple filters can be defined (comma-separated), but not combined.</small></details>| `string` |  |  |  |
 
 ## TSV conversion options
 
@@ -86,9 +86,9 @@ Options for filtering VCF files
 | `tsv` | Convert annotated VCF file into TSV format | `boolean` | True |  |  |
 | `allele_fraction` | Specify how to extract and calculate the allele fraction from the VCF file. <details><summary>Help</summary><small>The allele fraction (AF) of a variant is not always reported directly in the VCF file, but encoded indirectly in the FORMAT column. The AF is extracted or calculated  in the `vembrane table` module.   <br>Within the FORMAT column are some standard fields from which the AF can be calculated:   <br><br>- **DP:** Depth or coverage, number of reads at this position.  <br>- **AD:** Allelic depth, Number of reads supporting REF and ALT alleles (comma-separated, can be addressed with [0] or [1] as index)  <br><br>Dividing the allelic depth by the coverage gives the AF, which can be invoked with `FORMAT_AD`. Some VCF files also directly encode the AF in the FORMAT column as `AF` field, which can be invoked with `FORMAT_AF`.  <br>For the following variant callers, some defaults were specified that can be invoked by the name of the caller:  <br><br>- **Freebayes** uses the `FORMAT_AD` method dividing ALT allele readnumbers (AD[1]) by depth (DP)   <br>- **Mutect2** uses the AF field in the FORMAT column as defined in `FORMAT_AF` method. It is a probabilistic AF estimate, hence it is different compared to AF calculated with DP and AD column. Additionally, the DP field is also in the INFO column and will be extracted, which can be greater as the DP field in the FORMAT column as it also contains uninformative reads. So there can be three different ways of calculating the AF. Sources: [[1]](https://gatk.broadinstitute.org/hc/en-us/community/posts/4566282375835-Mutect2-AF-does-not-match-AD-and-DP),[[2]](https://github.com/broadinstitute/gatk/issues/6067),[[3]](https://gatk.broadinstitute.org/hc/en-us/articles/360035532252-Allele-Depth-AD-is-lower-than-expected). </small></details>| `string` | FORMAT_AD |  |  |
 | `read_depth` | Specify from which FORMAT field to extract read depth.  This will specify the column named "read_depth" in the output report and TSV file.. | `string` | DP |  |  |
-| `annotation_fields` | Comma-separated CSQ string with annotation fields from VEP annotation to include in TSV output. Can extract all annotation fields with 'all' (default). | `string` | all |  |  |
-| `format_fields` | Comma-separated fields with FORMAT fields from VCF FORMAT column to include in TSV output. Can include, e.g., allelic depth, fraction and coverage. | `string` | GT AD[0] AD[1] |  |  |
-| `info_fields` | Comma-separated fields with INFO fields from VCF INFO column to include in TSV output. | `string` |  |  |  |
+| `annotation_fields` | Comma-separated CSQ field names with annotation fields from VEP annotation to include in TSV output. Can extract all annotation fields with 'all' (default). | `string` | all |  |  |
+| `format_fields` | Comma-separated FORMAT field names from VCF FORMAT column to include in TSV output. Can include, e.g., allelic depth, fraction and coverage. | `string` | GT,AD[0],AD[1] |  |  |
+| `info_fields` | Comma-separated INFO field names from VCF INFO column to include in TSV output. | `string` |  |  |  |
 
 ## HTML report
 
