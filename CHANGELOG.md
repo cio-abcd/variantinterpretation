@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Added`
 
-- support multi-sample VCF files (Issue #35)
+- support multi-sample VCF files (PR #44, Issue #35)
 - updated nf-core template and restructured workflow (PR #47)
-- support merging of vcf files (Issue #36)
+- support merging of vcf files (PR #49, Issue #36)
 - updated nf-core modules (PR #50)
 
 ### Changed
@@ -20,7 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Fixed`
 
-- fixed vembrane error by updating vembrane to 1.0.6 (Issue #46)
+- fixed vembrane error by updating vembrane to 1.0.6 (PR #48, Issue #46)
+- fixed samtools dict from getSimpleName to getBaseName (PR #43, Issue #42)
 
 ### `Dependencies`
 
