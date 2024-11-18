@@ -1,1 +1,1 @@
-##INFO=<ID=ROI,Number=1,Type=String,Description="Region is present in the provided BED file">
+##INFO=<ID=ROI,Number=1,Type=String,Description="Region is present in the target regions BED file specified in variantinterpretation pipeline">

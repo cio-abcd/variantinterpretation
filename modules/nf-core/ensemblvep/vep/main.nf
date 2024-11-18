@@ -36,7 +36,7 @@ process ENSEMBLVEP_VEP {
     """
     vep \\
         -i $vcf \\
-        -o ${prefix}.ann.${file_extension}.gz \\
+        -o ${prefix}.${file_extension}.gz \\
         $args \\
         $compress_cmd \\
         $reference \\
@@ -58,9 +58,9 @@ process ENSEMBLVEP_VEP {
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    echo "" | gzip > ${prefix}.ann.vcf.gz
-    echo "" | gzip > ${prefix}.ann.tab.gz
-    echo "" | gzip > ${prefix}.ann.json.gz
+    echo "" | gzip > ${prefix}.vcf.gz
+    echo "" | gzip > ${prefix}.tab.gz
+    echo "" | gzip > ${prefix}.json.gz
     touch ${prefix}_summary.html
 
     cat <<-END_VERSIONS > versions.yml

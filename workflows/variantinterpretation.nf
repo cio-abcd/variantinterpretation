@@ -119,22 +119,18 @@ workflow VARIANTINTERPRETATION {
         TAGROI (    ch_bedfile,
                     vcf_tbi)
         ch_versions = ch_versions.mix(TAGROI.out.versions)
+        tagroi_vcf=TAGROI.out.vcf_tbi
+    } else {
+        tagroi_vcf=vcf_tbi
     }
 
     //
     // VCF filtering and normalization
     //
-
-    if (params.tag_roi) {
-        VCFPROC (
-            TAGROI.out.vcf_tbi,
+    VCFPROC (
+            tagroi_vcf,
             ch_fasta
-        ) } else {
-        VCFPROC (
-            vcf_tbi,
-            ch_fasta
-        )
-    }
+    )
     ch_versions = ch_versions.mix(VCFPROC.out.versions)
 
     //
