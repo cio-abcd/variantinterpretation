@@ -12,6 +12,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 - [Pre-annotation output](#pre-annotation-output)
   - [vcf checks](#vcf-checks) - Checks VCF files for structure, integrity and several other criteria.
+  - [region-of-interest tagging](#roi-tagging) - Tags VCF calls based on regions-of-interest in the provided BED file
   - [vcf preprocessing](#vcf-preprocessing) - Filters and normalizes variants.
   - [vcf merging](#vcf-merging) - Merges VCF files based on groups.
 - [Post-annotation output](#post-annotation-output)
@@ -39,6 +40,17 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 </details>
 
 This module checks the VCF file for structure, integrity and several criteria to avoid misleading pipeline errors.
+
+#### Region-of-Interest Tagging
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `vcfs/tag_roi`: VCFs tagged based on provided BED file as gzipped vcf files
+
+</details>
+
+This optional preprocessing step tags mutations outside of the provided "regions-of-interest" defined in the provided BED file for each VCF as "not_in_ROI". Downstream processing allows for direct filtering of non-ROI calls by passing the `--filter_pass = '"PASS"'` to `vcf preprocessing`
 
 #### VCF preprocessing
 

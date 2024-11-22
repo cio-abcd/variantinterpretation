@@ -4,7 +4,8 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { CHECKBEDFILE		                        } from '../modules/local/checkbedfile'
+include { CHECKBEDFILE		                        } from '../modules/local/bedfile/checkbedfile/main'
+include { TAGROI                                    } from '../subworkflows/local/vcf_roi_tagging/main'
 include { BCFTOOLS_INDEX                            } from '../modules/nf-core/bcftools/index/main'
 include { SAMTOOLS_DICT                             } from '../modules/nf-core/samtools/dict/main'
 include { SAMTOOLS_FAIDX                            } from '../modules/nf-core/samtools/faidx/main'
@@ -67,6 +68,7 @@ workflow VARIANTINTERPRETATION {
     if (!params.vep) log.warn("WARNING: You deactivated VEP-based annotation. Downstream processes are working properly only with VEP-annotated VCF file as input!")
     if (!params.tsv && params.report) error("ERROR: Needs to create TSV file for generating HTML report.")
     if (!params.tsv && params.calculate_tmb) error("ERROR: Need to create TSV file for calculating TMB.")
+    if (!params.bedfile && params.tag_roi) error("ERROR: Need to specify bedfile for region-of-interest tagging.")
     if (!params.bedfile && params.calculate_tmb) error("ERROR: Need to specify bedfile for calculating TMB.")
     if (!params.read_depth && params.calculate_tmb) error("ERROR: Need to specify the read_depth FORMAT field for calculating TMB.")
 
@@ -111,12 +113,23 @@ workflow VARIANTINTERPRETATION {
     }
 
     //
+    // ROI-tagging of VCF entries
+    //
+    if (params.tag_roi && CHECKBEDFILE.out.bed_valid) {
+        TAGROI (    ch_bedfile,
+                    vcf_tbi)
+        ch_versions = ch_versions.mix(TAGROI.out.versions)
+        tagroi_vcf=TAGROI.out.vcf_tbi
+    } else {
+        tagroi_vcf=vcf_tbi
+    }
+
+    //
     // VCF filtering and normalization
     //
-
     VCFPROC (
-        vcf_tbi,
-        ch_fasta
+            tagroi_vcf,
+            ch_fasta
     )
     ch_versions = ch_versions.mix(VCFPROC.out.versions)
 

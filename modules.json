@@ -5,6 +5,11 @@
         "https://github.com/nf-core/modules.git": {
             "modules": {
                 "nf-core": {
+                    "bcftools/annotate": {
+                        "branch": "master",
+                        "git_sha": "c1a7fa1c038061b344f2a41be71942061ec40d2e",
+                        "installed_by": ["modules"]
+                    },
                     "bcftools/index": {
                         "branch": "master",
                         "git_sha": "a5ba4d59c2b248c0379b0f8aeb4e7e754566cd1f",
@@ -78,6 +83,16 @@
                         "installed_by": [
                             "modules"
                         ]
+                    },
+                    "tabix/bgzip": {
+                        "branch": "master",
+                        "git_sha": "b20be35facfc5acdc1259f132ed79339d79e989f",
+                        "installed_by": ["modules"]
+                    },
+                    "tabix/tabix": {
+                        "branch": "master",
+                        "git_sha": "0840b387799172e77510393ed09e4d4ec1bc6d7c",
+                        "installed_by": ["modules"]
                     }
                 }
             },
