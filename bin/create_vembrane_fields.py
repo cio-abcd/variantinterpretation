@@ -136,14 +136,14 @@ if __name__ == "__main__":
                 'for_each_sample(lambda s: FORMAT["AF"][s] if FORMAT["AF"][s] else None)'
             )
             header_strings.append(
-                'for_each_sample(lambda sample: f"allele_fraction{sample}")'
+                'for_each_sample(lambda sample: f"allele_fraction[{sample}")'
             )
         elif args.allele_fraction in ["freebayes", "FORMAT_AD"]:
             vembrane_strings.append(
                 'for_each_sample(lambda s: FORMAT["AD"][s][1]/FORMAT["DP"][s] if FORMAT["AD"][s][1] and FORMAT["DP"][s] else None)'
             )
             header_strings.append(
-                'for_each_sample(lambda sample: f"allele_fraction{sample}")'
+                'for_each_sample(lambda sample: f"allele_fraction[{sample}]")'
             )
         else:
             raise ValueError("ERROR: Did not specify correct allele_fraction.")
@@ -153,7 +153,7 @@ if __name__ == "__main__":
         vembrane_strings.append(
             'for_each_sample(lambda s: FORMAT["' + str(args.read_depth) + '"][s])'
         )
-        header_strings.append('for_each_sample(lambda sample: f"read_depth{sample}]")')
+        header_strings.append('for_each_sample(lambda sample: f"read_depth[{sample}]")')
 
     if args.format_fields:
         # Formatting the FORMAT fields.
