@@ -18,25 +18,30 @@ def parse_args(argv=None):
     """Define and immediately parse command line arguments."""
     parser = argparse.ArgumentParser(
         description="Calculate TMB and plot AF distribution",
-        epilog="Example: python3 calculate_TMB.py input.tsv",
+        epilog="Example: python3 calculate_TMB.py --file_in input.tsv --sampleindex SAMPLE01",
     )
     parser.add_argument(
         "--file_in",
         metavar="file_in",
         type=Path,
-        help="Input tsv file of the vembrane TSV converter module",
+        help="Input TSV file of the vembrane TSV converter module",
     )
     parser.add_argument(
         "--sampleindex",
         metavar="sampleindex",
         type=str,
-        help="sampleindex based on meta.id of the input file"
+        help="Sample index based on meta.id of the input file",
     )
     parser.add_argument(
         "--bedfile",
         metavar="bedfile",
         type=Path,
-        help="Path to the provided BED-file with .bed suffix.",
+        help="Path to the provided BED file with .bed suffix.",
+    )
+    parser.add_argument(
+        "--prefilter_region",
+        action="store_true",
+        help="Filter the TMB calculation to only the defined bedfile range.",
     )
     parser.add_argument(
         "--panelsize_threshold",
@@ -177,6 +182,30 @@ def filter_retainMNV(TMB_inputfile):
     TMB_return = pd.concat([TMB_SNVs, TMB_MNVs])
     return TMB_return
 
+def filter_bedrange(TMB_inputfile, bedfile):
+    ### Separate filter for ROI independant of tag_roi
+    ### Read bedfile and convert to range
+    panel_data = pd.read_csv(bedfile, sep="\t", header=None)
+    panel_data = panel_data.iloc[:, 0:3]
+    panel_data.columns = ["Chromosome", "Start", "End"]
+    panel_range = pr.PyRanges(panel_data)
+    ### Read in data
+    TMB_prefilt = TMB_inputfile.copy()
+    TMB_prefilt = TMB_prefilt[["CHROM", "POS"]].rename(columns={"CHROM": "Chromosome", "POS": "Start"})
+    TMB_prefilt['End'] = TMB_prefilt['Start']
+    TMB_range = pr.PyRanges(TMB_prefilt)
+    ### Create intersection and return ROI-filtered dataframe
+    TMB_intersect = panel_range.intersect(TMB_range)
+    TMB_intersect_df = TMB_intersect.df.rename(columns={"Chromosome": "CHROM", "Start": "POS"}).iloc[:,0:2]
+    ### Check if the intersection df is not empty and pass a warning parameter to output writer
+    if len(TMB_intersect_df.index) > 0:
+        TMB_filt = pd.merge(TMB_inputfile, TMB_intersect_df[["CHROM", "POS"]], on=["CHROM", "POS"])
+        is_notempty = True
+        return (TMB_filt, is_notempty)
+    else:
+        TMB_filt = TMB_inputfile
+        is_notempty = False
+        return (TMB_filt, is_notempty)
 
 def check_bed_size(bedfile, breaking_thresh):
     panel_data = pd.read_csv(bedfile, sep="\t", header=None)
@@ -245,7 +274,7 @@ def process_single_sample(args, suffix):
     TMB_df, filtering_rates_total = preprocess_vembraneout(
         args.file_in, allele_fraction, read_depth, args.filter_muttype, args.population_db
     )
-    process_data(args, TMB_df, filtering_rates_total, allele_fraction, read_depth, args.file_out, args.plot_out)
+    process_data(args, TMB_df, filtering_rates_total, args.prefilter_region, args.bedfile, allele_fraction, read_depth, args.file_out, args.plot_out)
 
 
 def process_multi_sample(args, suffix_list):
@@ -259,10 +288,10 @@ def process_multi_sample(args, suffix_list):
         TMB_df, filtering_rates_total = preprocess_vembraneout(
             args.file_in, allele_fraction, read_depth, args.filter_muttype, args.population_db
         )
-        process_data(args, TMB_df, filtering_rates_total, allele_fraction, read_depth, output_filename, output_plotname)
+        process_data(args, TMB_df, filtering_rates_total, args.prefilter_region, args.bedfile, allele_fraction, read_depth, output_filename, output_plotname)
 
 
-def process_data(args, TMB_df, filtering_rates_total, allele_fraction, read_depth, output_file, output_plot):
+def process_data(args, TMB_df, filtering_rates_total, prefilter_region, bedfile, allele_fraction, read_depth, output_file, output_plot):
     ### Basically what main did before
     ### Processes data based on thresholds and filter conditions to generate the output txt files
     is_eligible, panel_size = check_bed_size(args.bedfile, args.panelsize_threshold)
@@ -272,6 +301,9 @@ def process_data(args, TMB_df, filtering_rates_total, allele_fraction, read_dept
             "The calculation was not performed as the panel_size is below the allowed threshold."
         )
         return
+
+    if prefilter_region == True:
+        TMB_df, is_notempty = filter_bedrange(TMB_df, bedfile)
 
     TMB_covfilt, filtering_rates_cov = coverage_filter(TMB_df, read_depth, args.min_cov)
     TMB_affilt, filtering_rates_af = allelefrequency_filter(
@@ -296,6 +328,7 @@ def process_data(args, TMB_df, filtering_rates_total, allele_fraction, read_dept
     write_output(
         output_file,
         filtering_rates_total,
+        args.prefilter_region,
         args.filter_muttype,
         args.min_cov,
         args.min_AF,
@@ -304,13 +337,23 @@ def process_data(args, TMB_df, filtering_rates_total, allele_fraction, read_dept
         args.popfreq_max,
         TMB_value,
         panel_size,
+        is_notempty,
     )
 
 def write_output(
-    output_file, filtering_rates, filter_muttype, min_cov, min_AF, max_AF, population_db, popfreq_max, TMB_value, panel_size
+    output_file, filtering_rates, prefilter_region, filter_muttype, min_cov, min_AF, max_AF, population_db, popfreq_max, TMB_value, panel_size, is_notempty
 ):
     with open(output_file, "w") as file:
         file.write(f"Initial amount of unique mutations: {filtering_rates[0]} mutations\n")
+        if prefilter_region == True:
+            if is_notempty == True:
+                file.write(
+                    f"### TMB Calculations have been performed only based on the provided BED file regions! ###\n"
+                )
+            else:
+                file.write(
+                    f"### WARNING: TMB Calculations could not be performed on BED file regions, as no mutations are present in the regions-of-interest! --prefilter_tmb was ignored. ###\n"
+                )
         if filter_muttype in ["snv", "snvs", "mnv", "mnvs"]:
             file.write(
                 f"Retained mutations after filtering for mutation type {filter_muttype}: {filtering_rates[1]} mutations\n"
