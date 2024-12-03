@@ -81,6 +81,12 @@ def parse_args(argv=None):
         help="Set the conditions for filtering, either selecting only SNVs, SNVs and MNVs or the whole dataset including InDels",
     )
     parser.add_argument(
+        "--filter_consequence",
+        metavar="filter_consequence",
+        type=str,
+        help="Path to csv-file containing the VEP consequences to retain for TMB calculation",
+    )
+    parser.add_argument(
         "--population_db",
         metavar="population_db",
         type=str,
@@ -121,13 +127,16 @@ def multisample_check(file_in):
     ### Return all relevant variables
     return (multi_control, suffix_list)
 
-def preprocess_vembraneout(file_in, allele_fraction, read_depth, filter_muttype, population_db):
+def preprocess_vembraneout(file_in, allele_fraction, read_depth, filter_muttype, population_db, filter_consequence):
     TMB_inputfile = pd.read_csv(file_in, sep="\t")
+    filtering_rates = []
     TMB_inputfile["Mut_ID"] = TMB_inputfile[["CHROM", "POS", "REF", "ALT"]].apply(
         lambda row: ":".join(row.values.astype(str)), axis=1
     )
-    TMB_deduplicated = TMB_inputfile.drop_duplicates("Mut_ID", keep="first")
-    filtering_rates = []
+    ### move consequence filter into preprocessing to circumvent deduplication pitfall
+    TMB_consequence, filtering_csq = consequence_filter(TMB_inputfile, filter_consequence)
+    filtering_rates.append(filtering_csq)
+    TMB_deduplicated = TMB_consequence.drop_duplicates("Mut_ID", keep="first")
     filtering_rates.append(len(TMB_deduplicated["Mut_ID"]))
     ### reduce dataset on relevant columns for TMB calculation
     TMB_minimal = TMB_deduplicated.filter(
@@ -156,7 +165,6 @@ def preprocess_vembraneout(file_in, allele_fraction, read_depth, filter_muttype,
     ### Generate position specific identifier for deduplication / counting
     return (TMB_filtered, filtering_rates)
 
-
 def filter_onlySNV(TMB_inputfile):
     TMB_onlySNV = TMB_inputfile[
         (TMB_inputfile["REF"].isin(["A", "G", "T", "C"]))
@@ -167,7 +175,6 @@ def filter_onlySNV(TMB_inputfile):
     else:
         TMB_onlySNV = TMB_onlySNV[(TMB_onlySNV["CSQ_VARIANT_CLASS"] == "SNV")]
         return TMB_onlySNV
-
 
 def filter_retainMNV(TMB_inputfile):
     TMB_SNVs = TMB_inputfile[
@@ -181,6 +188,22 @@ def filter_retainMNV(TMB_inputfile):
     )  ### contains DBS, SNVs close to repeats and non-normalized SNVs close to InDels
     TMB_return = pd.concat([TMB_SNVs, TMB_MNVs])
     return TMB_return
+
+def csq_match(row, values):
+    row_values = row.split('&')
+    return any(value in row_values for value in values)
+
+def consequence_filter(TMB_inputfile, filter_consequence):
+    TMB_prefilt = TMB_inputfile.copy()
+    with open(filter_consequence, 'r') as file:
+            csq_raw = file.read().strip()
+            if not csq_raw:
+                raise ValueError("The filter file is empty. Please provide valid filter values.")
+            csq_values = csq_raw.split(',')
+    TMB_filt = TMB_prefilt[TMB_prefilt["CSQ_Consequence"].apply(lambda x: csq_match(x, csq_values))]
+    filtering_rates = len(TMB_filt.index)
+    return (TMB_filt, filtering_rates)
+
 
 def filter_bedrange(TMB_inputfile, bedfile):
     ### Separate filter for ROI independant of tag_roi
@@ -272,7 +295,7 @@ def process_single_sample(args, suffix):
     allele_fraction = f'allele_fraction{suffix}'
     read_depth = f'read_depth{suffix}'
     TMB_df, filtering_rates_total = preprocess_vembraneout(
-        args.file_in, allele_fraction, read_depth, args.filter_muttype, args.population_db
+        args.file_in, allele_fraction, read_depth, args.filter_muttype, args.population_db, args.filter_consequence
     )
     process_data(args, TMB_df, filtering_rates_total, args.prefilter_region, args.bedfile, allele_fraction, read_depth, args.file_out, args.plot_out)
 
@@ -286,7 +309,7 @@ def process_multi_sample(args, suffix_list):
         output_filename = f"{str(args.file_out).strip('.txt')}_{suffix}.txt"
         output_plotname = f"{str(args.plot_out).strip('.png')}_{suffix}.png"
         TMB_df, filtering_rates_total = preprocess_vembraneout(
-            args.file_in, allele_fraction, read_depth, args.filter_muttype, args.population_db
+            args.file_in, allele_fraction, read_depth, args.filter_muttype, args.population_db, args.filter_consequence
         )
         process_data(args, TMB_df, filtering_rates_total, args.prefilter_region, args.bedfile, allele_fraction, read_depth, output_filename, output_plotname)
 
@@ -304,6 +327,8 @@ def process_data(args, TMB_df, filtering_rates_total, prefilter_region, bedfile,
 
     if prefilter_region == True:
         TMB_df, is_notempty = filter_bedrange(TMB_df, bedfile)
+    else:
+        is_notempty = True ## ensure script is running as intended when prefilter_region is not passed
 
     TMB_covfilt, filtering_rates_cov = coverage_filter(TMB_df, read_depth, args.min_cov)
     TMB_affilt, filtering_rates_af = allelefrequency_filter(
@@ -344,11 +369,12 @@ def write_output(
     output_file, filtering_rates, prefilter_region, filter_muttype, min_cov, min_AF, max_AF, population_db, popfreq_max, TMB_value, panel_size, is_notempty
 ):
     with open(output_file, "w") as file:
-        file.write(f"Initial amount of unique mutations: {filtering_rates[0]} mutations\n")
+        file.write(f"Initial amount of mutations after selecting for considered consequences: {filtering_rates[0]} mutations\n")
+        file.write(f"Initial amount of unique mutations after consequence selection: {filtering_rates[1]} mutations\n")
         if prefilter_region == True:
             if is_notempty == True:
                 file.write(
-                    f"### TMB Calculations have been performed only based on the provided BED file regions! ###\n"
+                    f"### All following TMB Calculations have been performed only based on the provided BED file regions! ###\n"
                 )
             else:
                 file.write(
@@ -356,16 +382,16 @@ def write_output(
                 )
         if filter_muttype in ["snv", "snvs", "mnv", "mnvs"]:
             file.write(
-                f"Retained mutations after filtering for mutation type {filter_muttype}: {filtering_rates[1]} mutations\n"
+                f"Retained mutations after filtering for mutation type {filter_muttype}: {filtering_rates[2]} mutations\n"
             )
         file.write(
-            f"Retained mutations after applying coverage filter for a threshold below {min_cov}: {filtering_rates[2]} mutations\n"
+            f"Retained mutations after applying coverage filter for a threshold below {min_cov}: {filtering_rates[3]} mutations\n"
         )
         file.write(
-            f"Retained mutations after filtering for AF between {min_AF} and {max_AF}: {filtering_rates[3]} mutations\n"
+            f"Retained mutations after filtering for AF between {min_AF} and {max_AF}: {filtering_rates[4]} mutations\n"
         )
         file.write(
-            f"Retained mutations after filtering for the population AF from {population_db} below {popfreq_max}: {filtering_rates[4]} mutations\n"
+            f"Retained mutations after filtering for the population AF from {population_db} below {popfreq_max}: {filtering_rates[5]} mutations\n"
         )
         file.write(
             f"The final TMB based on these filtering conditions and a panel size of {panel_size}: {TMB_value} mutations/Mbp"

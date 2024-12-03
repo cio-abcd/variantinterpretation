@@ -99,17 +99,18 @@ Options for filtering VCF files
 
 Options related to cutoffs in TMB calculation
 
-| Parameter             | Description                                                                                           | Type      | Default | Required | Hidden |
-| --------------------- | ----------------------------------------------------------------------------------------------------- | --------- | ------- | -------- | ------ |
-| `calculate_tmb`       | Enable TMB calculation                                                                                | `boolean` |         |          |        |
-| `min_af`              | Minimal allele frequency cutoff for TMB calculation                                                   | `number`  | 0       |          |        |
-| `max_af`              | Maximal allele frequency cutoff for TMB calculation                                                   | `number`  | 1       |          |        |
-| `min_cov`             | Minimal coverage cutoff for TMB calculation                                                           | `integer` | 10      |          |        |
-| `max_popfreq`         | Maximal population allele frequency in the gnomAD global population for TMB calculation               | `number`  | 0.02    |          |        |
-| `filter_muttype`      | Define if only SNVs, SNVs and MNVs or all mutation types should be selected for TMB calculation       | `string`  | snv     |          |        |
-| `population_db`       | Define an alternative population database to filter annotated mutations based on population frequency | `string`  |         |          |        |
-| `panelsize_threshold` | Expected panelsize threshold which should be surpassed to calculate TMB                               | `integer` | 1000000 |          |        |
-| `prefilter_tmb`       | Define if TMB should only be calculated on provided BED file regions                                  | `boolean` |         |          |        |
+| Parameter             | Description                                                                                                                                                       | Type      | Default          | Required | Hidden |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------------- | -------- | ------ |
+| `calculate_tmb`       | Enable TMB calculation                                                                                                                                            | `boolean` |                  |          |        |
+| `min_af`              | Minimal allele frequency cutoff for TMB calculation                                                                                                               | `number`  | 0                |          |        |
+| `max_af`              | Maximal allele frequency cutoff for TMB calculation                                                                                                               | `number`  | 1                |          |        |
+| `min_cov`             | Minimal coverage cutoff for TMB calculation                                                                                                                       | `integer` | 10               |          |        |
+| `max_popfreq`         | Maximal population allele frequency in the gnomAD global population for TMB calculation                                                                           | `number`  | 0.02             |          |        |
+| `filter_muttype`      | Define if only SNVs, SNVs and MNVs or all mutation types should be selected for TMB calculation                                                                   | `string`  | snv              |          |        |
+| `population_db`       | Define an alternative population database to filter annotated mutations based on population frequency                                                             | `string`  |                  |          |        |
+| `panelsize_threshold` | Expected panelsize threshold which should be surpassed to calculate TMB                                                                                           | `integer` | 1000000          |          |        |
+| `prefilter_tmb`       | Define if TMB should only be calculated on provided BED file regions                                                                                              | `boolean` |                  |          |        |
+| `consequence_tmb`     | csv-file containing [VEP consequences](https://www.ensembl.org/info/genome/variation/prediction/predicted_data.html) which should be retained for TMB calculation | `string`  | All consequences |          |        |
 
 ## Institutional config options
 

@@ -10,6 +10,7 @@ process TMB_CALCULATE {
     input:
     tuple val(meta), path(tsv)
     path bedfile
+    path consequence_tmb
 
     output:
     tuple val(meta), path("*.txt"), emit: TMB_txt
@@ -27,7 +28,8 @@ process TMB_CALCULATE {
     # Calculate TMB
     calculate_TMB.py \\
         --file_in $tsv \\
-        --bedfile $bedfile\\
+        --bedfile $bedfile \\
+        --filter_consequence $consequence_tmb \\
         $args \\
         --file_out ${prefix}.txt \\
         --plot_out ${prefix}.png

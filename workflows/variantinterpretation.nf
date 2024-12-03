@@ -52,6 +52,7 @@ workflow VARIANTINTERPRETATION {
     ch_datavzrd_config
     ch_annotation_colinfo
     ch_bedfile
+    ch_consequence_tmb
     ch_custom_filters
 
     main:
@@ -71,7 +72,6 @@ workflow VARIANTINTERPRETATION {
     if (!params.bedfile && params.tag_roi) error("ERROR: Need to specify bedfile for region-of-interest tagging.")
     if (!params.bedfile && params.calculate_tmb) error("ERROR: Need to specify bedfile for calculating TMB.")
     if (!params.read_depth && params.calculate_tmb) error("ERROR: Need to specify the read_depth FORMAT field for calculating TMB.")
-
 
     //
     // Index vcf and reference files
@@ -222,7 +222,8 @@ workflow VARIANTINTERPRETATION {
         if ( params.bedfile && params.calculate_tmb ) {
                 if ( CHECKBEDFILE.out.bed_valid ) {
                         TMB_CALCULATE ( TSV_CONVERSION.out.tsv,
-                                        ch_min_bedfile
+                                        ch_min_bedfile,
+                                        ch_consequence_tmb
                     )
                     ch_versions = ch_versions.mix(TMB_CALCULATE.out.versions)
             }

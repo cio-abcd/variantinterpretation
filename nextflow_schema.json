@@ -10,10 +10,7 @@
             "type": "object",
             "fa_icon": "fas fa-terminal",
             "description": "Define where the pipeline should find input data and save output data.",
-            "required": [
-                "input",
-                "outdir"
-            ],
+            "required": ["input", "outdir"],
             "properties": {
                 "input": {
                     "type": "string",
@@ -128,11 +125,7 @@
                     "type": "string",
                     "default": "vcf",
                     "description": "Output format for VEP",
-                    "enum": [
-                        "vcf",
-                        "json",
-                        "tab"
-                    ]
+                    "enum": ["vcf", "json", "tab"]
                 },
                 "vep_genome": {
                     "type": "string",
@@ -158,11 +151,7 @@
                 "vep_cache_source": {
                     "type": "string",
                     "help_text": "Leave empty (null) if ensembl (standard) cache is used.",
-                    "enum": [
-                        "None",
-                        "refseq",
-                        "merged"
-                    ],
+                    "enum": ["None", "refseq", "merged"],
                     "description": "Specified VEP cache. Either Ensembl (default, null), Refseq or merged."
                 },
                 "check_existing": {
@@ -198,11 +187,7 @@
                 "terms": {
                     "type": "string",
                     "default": "SO",
-                    "enum": [
-                        "SO",
-                        "display",
-                        "NCBI"
-                    ],
+                    "enum": ["SO", "display", "NCBI"],
                     "description": "Consequence terms to use.",
                     "help_text": "Default is Sequence Ontology. Details can be found here: http://www.sequenceontology.org/"
                 },
@@ -239,12 +224,7 @@
             "properties": {
                 "transcriptfilter": {
                     "type": "string",
-                    "enum": [
-                        "None",
-                        "PICK",
-                        "CANONICAL",
-                        "MANE_SELECT"
-                    ],
+                    "enum": ["None", "PICK", "CANONICAL", "MANE_SELECT"],
                     "description": "Transcript annotation column for filtering.",
                     "help_text": "If variant does not have any match, all annotation will be removed and variant is flagged in FILTER column.\nCan work simultaneously with \"transcriptfilter\" param."
                 },
@@ -283,12 +263,7 @@
                     "default": "FORMAT_AD",
                     "description": "Specify how to extract and calculate the allele fraction from the VCF file.",
                     "help_text": "The allele fraction (AF) of a variant is not always reported directly in the VCF file, but encoded indirectly in the FORMAT column. The AF is extracted or calculated  in the `vembrane table` module.   \nWithin the FORMAT column are some standard fields from which the AF can be calculated:   \n\n- **DP:** Depth or coverage, number of reads at this position.  \n- **AD:** Allelic depth, Number of reads supporting REF and ALT alleles (comma-separated, can be addressed with [0] or [1] as index)  \n\nDividing the allelic depth by the coverage gives the AF, which can be invoked with `FORMAT_AD`. Some VCF files also directly encode the AF in the FORMAT column as `AF` field, which can be invoked with `FORMAT_AF`.  \nFor the following variant callers, some defaults were specified that can be invoked by the name of the caller:  \n\n- **Freebayes** uses the `FORMAT_AD` method dividing ALT allele readnumbers (AD[1]) by depth (DP)   \n- **Mutect2** uses the AF field in the FORMAT column as defined in `FORMAT_AF` method. It is a probabilistic AF estimate, hence it is different compared to AF calculated with DP and AD column. Additionally, the DP field is also in the INFO column and will be extracted, which can be greater as the DP field in the FORMAT column as it also contains uninformative reads. So there can be three different ways of calculating the AF. Sources: [[1]](https://gatk.broadinstitute.org/hc/en-us/community/posts/4566282375835-Mutect2-AF-does-not-match-AD-and-DP),[[2]](https://github.com/broadinstitute/gatk/issues/6067),[[3]](https://gatk.broadinstitute.org/hc/en-us/articles/360035532252-Allele-Depth-AD-is-lower-than-expected). ",
-                    "enum": [
-                        "FORMAT_AF",
-                        "mutect2",
-                        "FORMAT_AD",
-                        "freebayes"
-                    ]
+                    "enum": ["FORMAT_AF", "mutect2", "FORMAT_AD", "freebayes"]
                 },
                 "read_depth": {
                     "type": "string",
@@ -379,11 +354,14 @@
                     "description": "Expected panelsize threshold which should be surpassed to calculate TMB"
                 },
                 "prefilter_tmb": {
-                    "type": "boolean",
+                    "type": "string",
                     "description": "Define if TMB should only be calculated on provided BED file regions"
+                },
+                "consequence_tmb": {
+                    "type": "string",
+                    "description": "Define VEP consequences which should be considered during TMB calculation"
                 }
-            },
-            "fa_icon": "fas fa-divide"
+            }
         },
         "institutional_config_options": {
             "title": "Institutional config options",
@@ -491,14 +469,7 @@
                     "description": "Method used to save pipeline results to output directory.",
                     "help_text": "The Nextflow `publishDir` option specifies which intermediate files should be saved to the output directory. This option tells the pipeline what method should be used to move these files. See [Nextflow docs](https://www.nextflow.io/docs/latest/process.html#publishdir) for details.",
                     "fa_icon": "fas fa-copy",
-                    "enum": [
-                        "symlink",
-                        "rellink",
-                        "link",
-                        "copy",
-                        "copyNoFollow",
-                        "move"
-                    ],
+                    "enum": ["symlink", "rellink", "link", "copy", "copyNoFollow", "move"],
                     "hidden": true
                 },
                 "email_on_fail": {
@@ -611,40 +582,40 @@
     },
     "allOf": [
         {
-            "$ref": "#/$defs/input_output_options"
+            "$ref": "#/definitions/input_output_options"
         },
         {
-            "$ref": "#/$defs/vcf_normalization"
+            "$ref": "#/definitions/vcf_normalization"
         },
         {
-            "$ref": "#/$defs/reference_genome_options"
+            "$ref": "#/definitions/reference_genome_options"
         },
         {
-            "$ref": "#/$defs/preprocessing_options"
+            "$ref": "#/definitions/preprocessing_options"
         },
         {
-            "$ref": "#/$defs/annotation_options"
+            "$ref": "#/definitions/annotation_options"
         },
         {
-            "$ref": "#/$defs/annotation_filtering_option"
+            "$ref": "#/definitions/annotation_filtering_option"
         },
         {
-            "$ref": "#/$defs/tsv_conversion_options"
+            "$ref": "#/definitions/tsv_conversion_options"
         },
         {
-            "$ref": "#/$defs/html_report"
+            "$ref": "#/definitions/html_report"
         },
         {
-            "$ref": "#/$defs/tmb_calculation_options"
+            "$ref": "#/definitions/tmb_calculation_options"
         },
         {
-            "$ref": "#/$defs/institutional_config_options"
+            "$ref": "#/definitions/institutional_config_options"
         },
         {
-            "$ref": "#/$defs/max_job_request_options"
+            "$ref": "#/definitions/max_job_request_options"
         },
         {
-            "$ref": "#/$defs/generic_options"
+            "$ref": "#/definitions/generic_options"
         }
     ]
 }
