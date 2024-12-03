@@ -13,9 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - updated nf-core modules (PR #50)
 - support for "region-of-interest" tagging of variant calls outside of provided BED file (PR #51)
 - added bcftools annotate/tabix/bgzip as nf-core modules (PR #51)
-- added multi-sample support for TMB_CALCULATE ()
-- added separate region-of-interest filter independent of `--tag_roi` + `--filter_vcf` for TMB_CALCULATE ()
-- added VEP consequence filter for TMB_CALCULATE ()
+- added multi-sample support for TMB_CALCULATE (PR #56)
+- added separate region-of-interest filter independent of `--tag_roi` + `--filter_vcf` for TMB_CALCULATE (PR #56)
+- added VEP consequence filter for TMB_CALCULATE (PR #56)
 
 ### Changed
 
