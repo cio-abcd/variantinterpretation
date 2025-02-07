@@ -345,6 +345,48 @@
                 }
             }
         },
+        "ukb_report": {
+            "title": "UKB report",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "UKB_report": {
+                    "type": "boolean",
+                    "default": null,
+                    "description": "Convert TSV file into UKB specific report using custom python script."
+                },
+                "refseq_list": {
+                    "type": "string",
+                    "description": "TXT file containing current refseq transcripts used in tWXS."
+                },
+                "variantDBi": {
+                    "type": "string",
+                    "descritption": "Xlsx file containing UKB internal interpretations to variants."
+                }
+            }
+        },
+        "ukb_filter": {
+            "title": "UKB filter",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "UKB_filter": {
+                    "type": "boolean",
+                    "default": null,
+                    "description": "Convert TSV file into a filtered variant list in TSV format."
+                },
+                "refseq_list": {
+                    "type": "string",
+                    "description": "TXT file containing current refseq transcripts used in tWXS."
+                },
+                "variantDBi": {
+                    "type": "string",
+                    "descritption": "Xlsx file containing UKB internal interpretations to variants."
+                }
+            }
+        },
         "institutional_config_options": {
             "title": "Institutional config options",
             "type": "object",

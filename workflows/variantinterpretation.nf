@@ -60,6 +60,9 @@ vep_cache_version          = params.vep_cache_version       ?: Channel.empty()
 vep_genome                 = params.vep_genome              ?: Channel.empty()
 vep_species                = params.vep_species             ?: Channel.empty()
 annotation_fields          = params.annotation_fields       ?: ''
+refseq_list                = params.refseq_list        ? Channel.value(params.refseq_list)                           : []
+variantDBi                 = params.variantDBi         ? Channel.value(params.variantDBi)                            : []
+token                      = params.oncokb_token       ? Channel.value(params.oncokb_token)                          : []
 
 // VEP extra files
 vep_extra_files            = []
@@ -83,6 +86,11 @@ include { VEMBRANE_TABLE                            } from '../subworkflows/loca
 include { VARIANTFILTER as PRESETS_FILTER_REPORT    } from '../subworkflows/local/variantfilter/main'
 include { HTML_REPORT                               } from '../subworkflows/local/html_report/main'
 include { TMB_CALCULATE	    	                    } from '../modules/local/tmbcalculation/main'
+include { UKB_REPORT                                } from '../modules/local/UKB_report/main'
+include { UKB_FILTER                                } from '../modules/local/UKB_filter/main'
+include { PREPROCESSVCF2MAF as PREPROCESS_FILTERED_VARIANTS } from '../modules/local/UKB_filter/preprocessvcf2maf/main'
+include { VCF2MAF                                   } from '../modules/local/UKB_filter/vcf2maf/main'
+include { ONCOKB_ANNOTATOR                          } from '../modules/local/UKB_filter/oncokb_annotator'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -256,6 +264,33 @@ workflow VARIANTINTERPRETATION {
                     ch_versions = ch_versions.mix(TMB_CALCULATE.out.versions)
             }
         }
+
+        // 
+        // MODULE: UKB report
+        //
+        if ( params.UKB_report) {
+            ch_samplename_tsv = ch_tsv.map { meta, tsv -> [meta.id, tsv] }
+            UKB_REPORT (ch_samplename_tsv, refseq_list, variantDBi)
+            ch_versions = ch_versions.mix(UKB_REPORT.out.versions)
+            
+        }
+
+        // 
+        // MODULE: UKB filter
+        //
+        if ( params.UKB_filter) {
+            ch_samplename_tsv = ch_tsv.map { meta, tsv -> [meta.id, tsv] }
+
+            UKB_FILTER (ch_samplename_tsv, refseq_list, variantDBi)
+            ch_versions = ch_versions.mix(UKB_FILTER.out.versions)
+
+            ch_filtered_variants = UKB_FILTER.out.variants_for_vcf_filter
+            ch_tofilter_vcf = ch_vcf_tag.map { meta, vcf -> [meta.id, vcf] }
+            PREPROCESS_FILTERED_VARIANTS(ch_filtered_variants,ch_tofilter_vcf)
+            VCF2MAF(PREPROCESS_FILTERED_VARIANTS.out.filtered_variants,fasta_ref)
+            ONCOKB_ANNOTATOR(VCF2MAF.out.vcf2mafout,token)
+        }
+       
     }
 
     // dump software versions
