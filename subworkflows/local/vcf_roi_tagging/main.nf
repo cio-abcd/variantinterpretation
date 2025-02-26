@@ -3,8 +3,8 @@ include { PREPAREBEDFILE                            } from '../../../modules/loc
 include { TABIX_BGZIP as FIRST_COMPRESS             } from '../../../modules/nf-core/tabix/bgzip/main'
 include { TABIX_BGZIP as SECOND_COMPRESS            } from '../../../modules/nf-core/tabix/bgzip/main'
 include { TABIX_TABIX                               } from '../../../modules/nf-core/tabix/tabix/main'
-include { BCFTOOLS_INDEX                            } from '../../../modules/nf-core/bcftools/index/main'
 include { BCFTOOLS_INDEX as TAGROI_INDEX            } from '../../../modules/nf-core/bcftools/index/main'
+include { BCFTOOLS_INDEX as TAGROI_INDEX2            } from '../../../modules/nf-core/bcftools/index/main'
 include { BCFTOOLS_ANNOTATE as BCFTOOLS_ADDROI      } from '../../../modules/nf-core/bcftools/annotate/main'
 include { BCFTOOLS_ANNOTATE as BCFTOOLS_RMVROI      } from '../../../modules/nf-core/bcftools/annotate/main'
 include { VEMBRANE_TAG as FILTER_TAGROI             } from '../../../modules/local/vembrane/tag/main'
@@ -85,10 +85,10 @@ workflow TAGROI {
         ch_removeroi, [], [], []
     )
 
-    BCFTOOLS_INDEX  (
+    TAGROI_INDEX2  (
         BCFTOOLS_RMVROI.out.vcf
     )
-    ch_posttagging = BCFTOOLS_RMVROI.out.vcf.join(BCFTOOLS_INDEX.out.tbi)
+    ch_posttagging = BCFTOOLS_RMVROI.out.vcf.join(TAGROI_INDEX2.out.tbi)
 
     emit:
     vcf_tbi     =   ch_posttagging
