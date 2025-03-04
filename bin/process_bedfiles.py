@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-### Import dependencies
 import pandas as pd
 from pathlib import Path
 import sys
@@ -39,7 +38,6 @@ chroms = {
     "chrM",
 }
 
-### Define argument parser
 
 def parse_args(argv=None):
     """Define and immediately parse command line arguments."""
@@ -48,7 +46,7 @@ def parse_args(argv=None):
         on the integrity and format adherence of the file. It checks if the BED file contains no header, if all columns containing \
         positions are only composed of integers and that all end positions occur after their respective start positions. Furthermore, it creates a \
         minimized version of a BED file required for bcftools and BED-based subworkflows in this pipeline.",
-        epilog="Example: python3 check_bedfiles.py file.bed",
+        epilog="Example: python3 process_bedfiles.py file.bed",
     )
     parser.add_argument(
         "file_in",
@@ -121,20 +119,13 @@ def check_bed_structure(bed_input):
     header_test = any(
         isinstance(value, str) for value in colcheck.iloc[0, 1:2]
     )  ## checks for no full strings in positional argument columns, as chr is interpreted as str
-    if (
-        len(colcheck.columns) >= 3 and header_test == False
-    ):  ### Should contain at least three columns CHROM, POS, END without header
+    if len(colcheck.columns) >= 3 and header_test == False:
+        ### Should contain at least three columns CHROM, POS, END without header
         chrom_valid = check_chromosome_col(colcheck.iloc[:, 0])
         start_valid = check_integer_col(colcheck.iloc[:, 1])
         end_valid = check_integer_col(colcheck.iloc[:, 2])
         order_check = check_startend_col(colcheck)
-        if chrom_valid == True:
-            if start_valid == True and end_valid == True and order_check == True:
-                return True
-            else:
-                return False
-        else:
-            return False
+        return all([chrom_valid, start_valid, end_valid, order_check])
     else:
         raise ValueError(
             f"The provided BED file doesn't follow the required format. Please provide a BED file containing the minimal information (Chromosome, Start, End) without an header. TMB will not be calculated."
@@ -145,7 +136,6 @@ def select_minimal(bed_input):
     minimal_bed = full_bed.iloc[:,0:3]
     return(minimal_bed)
 
-### Define main function
 
 def main(argv=None):
     """Coordinate argument parsing and program execution."""

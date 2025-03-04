@@ -136,7 +136,7 @@ if __name__ == "__main__":
                 'for_each_sample(lambda s: FORMAT["AF"][s] if FORMAT["AF"][s] else None)'
             )
             header_strings.append(
-                'for_each_sample(lambda sample: f"allele_fraction[{sample}")'
+                'for_each_sample(lambda sample: f"allele_fraction[{sample}]")'
             )
         elif args.allele_fraction in ["freebayes", "FORMAT_AD"]:
             vembrane_strings.append(

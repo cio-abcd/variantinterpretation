@@ -315,7 +315,6 @@ def process_multi_sample(args, suffix_list):
 
 
 def process_data(args, TMB_df, filtering_rates_total, prefilter_region, bedfile, allele_fraction, read_depth, output_file, output_plot):
-    ### Basically what main did before
     ### Processes data based on thresholds and filter conditions to generate the output txt files
     is_eligible, panel_size = check_bed_size(args.bedfile, args.panelsize_threshold)
 
@@ -451,9 +450,6 @@ def plot_TMB(input, output_plotname, allele_fraction, lower_af, higher_af):
     ax.yaxis.get_major_locator().set_params(integer=True)  ## force integers on y-axis
     plt.savefig(output_plotname, bbox_inches="tight")
 
-##########
-#### MAIN
-##########
 
 def main(argv=None):
     ### Parse arguments

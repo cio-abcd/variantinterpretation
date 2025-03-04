@@ -48,7 +48,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
    - [VCF checks](#vcf-checks)
      - Checks samplesheet integrity with modified [nf-core script](bin/check_samplesheet.py)
      - Checks VCF file requirements and integrity with `GATK4 ValidateVariants`, `bcftools` and a custom python script.
-     - Runs optional BED file format check using a [python script](bin/check_bedfiles.py)
+     - Runs optional BED file format check using a [python script](bin/process_bedfiles.py)
    - [Pre-annotation VCF filtering](#pre-annotation-vcf-filter) based on FILTER column entries using `bcftools view`.
    - [VCF normalization](#vcf-normalization): Splitting of multi-allelic into bi-allelic variants and optional left-alignment of InDels using `bcftools norm`.
    - [VCF merging](#vcf-merging): Optional merging of VCF file based on 'group' column in samplesheet into multi-sample VCF files.
