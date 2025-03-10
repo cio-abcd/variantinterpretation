@@ -36,6 +36,31 @@ chroms = {
     "chrX",
     "chrY",
     "chrM",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16",
+    "17",
+    "18",
+    "19",
+    "20",
+    "21",
+    "22",
+    "X",
+    "Y",
+    "MT",
 }
 
 
@@ -115,16 +140,15 @@ def check_startend_col(input):
 
 
 def check_bed_structure(bed_input):
-    colcheck = pd.read_csv(bed_input, sep="\t", header=None)
     header_test = any(
-        isinstance(value, str) for value in colcheck.iloc[0, 1:2]
+        isinstance(value, str) for value in bed_input.iloc[0, 1:2]
     )  ## checks for no full strings in positional argument columns, as chr is interpreted as str
-    if len(colcheck.columns) >= 3 and header_test == False:
+    if len(bed_input.columns) >= 3 and header_test == False:
         ### Should contain at least three columns CHROM, POS, END without header
-        chrom_valid = check_chromosome_col(colcheck.iloc[:, 0])
-        start_valid = check_integer_col(colcheck.iloc[:, 1])
-        end_valid = check_integer_col(colcheck.iloc[:, 2])
-        order_check = check_startend_col(colcheck)
+        chrom_valid = check_chromosome_col(bed_input.iloc[:, 0])
+        start_valid = check_integer_col(bed_input.iloc[:, 1])
+        end_valid = check_integer_col(bed_input.iloc[:, 2])
+        order_check = check_startend_col(bed_input)
         return all([chrom_valid, start_valid, end_valid, order_check])
     else:
         raise ValueError(
@@ -132,8 +156,7 @@ def check_bed_structure(bed_input):
         )
 
 def select_minimal(bed_input):
-    full_bed = pd.read_csv(bed_input, sep="\t", header=None)
-    minimal_bed = full_bed.iloc[:,0:3]
+    minimal_bed = bed_input.iloc[:,0:3]
     return(minimal_bed)
 
 
@@ -145,12 +168,13 @@ def main(argv=None):
         logger.error(f"The given input file {args.file_in} was not found!")
         raise ValueError(f"The given input file {args.file_in} was not found!")
     else:
-        bed_well_structured = check_bed_structure(args.file_in)
+        bedfile = pd.read_csv(args.file_in, sep="\t", header=None)
+        bed_well_structured = check_bed_structure(bedfile)
         if bed_well_structured == True:
             structured_out = pd.DataFrame(
                 {"bed_well_structured": [bed_well_structured]}
             )
-            minimal_bed = select_minimal(args.file_in)
+            minimal_bed = select_minimal(bedfile)
             structured_out.to_csv("bed_stats_structure.txt", header=False, index=False)
             minimal_bed.to_csv(args.file_out, header=False, index=False, sep='\t')
         else:

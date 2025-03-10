@@ -77,14 +77,20 @@ def parse_args(argv=None):
         "--filter_muttype",
         metavar="filter_muttype",
         type=str,
-        choices=["snv", "snvs", "mnv", "mnvs"],
+        choices=["snv", "snvs", "mnv", "mnvs", "all"],
         help="Set the conditions for filtering, either selecting only SNVs, SNVs and MNVs or the whole dataset including InDels",
     )
     parser.add_argument(
         "--filter_consequence",
         metavar="filter_consequence",
+        type=bool,
+        help="Should variant consequence filtering be performed?",
+    )
+    parser.add_argument(
+        "--csq_values",
+        metavar="csq_values",
         type=str,
-        help="Path to csv-file containing the VEP consequences to retain for TMB calculation",
+        help="String containing the VEP consequences for which should be filtered.",
     )
     parser.add_argument(
         "--population_db",
@@ -127,17 +133,24 @@ def multisample_check(file_in):
     ### Return all relevant variables
     return (multi_control, suffix_list)
 
-def preprocess_vembraneout(file_in, allele_fraction, read_depth, filter_muttype, population_db, filter_consequence):
+
+def preprocess_vembraneout(file_in, allele_fraction, read_depth, filter_muttype, population_db, filter_consequence, csq_values):
     TMB_inputfile = pd.read_csv(file_in, sep="\t")
     filtering_rates = []
     TMB_inputfile["Mut_ID"] = TMB_inputfile[["CHROM", "POS", "REF", "ALT"]].apply(
         lambda row: ":".join(row.values.astype(str)), axis=1
     )
+    ### Count initial unique mutations based on Mut_ID
+    initial_unique = TMB_inputfile["Mut_ID"].nunique()
+    filtering_rates.append(initial_unique)
     ### move consequence filter into preprocessing to circumvent deduplication pitfall
-    TMB_consequence, filtering_csq = consequence_filter(TMB_inputfile, filter_consequence)
-    filtering_rates.append(filtering_csq)
+    if filter_consequence is True:
+        TMB_consequence, filtering_csq = consequence_filter(TMB_inputfile, csq_values)
+        filtering_rates.append(filtering_csq)
+    else:
+        TMB_consequence = TMB_inputfile
+        filtering_rates.append(initial_unique)
     TMB_deduplicated = TMB_consequence.drop_duplicates("Mut_ID", keep="first")
-    filtering_rates.append(len(TMB_deduplicated["Mut_ID"]))
     ### reduce dataset on relevant columns for TMB calculation
     TMB_minimal = TMB_deduplicated.filter(
         items=[
@@ -161,9 +174,9 @@ def preprocess_vembraneout(file_in, allele_fraction, read_depth, filter_muttype,
         TMB_filtered = filter_retainMNV(TMB_minimal)
     else:
         TMB_filtered = TMB_minimal
-    filtering_rates.append(len(TMB_filtered["Mut_ID"]))
-    ### Generate position specific identifier for deduplication / counting
+    filtering_rates.append(TMB_filtered["Mut_ID"].nunique())
     return (TMB_filtered, filtering_rates)
+
 
 def filter_onlySNV(TMB_inputfile):
     TMB_onlySNV = TMB_inputfile[
@@ -175,6 +188,7 @@ def filter_onlySNV(TMB_inputfile):
     else:
         TMB_onlySNV = TMB_onlySNV[(TMB_onlySNV["CSQ_VARIANT_CLASS"] == "SNV")]
         return TMB_onlySNV
+
 
 def filter_retainMNV(TMB_inputfile):
     TMB_SNVs = TMB_inputfile[
@@ -189,27 +203,24 @@ def filter_retainMNV(TMB_inputfile):
     TMB_return = pd.concat([TMB_SNVs, TMB_MNVs])
     return TMB_return
 
+
 def csq_match(row, values):
     row_values = row.split('&')
     return any(value in row_values for value in values)
 
-def consequence_filter(TMB_inputfile, filter_consequence):
+
+def consequence_filter(TMB_inputfile, csq_values):
+    csq_list = csq_values.split(",")
     TMB_prefilt = TMB_inputfile.copy()
-    with open(filter_consequence, 'r') as file:
-            csq_raw = file.read().strip()
-            if not csq_raw:
-                raise ValueError("The filter file is empty. Please provide valid filter values.")
-            csq_values = csq_raw.split(',')
-    TMB_filt = TMB_prefilt[TMB_prefilt["CSQ_Consequence"].apply(lambda x: csq_match(x, csq_values))]
-    filtering_rates = len(TMB_filt.index)
+    TMB_filt = TMB_prefilt[TMB_prefilt["CSQ_Consequence"].apply(lambda x: csq_match(x, csq_list))]
+    filtering_rates = TMB_filt["Mut_ID"].nunique()
     return (TMB_filt, filtering_rates)
 
 
-def filter_bedrange(TMB_inputfile, bedfile):
+def filter_bedrange(TMB_inputfile, panel_data_in):
     ### Separate filter for ROI independant of tag_roi
     ### Read bedfile and convert to range
-    panel_data = pd.read_csv(bedfile, sep="\t", header=None)
-    panel_data = panel_data.iloc[:, 0:3]
+    panel_data = panel_data_in.iloc[:, 0:3]
     panel_data.columns = ["Chromosome", "Start", "End"]
     panel_range = pr.PyRanges(panel_data)
     ### Read in data
@@ -224,15 +235,17 @@ def filter_bedrange(TMB_inputfile, bedfile):
     if len(TMB_intersect_df.index) > 0:
         TMB_filt = pd.merge(TMB_inputfile, TMB_intersect_df[["CHROM", "POS"]], on=["CHROM", "POS"])
         is_notempty = True
-        return (TMB_filt, is_notempty)
+        filtering_rates = TMB_filt.index.nunique()
+        return (TMB_filt, is_notempty, filtering_rates)
     else:
         TMB_filt = TMB_inputfile
         is_notempty = False
-        return (TMB_filt, is_notempty)
+        filtering_rates = TMB_filt.index.nunique()
+        return (TMB_filt, is_notempty, filtering_rates)
 
-def check_bed_size(bedfile, breaking_thresh):
-    panel_data = pd.read_csv(bedfile, sep="\t", header=None)
-    panel_data = panel_data.iloc[:, 0:3]
+
+def check_bed_size(panel_data_in, breaking_thresh):
+    panel_data = panel_data_in.iloc[:, 0:3]
     panel_data.columns = ["Chromosome", "Start", "End"]
     panel_range = pr.PyRanges(panel_data)
     panel_size = panel_range.length
@@ -267,7 +280,7 @@ def check_bed_size(bedfile, breaking_thresh):
 
 def coverage_filter(input, read_depth, threshold):
     TMB_covfilt = input[(input[read_depth] >= threshold)].reset_index(drop=True)
-    filtering_rates = len(TMB_covfilt["Mut_ID"])
+    filtering_rates = TMB_covfilt["Mut_ID"].nunique()
     return (TMB_covfilt, filtering_rates)
 
 
@@ -276,28 +289,30 @@ def allelefrequency_filter(input, allele_fraction, lower_threshold, higher_thres
         (input[allele_fraction] >= lower_threshold)
         & (input[allele_fraction] <= higher_threshold)
     ].reset_index(drop=True)
-    filtering_rates = len(TMB_AFboundariesfilt["Mut_ID"])
+    filtering_rates = TMB_AFboundariesfilt["Mut_ID"].nunique()
     return (TMB_AFboundariesfilt, filtering_rates)
 
 
 def popfrequency_filter(input, database, threshold):
-    TMB_popfreqfilt = input[input[database] <= threshold].reset_index(drop=True)
-    filtering_rates = len(TMB_popfreqfilt["Mut_ID"])
+    ### NaN should be retained
+    TMB_popfreqfilt = input[(input[database] <= threshold) | input[database].isna()].reset_index(drop=True)
+    filtering_rates = TMB_popfreqfilt["Mut_ID"].nunique()
     return (TMB_popfreqfilt, filtering_rates)
 
 
 def calculate_TMB(input, panel_size):
-    TMB = round((len(input.index) / panel_size) * 1000000, 2)
+    TMB = round((input["Mut_ID"].nunique() / panel_size) * 1000000, 2)
     return TMB
+
 
 def process_single_sample(args, suffix):
     ### Wrapper for single-sample TSV
     allele_fraction = f'allele_fraction{suffix}'
     read_depth = f'read_depth{suffix}'
     TMB_df, filtering_rates_total = preprocess_vembraneout(
-        args.file_in, allele_fraction, read_depth, args.filter_muttype, args.population_db, args.filter_consequence
+        args.file_in, allele_fraction, read_depth, args.filter_muttype, args.population_db, args.filter_consequence, args.csq_values
     )
-    process_data(args, TMB_df, filtering_rates_total, args.prefilter_region, args.bedfile, allele_fraction, read_depth, args.file_out, args.plot_out)
+    process_data(args, TMB_df, filtering_rates_total, args.prefilter_region, allele_fraction, read_depth, args.file_out, args.plot_out)
 
 
 def process_multi_sample(args, suffix_list):
@@ -309,14 +324,15 @@ def process_multi_sample(args, suffix_list):
         output_filename = f"{str(args.file_out).strip('.txt')}_{suffix}.txt"
         output_plotname = f"{str(args.plot_out).strip('.png')}_{suffix}.png"
         TMB_df, filtering_rates_total = preprocess_vembraneout(
-            args.file_in, allele_fraction, read_depth, args.filter_muttype, args.population_db, args.filter_consequence
+            args.file_in, allele_fraction, read_depth, args.filter_muttype, args.population_db, args.filter_consequence, args.csq_values
         )
-        process_data(args, TMB_df, filtering_rates_total, args.prefilter_region, args.bedfile, allele_fraction, read_depth, output_filename, output_plotname)
+        process_data(args, TMB_df, filtering_rates_total, args.prefilter_region, allele_fraction, read_depth, output_filename, output_plotname)
 
 
-def process_data(args, TMB_df, filtering_rates_total, prefilter_region, bedfile, allele_fraction, read_depth, output_file, output_plot):
+def process_data(args, TMB_df, filtering_rates_total, prefilter_region, allele_fraction, read_depth, output_file, output_plot):
     ### Processes data based on thresholds and filter conditions to generate the output txt files
-    is_eligible, panel_size = check_bed_size(args.bedfile, args.panelsize_threshold)
+    panel_bedfile = pd.read_csv(args.bedfile, sep="\t", header=None)
+    is_eligible, panel_size = check_bed_size(panel_bedfile, args.panelsize_threshold)
 
     if not is_eligible:
         logger.info(
@@ -325,11 +341,14 @@ def process_data(args, TMB_df, filtering_rates_total, prefilter_region, bedfile,
         return
 
     if prefilter_region == True:
-        TMB_df, is_notempty = filter_bedrange(TMB_df, bedfile)
+        TMB_df, is_notempty, filtering_rates_roi = filter_bedrange(TMB_df, panel_bedfile)
     else:
-        is_notempty = True ## ensure script is running as intended when prefilter_region is not passed
+        is_notempty = True
+        filtering_rates_roi = 0 ## ensure script is running as intended when prefilter_region is not passed
 
-    TMB_covfilt, filtering_rates_cov = coverage_filter(TMB_df, read_depth, args.min_cov)
+    TMB_covfilt, filtering_rates_cov = coverage_filter(
+        TMB_df, read_depth, args.min_cov
+    )
     TMB_affilt, filtering_rates_af = allelefrequency_filter(
         TMB_covfilt, allele_fraction, args.min_AF, args.max_AF
     )
@@ -344,6 +363,7 @@ def process_data(args, TMB_df, filtering_rates_total, prefilter_region, bedfile,
     )
 
     filtering_rates_total += [
+        filtering_rates_roi,
         filtering_rates_cov,
         filtering_rates_af,
         filtering_rates_popfreq,
@@ -353,7 +373,6 @@ def process_data(args, TMB_df, filtering_rates_total, prefilter_region, bedfile,
         output_file,
         filtering_rates_total,
         args.prefilter_region,
-        args.filter_muttype,
         args.min_cov,
         args.min_AF,
         args.max_AF,
@@ -365,35 +384,35 @@ def process_data(args, TMB_df, filtering_rates_total, prefilter_region, bedfile,
     )
 
 def write_output(
-    output_file, filtering_rates, prefilter_region, filter_muttype, min_cov, min_AF, max_AF, population_db, popfreq_max, TMB_value, panel_size, is_notempty
+    output_file, filtering_rates, prefilter_region, min_cov, min_AF, max_AF, population_db, popfreq_max, TMB_value, panel_size, is_notempty
 ):
     with open(output_file, "w") as file:
-        file.write(f"Initial amount of mutations after selecting for considered consequences: {filtering_rates[0]} mutations\n")
-        file.write(f"Initial amount of unique mutations after consequence selection: {filtering_rates[1]} mutations\n")
+        file.write(f"STEP,#_MUTATIONS,INFO\n")
+        file.write(f"Initial mutations prior filtering,{filtering_rates[0]},\n")
+        if filtering_rates[0] == filtering_rates[1]:
+            file.write(f"Unique mutations after consequence filter,{filtering_rates[1]},NOT_APPLIED\n")
+        else:
+            file.write(f"Unique mutations after consequence filter,{filtering_rates[1]},\n")
+        if filtering_rates[1] == filtering_rates[2]:
+            file.write(f"Unique mutations after SNV/MNV filter,{filtering_rates[2]},NOT_APPLIED\n")
+        else:
+            file.write(f"Unique mutations after SNV/MNV filter,{filtering_rates[2]},\n")
         if prefilter_region == True:
             if is_notempty == True:
-                file.write(
-                    f"### All following TMB Calculations have been performed only based on the provided BED file regions! ###\n"
-                )
+                file.write(f"Unique mutations after ROI-intersection,{filtering_rates[3]},\n")
             else:
-                file.write(
-                    f"### WARNING: TMB Calculations could not be performed on BED file regions, as no mutations are present in the regions-of-interest! --prefilter_tmb was ignored. ###\n"
-                )
-        if filter_muttype in ["snv", "snvs", "mnv", "mnvs"]:
-            file.write(
-                f"Retained mutations after filtering for mutation type {filter_muttype}: {filtering_rates[2]} mutations\n"
-            )
+                file.write(f"Unique mutations after ROI-intersection,{filtering_rates[3]},WARN_NO_MUTATIONS_IN_ROI\n")
         file.write(
-            f"Retained mutations after applying coverage filter for a threshold below {min_cov}: {filtering_rates[3]} mutations\n"
+            f"Unique mutations after coverage filter,{filtering_rates[4]},COV_VAL_{min_cov}\n"
         )
         file.write(
-            f"Retained mutations after filtering for AF between {min_AF} and {max_AF}: {filtering_rates[4]} mutations\n"
+            f"Unique mutations after AF range filter,{filtering_rates[5]},AF_RANGE_{min_AF}_{max_AF}\n"
         )
         file.write(
-            f"Retained mutations after filtering for the population AF from {population_db} below {popfreq_max}: {filtering_rates[5]} mutations\n"
+            f"Unique mutations after population database filter,{filtering_rates[6]},{population_db}_THRESH_{popfreq_max}\n"
         )
         file.write(
-            f"The final TMB based on these filtering conditions and a panel size of {panel_size}: {TMB_value} mutations/Mbp"
+            f"TMB value,{TMB_value}/Mbp,PANELSIZE_{panel_size}"
         )
 
 def plot_TMB(input, output_plotname, allele_fraction, lower_af, higher_af):
@@ -419,7 +438,7 @@ def plot_TMB(input, output_plotname, allele_fraction, lower_af, higher_af):
     )
     TMB_forplot["CSQ_Consequence"] = (
         TMB_forplot["CSQ_Consequence"].str.split("&").str[0]
-    )  ## beautification
+    )
     TMB_forplot = TMB_forplot.drop_duplicates("Mut_ID", keep="first")
 
     ### Draw the plot

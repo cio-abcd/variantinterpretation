@@ -222,8 +222,7 @@ workflow VARIANTINTERPRETATION {
         if ( params.bedfile && params.calculate_tmb ) {
                 if ( CHECKBEDFILE.out.bed_valid ) {
                         TMB_CALCULATE ( TSV_CONVERSION.out.tsv,
-                                        ch_min_bedfile,
-                                        ch_consequence_tmb
+                                        ch_min_bedfile
                     )
                     ch_versions = ch_versions.mix(TMB_CALCULATE.out.versions)
             }
