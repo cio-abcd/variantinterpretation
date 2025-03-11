@@ -2,7 +2,7 @@ process VEMBRANE_VEMBRANETABLE {
     tag "$meta.id"
     label 'process_low'
 
-    conda "bioconda::vembrane=1.0.1"
+    conda "bioconda::vembrane=1.0.7"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/vembrane:1.0.1--pyhdfd78af_0':
         'biocontainers/vembrane:1.0.1--pyhdfd78af_0' }"
@@ -24,6 +24,7 @@ process VEMBRANE_VEMBRANETABLE {
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
+    bcftools index --tbi $vcf -o ${prefix}.ann.vcf.tbi
     vembrane table \\
         --output ${prefix}.tsv \\
         --header '$header' \\

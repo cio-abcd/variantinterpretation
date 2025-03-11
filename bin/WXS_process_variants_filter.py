@@ -322,12 +322,27 @@ final_format.loc[:,AF_colnames[1]]  = final_format\
 
 # Sort Frequency
 final = final_format.sort_values(by=[AF_colnames[1]], ascending=False)
-  
+
+# save file for maf converting
+final = final.rename(columns={"CHROM": "Chromosome",
+                              "POS": "Start_Position",
+                              "REF": "Reference_Allele",
+                              "ALT": "Tumor_Seq_Allele2",
+                              "CSQ_SYMBOL": "HUGO_SYMBOL"})
+
+normal_id = (re.findall(r'(?<=allele_fraction)[WGS\d+\-]*', AF_colnames[0]))[0] + "_N_1"
+tumor_id = (re.findall(r'(?<=allele_fraction)[WGS\d+\-]*', AF_colnames[1]))[0] + "_T_1"
+
+final["Tumor_Sample_Barcode"] = tumor_id
+final["Matched_Norm_Sample_Barcode"] = normal_id
+final["NCBI_Build"] = "GRCh38"
+final.to_csv(args.outfile, sep="\t", index = False)
 # save output for vcf_filter
-variants_for_vcf_filter = final[["CHROM","POS","REF","ALT"]]
-unique_variants_for_vcf_filter = variants_for_vcf_filter.drop_duplicates()
-unique_variants_for_vcf_filter.to_csv(args.outfile, sep="\t", header = False,
-                               index = False)
+#variants_for_vcf_filter = final[["CHROM","POS","REF","ALT"]]
+#unique_variants_for_vcf_filter = variants_for_vcf_filter.drop_duplicates()
+#unique_variants_for_vcf_filter.to_csv(args.outfile, sep="\t", header = False,
+#                               index = False)
+
 # save file removed
 discarded_data = [intergenic_variants, data_below_AF, no_refseq_match_variants, 
                   hgvsc_nan, variants_exlude]
@@ -337,7 +352,7 @@ removed.to_excel(args.removed_variants,
                  engine= None)
 
 # Log information
-print("--> Writing file for variants for vcf_filter and file for removed data to xlsx file: successful!")
+print("--> Writing file for variants for oncokb and file for removed data to xlsx file: successful!")
 
 # Getting current date and time for log information
 date_time_now = datetime.now()

@@ -63,6 +63,7 @@ annotation_fields          = params.annotation_fields       ?: ''
 refseq_list                = params.refseq_list        ? Channel.value(params.refseq_list)                           : []
 variantDBi                 = params.variantDBi         ? Channel.value(params.variantDBi)                            : []
 token                      = params.oncokb_token       ? Channel.value(params.oncokb_token)                          : []
+mskcc                      = params.mskcc              ? Channel.value(params.mskcc)                                 : []
 
 // VEP extra files
 vep_extra_files            = []
@@ -88,10 +89,8 @@ include { HTML_REPORT                               } from '../subworkflows/loca
 include { TMB_CALCULATE	    	                    } from '../modules/local/tmbcalculation/main'
 include { UKB_REPORT                                } from '../modules/local/UKB_report/main'
 include { UKB_FILTER                                } from '../modules/local/UKB_filter/main'
-include { PREPROCESSVCF2MAF as PREPROCESS_FILTERED_VARIANTS } from '../modules/local/UKB_filter/preprocessvcf2maf/main'
-include { VCF2MAF                                   } from '../modules/local/UKB_filter/vcf2maf/main'
-include { ONCOKB_ANNOTATOR                          } from '../modules/local/UKB_filter/oncokb_annotator'
-
+include { ONCOKB_ANNOTATOR_UKB                      } from '../modules/local/oncokb_annotator_ukb/main'
+include { WXS_ANNOTATION_UKB                        } from '../modules/local/wxs_annotation_ukb/main'
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
@@ -186,7 +185,7 @@ workflow VARIANTINTERPRETATION {
 
     proc_vcf=VCFPROC.out.vcf_norm_tbi
         .map { meta, vcf, tbi -> tuple( meta, vcf, []) }
-
+    
     //
     // MODULE: VEP annotation
     //
@@ -205,8 +204,6 @@ workflow VARIANTINTERPRETATION {
     } else {
         ch_vcf = proc_vcf
     }
-
-
 
     // Filtering for transcripts
     if ( params.transcriptfilter || (params.transcriptlist!=[]) ) {
@@ -228,6 +225,22 @@ workflow VARIANTINTERPRETATION {
     } else {
         ch_vcf_tag = ch_vcf_tf
     }
+
+    //
+    // MODULE: NF-core VCF2MAF and Oncokb-Annotator (not compatiple mit provious vep module; has intrinsic vep!)
+    //
+    //if (params.vcf2maf) {
+    //    VCF2MAF( proc_vcf,
+    //             fasta_ref,
+    //             vep_cache,
+    //             mskcc)
+    //   ch_maf = VCF2MAF.out.maf
+    //   ch_vcf_tag = VCF2MAF.out.vcf_vep
+    //   ch_versions = ch_versions.mix(VCF2MAF.out.versions)
+    //   //ONCOKB_ANNOTATOR(ch_maf,token)
+    //} else {
+    //    ch_vcf_tag = proc_vcf
+    //}
 
     //
     // MODULE: TSV conversion with vembrane table
@@ -279,16 +292,13 @@ workflow VARIANTINTERPRETATION {
         // MODULE: UKB filter
         //
         if ( params.UKB_filter) {
-            ch_samplename_tsv = ch_tsv.map { meta, tsv -> [meta.id, tsv] }
+            //ch_samplename_tsv = ch_tsv.map { meta, tsv -> [meta.id, tsv] }
 
-            UKB_FILTER (ch_samplename_tsv, refseq_list, variantDBi)
+            UKB_FILTER(ch_tsv, refseq_list, variantDBi)
             ch_versions = ch_versions.mix(UKB_FILTER.out.versions)
-
-            ch_filtered_variants = UKB_FILTER.out.variants_for_vcf_filter
-            ch_tofilter_vcf = ch_vcf_tag.map { meta, vcf -> [meta.id, vcf] }
-            PREPROCESS_FILTERED_VARIANTS(ch_filtered_variants,ch_tofilter_vcf)
-            VCF2MAF(PREPROCESS_FILTERED_VARIANTS.out.filtered_variants,fasta_ref)
-            ONCOKB_ANNOTATOR(VCF2MAF.out.vcf2mafout,token)
+            ch_filtered_variants = UKB_FILTER.out.variants_filtered_maf
+            ONCOKB_ANNOTATOR_UKB(ch_filtered_variants,token)
+            WXS_ANNOTATION_UKB(ONCOKB_ANNOTATOR_UKB.out.oncokb_out)
         }
        
     }

@@ -1,4 +1,4 @@
-process VCF2MAF {
+process VCF2MAF_UKB {
     tag "$meta"
     label 'process_single'
     conda "bioconda::vcf2maf=1.6.22"
@@ -6,6 +6,7 @@ process VCF2MAF {
     input:
     tuple val(meta), path(filtered_variants)
     tuple val(meta2), path(fasta)
+    path(mskcc)
    
     output:
     tuple val(meta), path("${meta}_vcf2maf_out.maf"), emit: vcf2mafout
@@ -29,6 +30,7 @@ process VCF2MAF {
            --species homo_sapiens \
            --cache-version 112  \
            --ncbi-build GRCh38 \
+           --custom-enst ${mskcc} \
            --verbose \
            --inhibit-vep > log_${prefix}_vcf2maf_stdout.log 2>&1
     """
