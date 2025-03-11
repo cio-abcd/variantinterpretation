@@ -12,7 +12,7 @@ process TMB_CALCULATE {
     path bedfile
 
     output:
-    tuple val(meta), path("*.txt"), emit: TMB_txt
+    tuple val(meta), path("*.csv"), emit: TMB_txt
     tuple val(meta), path("*.png"), emit: TMB_png
     path "versions.yml"           , emit: versions
 
@@ -29,7 +29,7 @@ process TMB_CALCULATE {
         --file_in $tsv \\
         --bedfile $bedfile \\
         $args \\
-        --file_out ${prefix}.txt \\
+        --file_out ${prefix}.csv \\
         --plot_out ${prefix}.png
 
     cat <<-END_VERSIONS > versions.yml

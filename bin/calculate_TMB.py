@@ -403,16 +403,16 @@ def write_output(
             else:
                 file.write(f"Unique mutations after ROI-intersection,{filtering_rates[3]},WARN_NO_MUTATIONS_IN_ROI\n")
         file.write(
-            f"Unique mutations after coverage filter,{filtering_rates[4]},COV_VAL_{min_cov}\n"
+            f"Unique mutations after coverage filter,{filtering_rates[4]},MinimalCoverageThreshold:{min_cov}\n"
         )
         file.write(
-            f"Unique mutations after AF range filter,{filtering_rates[5]},AF_RANGE_{min_AF}_{max_AF}\n"
+            f"Unique mutations after AF range filter,{filtering_rates[5]},AFRange_Min:{min_AF}-Max:{max_AF}\n"
         )
         file.write(
-            f"Unique mutations after population database filter,{filtering_rates[6]},{population_db}_THRESH_{popfreq_max}\n"
+            f"Unique mutations after population database filter,{filtering_rates[6]},{population_db}_MaximalAF:{popfreq_max}\n"
         )
         file.write(
-            f"TMB value,{TMB_value}/Mbp,PANELSIZE_{panel_size}"
+            f"TMB value,{TMB_value}/Mbp,Panelsize_in_bp_{panel_size}"
         )
 
 def plot_TMB(input, output_plotname, allele_fraction, lower_af, higher_af):
