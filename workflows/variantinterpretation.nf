@@ -77,7 +77,6 @@ workflow VARIANTINTERPRETATION {
 
     refseq_list                = params.refseq_list        ? Channel.value(params.refseq_list)                           : []
     variantDBi                 = params.variantDBi         ? Channel.value(params.variantDBi)                            : []
-    token                      = params.oncokb_token       ? Channel.value(params.oncokb_token)                          : []
     mskcc                      = params.mskcc              ? Channel.value(params.mskcc)                                 : []
 
     //
@@ -209,7 +208,7 @@ workflow VARIANTINTERPRETATION {
     //   ch_maf = VCF2MAF.out.maf
     //   ch_vcf_tag = VCF2MAF.out.vcf_vep
     //   ch_versions = ch_versions.mix(VCF2MAF.out.versions)
-    //   //ONCOKB_ANNOTATOR(ch_maf,token)
+    //   //ONCOKB_ANNOTATOR(ch_maf)
     //} else {
     //    ch_vcf_tag = proc_vcf
     //}
@@ -269,7 +268,7 @@ workflow VARIANTINTERPRETATION {
             UKB_FILTER(ch_tsv, refseq_list, variantDBi)
             ch_versions = ch_versions.mix(UKB_FILTER.out.versions)
             ch_filtered_variants = UKB_FILTER.out.variants_filtered_maf
-            ONCOKB_ANNOTATOR_UKB(ch_filtered_variants,token)
+            ONCOKB_ANNOTATOR_UKB(ch_filtered_variants)
             WXS_ANNOTATION_UKB(ONCOKB_ANNOTATOR_UKB.out.oncokb_out)
         }
 
