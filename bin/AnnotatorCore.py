@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# from https://github.com/oncokb/oncokb-annotator AGPL-3.0 license
 import datetime
 import json
 import csv
