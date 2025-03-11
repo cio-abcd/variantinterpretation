@@ -18,7 +18,10 @@ include { TSV_CONVERSION                            } from '../subworkflows/loca
 include { VARIANTFILTER as PRESETS_FILTER_REPORT    } from '../subworkflows/local/variantfilter/main'
 include { HTML_REPORT                               } from '../subworkflows/local/html_report/main'
 include { TMB_CALCULATE	    	                    } from '../modules/local/tmbcalculation/main'
-
+include { UKB_REPORT                                } from '../modules/local/UKB_report/main'
+include { UKB_FILTER                                } from '../modules/local/UKB_filter/main'
+include { ONCOKB_ANNOTATOR_UKB                      } from '../modules/local/oncokb_annotator_ukb/main'
+include { WXS_ANNOTATION_UKB                        } from '../modules/local/wxs_annotation_ukb/main'
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
@@ -72,6 +75,10 @@ workflow VARIANTINTERPRETATION {
     if (!params.bedfile && params.calculate_tmb) error("ERROR: Need to specify bedfile for calculating TMB.")
     if (!params.read_depth && params.calculate_tmb) error("ERROR: Need to specify the read_depth FORMAT field for calculating TMB.")
 
+    refseq_list                = params.refseq_list        ? Channel.value(params.refseq_list)                           : []
+    variantDBi                 = params.variantDBi         ? Channel.value(params.variantDBi)                            : []
+    token                      = params.oncokb_token       ? Channel.value(params.oncokb_token)                          : []
+    mskcc                      = params.mskcc              ? Channel.value(params.mskcc)                                 : []
 
     //
     // Index vcf and reference files
@@ -192,6 +199,22 @@ workflow VARIANTINTERPRETATION {
     }
 
     //
+    // MODULE: NF-core VCF2MAF and Oncokb-Annotator (not compatiple mit provious vep module; has intrinsic vep!)
+    //
+    //if (params.vcf2maf) {
+    //    VCF2MAF( proc_vcf,
+    //             fasta_ref,
+    //             vep_cache,
+    //             mskcc)
+    //   ch_maf = VCF2MAF.out.maf
+    //   ch_vcf_tag = VCF2MAF.out.vcf_vep
+    //   ch_versions = ch_versions.mix(VCF2MAF.out.versions)
+    //   //ONCOKB_ANNOTATOR(ch_maf,token)
+    //} else {
+    //    ch_vcf_tag = proc_vcf
+    //}
+
+    //
     // MODULE: TSV conversion with vembrane table
     //
 
@@ -226,6 +249,30 @@ workflow VARIANTINTERPRETATION {
                     ch_versions = ch_versions.mix(TMB_CALCULATE.out.versions)
             }
         }
+
+        //
+        // MODULE: UKB report
+        //
+        if ( params.UKB_report) {
+            ch_samplename_tsv = ch_tsv.map { meta, tsv -> [meta.id, tsv] }
+            UKB_REPORT (ch_samplename_tsv, refseq_list, variantDBi)
+            ch_versions = ch_versions.mix(UKB_REPORT.out.versions)
+
+        }
+
+        //
+        // MODULE: UKB filter
+        //
+        if ( params.UKB_filter) {
+            //ch_samplename_tsv = ch_tsv.map { meta, tsv -> [meta.id, tsv] }
+
+            UKB_FILTER(ch_tsv, refseq_list, variantDBi)
+            ch_versions = ch_versions.mix(UKB_FILTER.out.versions)
+            ch_filtered_variants = UKB_FILTER.out.variants_filtered_maf
+            ONCOKB_ANNOTATOR_UKB(ch_filtered_variants,token)
+            WXS_ANNOTATION_UKB(ONCOKB_ANNOTATOR_UKB.out.oncokb_out)
+        }
+
     }
 
     emit:
