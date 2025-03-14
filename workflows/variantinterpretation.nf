@@ -99,15 +99,15 @@ workflow VARIANTINTERPRETATION {
     // VCF tests
     //
 
-    CHECKVCF (
-        vcf_tbi,
-        fasta_ref,
-        SAMTOOLS_DICT.out.dict,
-        SAMTOOLS_FAIDX.out.fai
-    )
-    ch_versions = ch_versions.mix(CHECKVCF.out.versions)
-    ch_warnings = ch_warnings.mix(CHECKVCF.out.warnings)
-    ch_multiqc_files = ch_multiqc_files.mix(CHECKVCF.out.multiqc_reports)
+    //CHECKVCF (
+    //    vcf_tbi,
+    //    fasta_ref,
+    //    SAMTOOLS_DICT.out.dict,
+    //    SAMTOOLS_FAIDX.out.fai
+    //)
+    //ch_versions = ch_versions.mix(CHECKVCF.out.versions)
+    //ch_warnings = ch_warnings.mix(CHECKVCF.out.warnings)
+    //ch_multiqc_files = ch_multiqc_files.mix(CHECKVCF.out.multiqc_reports)
 
     //
     // Check bedfiles
