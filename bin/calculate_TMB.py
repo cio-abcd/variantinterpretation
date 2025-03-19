@@ -321,7 +321,7 @@ def process_multi_sample(args, suffix_list):
     for suffix in suffix_list:
         allele_fraction = f'allele_fraction{suffix}'
         read_depth = f'read_depth{suffix}'
-        output_filename = f"{str(args.file_out).strip('.txt')}_{suffix}.txt"
+        output_filename = f"{str(args.file_out).strip('.txt')}_{suffix}.csv"
         output_plotname = f"{str(args.plot_out).strip('.png')}_{suffix}.png"
         TMB_df, filtering_rates_total = preprocess_vembraneout(
             args.file_in, allele_fraction, read_depth, args.filter_muttype, args.population_db, args.filter_consequence, args.csq_values
