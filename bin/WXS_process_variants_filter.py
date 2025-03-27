@@ -31,6 +31,7 @@ print("Script: WXS_process_variants_filter.py")
 
 # Get VEMBRANE_TABLE.out data
 VEMBRANE_TABLE_OUT = args.vembrane_table
+#VEMBRANE_TABLE_OUT = "4_FF_T1.tsv"
 VEMBRANE_TABLE_OUT_data = pd.read_csv(VEMBRANE_TABLE_OUT, sep="\t",low_memory=False)
 
 # Get PASS variants and others # not needed, since bcftools has filtered out the 
@@ -88,7 +89,7 @@ data_below_AF = data_report[data_report[AF_colnames[1]] < 0.05]
 
 # Load RefSeq transcripts to list
 transcript_list = args.refseq_list
-#transcript_list = "03022025_final_wxsRefSeq.txt"
+#transcript_list = "12032025_use_in_wgs_pilot_refseq.txt"
 RefSeq_NM = pd.read_csv(transcript_list)
 RefSeq_NM_lst = RefSeq_NM["NM_RefSeq_final"].values.tolist()
 
@@ -153,6 +154,9 @@ variants_valid = refseq_variants.loc[valid_index, :]
 
 # nan HGVSc nomencalure
 hgvsc_nan = refseq_variants.loc[nan_index , :]
+
+# exclude :n. variants
+variants_valid  = variants_valid[~variants_valid["CSQ_HGVSc"].str.contains(r':n.')]
 
 # Reset indices
 variants_valid = variants_valid .reset_index(drop="TRUE")

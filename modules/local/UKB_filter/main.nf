@@ -9,6 +9,7 @@ process UKB_FILTER {
     val(variantDBi)
 
     output:
+    tuple val(meta), path("*_tmb.csv")                     , emit: tmb
     tuple val(meta), path("*_filtered_variants.maf")       , emit: variants_filtered_maf
     tuple val(meta), path("*_removed_variants.xlsx")       , emit: removed_variants
     tuple val(meta), path("log_*.log")                     , emit: log
@@ -20,10 +21,11 @@ process UKB_FILTER {
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
     """  
-    WXS_process_variants_filter.py \\
+    WXS_process_variants_filter_tmb.py \\
         --vembrane_table ${tsv} \\
         --refseq_list ${refseq_list} \\
         --variant_DBi ${variantDBi} \\
+        --tmb_output ${prefix}_tmb.csv \\
         --outfile  ${prefix}_filtered_variants.maf \\
         --removed_variants ${prefix}_removed_variants.xlsx > log_${prefix}.log
     
