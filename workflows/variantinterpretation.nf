@@ -77,7 +77,7 @@ workflow VARIANTINTERPRETATION {
 
     refseq_list                = params.refseq_list        ? Channel.value(params.refseq_list)                           : []
     variantDBi                 = params.variantDBi         ? Channel.value(params.variantDBi)                            : []
-    mskcc                      = params.mskcc              ? Channel.value(params.mskcc)                                 : []
+    //mskcc                      = params.mskcc              ? Channel.value(params.mskcc)                                 : []
 
     //
     // Index vcf and reference files

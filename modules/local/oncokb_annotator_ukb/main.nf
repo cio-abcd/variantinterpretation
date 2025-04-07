@@ -3,6 +3,7 @@ process ONCOKB_ANNOTATOR_UKB {
     label 'process_single'
     conda "conda-forge::python=3.9.18 conda-forge::requests==2.31.0 conda-forge::urllib3==1.26.8 conda-forge::kiwisolver==1.2.0"
     secret 'oncokb_token'
+    errorStrategy 'ignore'
 
     input:
     tuple val(meta), path(variants_filtered_maf)

@@ -2,6 +2,7 @@ process UKB_FILTER {
     tag "$meta.id"
     label 'process_single'
     conda "conda-forge::python=3.9.18 conda-forge::pandas=2.1.0 conda-forge::openpyxl=3.1.2"
+    errorStrategy 'ignore'    
    
     input:
     tuple val(meta), path(tsv)
