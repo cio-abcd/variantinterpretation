@@ -2,7 +2,7 @@ process ENSEMBLVEP_VEP {
     tag "$meta.id"
     label 'process_medium'
 
-    conda "bioconda::ensembl-vep=112.0 bioconda::perl-list-moreutils=0.430"
+    conda "bioconda::ensembl-vep=112.0 bioconda::perl-list-moreutils=0.430 conda-forge::perl=5.32.1 conda-forge::perl-compress-raw-zlib=2.202"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/ensembl-vep:110.0--pl5321h2a3209d_0' :
         'biocontainers/ensembl-vep:110.0--pl5321h2a3209d_0' }"
