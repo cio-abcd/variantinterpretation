@@ -52,10 +52,17 @@ for i, pos in enumerate(UKB_ONCOKB_OUT_data["Start_Position"]):
             loc[i,"Start_Position"] + tmp_end_position1
             
 # final wgs pilot output
+# MULTIsample
+# get col names Normal and Tumor sample
+AF_colnames = UKB_ONCOKB_OUT_data.loc[:, UKB_ONCOKB_OUT_data.columns.str.startswith\
+                   ("allele_fraction")].columns.tolist()
+
+RD_colnames = UKB_ONCOKB_OUT_data.loc[:, UKB_ONCOKB_OUT_data.columns.str.startswith\
+                   ("read_depth")].columns.tolist()
+  
 final_columns = ["Chromosome", "Start_Position", "End_Position", "Reference_Allele",
-                 "Tumor_Seq_Allele2", "allele_fractionWGS15198-23_N_1",
-                 "read_depthWGS15198-23_N_1]", "allele_fractionWGS15198-23_T_1",
-                 "read_depthWGS15198-23_T_1]", "CSQ_VARIANT_CLASS",
+                 "Tumor_Seq_Allele2", AF_colnames[0], RD_colnames[0], AF_colnames[1], 
+                 RD_colnames[1], "CSQ_VARIANT_CLASS",
                  "CSQ_Consequence", "HUGO_SYMBOL", "NM-Nummer", "HGVSc", "HGVSp",
                  "CSQ_EXON", "CSQ_AF", "CSQ_MAX_AF", "CSQ_gnomADe_AF", "CSQ_gnomADg_AF",
                  "CSQ_CLIN_SIG", "ANNOTATED", "GENE_IN_ONCOKB", "VARIANT_IN_ONCOKB",
