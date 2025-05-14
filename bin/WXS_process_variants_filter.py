@@ -12,6 +12,7 @@ parser.add_argument("-r", "--refseq_list", type=str)
 parser.add_argument("-D", "--variant_DBi", type=str)
 parser.add_argument("-o", "--outfile", type=str)
 parser.add_argument("-rv", "--removed_variants", type=str)
+parser.add_argument("-tmb", "--tmb_output", type=str)
 args = parser.parse_args()
 
 # Getting current date and time for log information
@@ -25,9 +26,10 @@ print("Start:", dt_string)
 print("Input_vembrane_table:", args.vembrane_table)
 print("Output_file_1:", args.outfile)
 print("Output_file_2:", args.removed_variants)
+print("Output_file_3:", args.tmb_output)
 
 # Script used
-print("Script: WXS_process_variants_filter.py")
+print("Script: WXS_process_variants_filter_tmb.py")
 
 # Get VEMBRANE_TABLE.out data
 VEMBRANE_TABLE_OUT = args.vembrane_table
@@ -80,12 +82,77 @@ AF_colnames = data_report.loc[:, data_report.columns.str.startswith\
 
 RD_colnames = data_report.loc[:, data_report.columns.str.startswith\
                    ("read_depth")].columns.tolist()
-    
+      
 # Variants with AF>5%
 data_report_AF = data_report[data_report[AF_colnames[1]] >= 0.05]
 
 # Remove variants
 data_below_AF = data_report[data_report[AF_colnames[1]] < 0.05]
+
+# TMB calculation
+# filter variants
+intergenic_variants_AF = intergenic_variants[intergenic_variants\
+                                            [AF_colnames[1]] >= 0.05]
+    
+intergenic_variants_AF_RD = intergenic_variants_AF[intergenic_variants_AF\
+                                            [RD_colnames[1]] >= 30]
+    
+data_report_AF_RD = data_report_AF[data_report_AF\
+                                            [RD_colnames[1]] >= 30]
+
+# concat variants
+variants_tmb_frames = [data_report_AF_RD, intergenic_variants_AF_RD]
+variants_tmb = pd.concat(variants_tmb_frames)
+
+# remove duplicates based on CHROM, POS, REF, ALT, AF_colnames[1], RD_colnames[1]
+unique_variants_tmb = variants_tmb.drop_duplicates(
+                      subset = ["CHROM", "POS", "REF", "ALT", AF_colnames[1],
+                                RD_colnames[1]]).reset_index(drop=True)
+
+#synonymous_variants = unique_variants_tmb[unique_variants_tmb\
+#                                          ["CSQ_HGVSp"].str.contains(r'=', na=False)]
+    
+non_synonymous_variants = unique_variants_tmb[unique_variants_tmb\
+                                          ["CSQ_Consequence"] != "synonymous_variant"]
+# get SNV, DEL, INS
+#variant_clases = set(non_synonymous_variants["CSQ_VARIANT_CLASS"].to_list())
+
+TMB_snv =  non_synonymous_variants[non_synonymous_variants\
+                                   ["CSQ_VARIANT_CLASS"] == "SNV"]
+    
+TMB_del =  non_synonymous_variants[non_synonymous_variants\
+                                   ["CSQ_VARIANT_CLASS"] == "deletion"]
+    
+TMB_ins =  non_synonymous_variants[non_synonymous_variants\
+                                   ["CSQ_VARIANT_CLASS"] == "insertion"]
+    
+TMB_sub =  non_synonymous_variants[non_synonymous_variants\
+                                   ["CSQ_VARIANT_CLASS"] == "substitution"]
+
+# count numbers
+TMB_snv_final = len(TMB_snv)
+TMB_snv_delins_final = len(TMB_snv) + len(TMB_del) + len(TMB_ins)
+
+Regionsgroesse_MB = 3099.73 # 3099734149
+
+# make dataframe
+TMB = pd.DataFrame()
+
+header_col = ["Anzahl TMB Mut. missense", "Anzahl TMB Mut. Missense + InDel", "Regionsgroesse [Mb]",\
+              "TMB Missense", \
+              "TMB Missense + InDel"]
+
+for col in header_col:
+    TMB [col] = ""
+    
+TMB.loc[0, "Anzahl TMB Mut. missense"] = TMB_snv_final
+TMB.loc[0, "Anzahl TMB Mut. Missense + InDel"] = TMB_snv_delins_final
+TMB.loc[0, "Regionsgroesse [Mb]"] = Regionsgroesse_MB
+TMB.loc[0, "TMB Missense"] = round(TMB_snv_final/Regionsgroesse_MB, 2)
+TMB.loc[0, "TMB Missense + InDel"] = round(TMB_snv_delins_final/Regionsgroesse_MB, 2)
+    
+TMB.to_csv(args.tmb_output, index=False) 
+
 
 # Load RefSeq transcripts to list
 transcript_list = args.refseq_list
