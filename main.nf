@@ -44,6 +44,7 @@ ch_transcriptlist             = params.transcriptlist     ? Channel.fromPath(par
 ch_datavzrd_config            = params.datavzrd_config    ? Channel.fromPath(params.datavzrd_config).collect()          : Channel.fromPath("$projectDir/assets/datavzrd_config_template.yaml", checkIfExists: true)
 ch_annotation_colinfo         = params.annotation_colinfo ? Channel.fromPath(params.annotation_colinfo).collect()       : Channel.fromPath("$projectDir/assets/annotation_colinfo.tsv", checkIfExists: true)
 ch_bedfile			          = params.bedfile            ? Channel.fromPath(params.bedfile).collect()		            : []
+ch_consequence_tmb            = params.consequence_tmb    ? Channel.fromPath(params.consequence_tmb).collect()          : Channel.fromPath("$projectDir/assets/tmb_consequence_filters.csv", checkIfExists: true).collect()
 ch_custom_filters             = params.custom_filters     ? Channel.fromPath(params.custom_filters).collect()           : []
 
 // Initialize value channels from parameters
@@ -89,6 +90,7 @@ workflow CIOABCD_VARIANTINTERPRETATION {
         ch_datavzrd_config,
         ch_annotation_colinfo,
         ch_bedfile,
+        ch_consequence_tmb,
         ch_custom_filters
     )
 

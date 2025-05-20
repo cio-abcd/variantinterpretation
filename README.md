@@ -48,7 +48,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
    - [VCF checks](#vcf-checks)
      - Checks samplesheet integrity with modified [nf-core script](bin/check_samplesheet.py)
      - Checks VCF file requirements and integrity with `GATK4 ValidateVariants`, `bcftools` and a custom python script.
-     - Runs optional BED file format check using a [python script](bin/check_bedfiles.py)
+     - Runs optional BED file format check using a [python script](bin/process_bedfiles.py)
    - [Pre-annotation VCF filtering](#pre-annotation-vcf-filter) based on FILTER column entries using `bcftools view`.
    - [VCF normalization](#vcf-normalization): Splitting of multi-allelic into bi-allelic variants and optional left-alignment of InDels using `bcftools norm`.
    - [VCF merging](#vcf-merging): Optional merging of VCF file based on 'group' column in samplesheet into multi-sample VCF files.
@@ -273,6 +273,9 @@ The main parameter flags and their respective defaults are:
 - `--filter_muttype` : string, defines the filtering stringency for non single nucleotide variants, as f.e. multinucleotide variants or InDels. Setting **'snv'** will only consider single-base substitutions as eligible, **'mnv'** will additionally consider double-base substitutions and other substitution classes, every other string input will retain the full dataset as eligible. [default: 'snv']
 - `--population_db` : string, defines the major population database following the [VEP output nomenclature for external databases](https://www.ensembl.org/info/docs/tools/vep/vep_formats.html#output) for population AF based filtering. If not changed, it defaults to the combined global gnomAD exome AF as filtering database. The string should be formatted as 'CSQ\_{population_database_name}' to be compatible with the vembrane TSV output. [default: 'CSQ_gnomADe_AF']
 - `--panelsize_threshold` : integer, defines an additional threshold which checks if the provided BED file covers more basepairs than the threshold value. The TMB module will skip the TMB calculation without breaking the pipeline if the panelsize is below the threshold. The threshold should be lowered if the provided BED file covers less than 1 MBp but a TMB estimate needs to be inferred. [default: 1000000]
+- `--filter_roi_for_tmb`: boolean, controls if the TMB value should be calculated only on the provided positional arguments from the provided BED file. This option affects only the TMB calculation and would be equivalent of running the workflow with both `--tag_roi` and `--filter_vcf '"PASS"'`. [default: false]
+- `--filter_consequence`: boolean, controls if consequence filtering should be performed. Should be used in conjuction with `--csq_values` or no filtering based on consequences will be performed. [default: false]
+- `--csq_values`: comma-seperated string containing [consequences as defined on the VEP website](https://www.ensembl.org/info/genome/variation/prediction/predicted_data.html) fo which consequence filtering should be performed. If not defined it will default to all consequences retaining all mutations. [default: null]
 
 ## Contributions and Support
 

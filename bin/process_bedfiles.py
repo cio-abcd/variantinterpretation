@@ -7,9 +7,8 @@ import sys
 import argparse
 import logging
 
-logger = logging.getLogger()
-
 ### Set the values which could occur in a well structured bed file
+### FUTURE WARNING: Needs adaption depending on reference genome!
 
 chroms = {
     "chr1",
@@ -37,22 +36,54 @@ chroms = {
     "chrX",
     "chrY",
     "chrM",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16",
+    "17",
+    "18",
+    "19",
+    "20",
+    "21",
+    "22",
+    "X",
+    "Y",
+    "MT",
 }
-
-### Function to read in the input bed file
 
 
 def parse_args(argv=None):
     """Define and immediately parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description="Validate the structure of the provided BED-sheet.",
-        epilog="Example: python3 check_bedfiles.py file.bed",
+        description="This python script accepts BED files based on the USCS file format standard and runs multiple checks \
+        on the integrity and format adherence of the file. It checks if the BED file contains no header, if all columns containing \
+        positions are only composed of integers and that all end positions occur after their respective start positions. Furthermore, it creates a \
+        minimized version of a BED file required for bcftools and BED-based subworkflows in this pipeline.",
+        epilog="Example: python3 process_bedfiles.py file.bed",
     )
     parser.add_argument(
         "file_in",
         metavar="FILE_IN",
         type=Path,
         help="File with .bed suffix.",
+    )
+    parser.add_argument(
+        "file_out",
+        metavar="FILE_OUT",
+        type=Path,
+        help="Filename after minimization"
     )
     parser.add_argument(
         "-l",
@@ -63,37 +94,9 @@ def parse_args(argv=None):
     )
     return parser.parse_args(argv)
 
+logger = logging.getLogger()
 
-### Function to check if the BED file provided can be used for bcftools and PyRanges
-
-
-def check_bed_structure(bed_input):
-    colcheck = pd.read_csv(bed_input, sep="\t", header=None)
-    header_test = any(
-        isinstance(value, str) for value in colcheck.iloc[0, 1:2]
-    )  ## checks for no full strings in positional argument columns, as chr is interpreted as str
-    if (
-        len(colcheck.columns) >= 3 and header_test == False
-    ):  ### Should contain at least three columns CHROM, POS, END without header
-        chrom_valid = check_chromosome_col(colcheck.iloc[:, 0])
-        start_valid = check_integer_col(colcheck.iloc[:, 1])
-        end_valid = check_integer_col(colcheck.iloc[:, 2])
-        order_check = check_startend_col(colcheck)
-        if chrom_valid == True:
-            if start_valid == True and end_valid == True and order_check == True:
-                return True
-            else:
-                return False
-        else:
-            return False
-    else:
-        logger.error(
-            "The provided BED file doesn't follow the required format. Please provide a BED file containing the minimal information (Chromosome, Start, End) without an header. TMB will not be calculated."
-        )
-        raise ValueError(
-            f"The provided BED file doesn't follow the required format. Please provide a BED file containing the minimal information (Chromosome, Start, End) without an header. TMB will not be calculated."
-        )
-
+### Define functions for integrity checks and BED-file minimalization.
 
 def check_chromosome_col(input):
     column = input.isin(chroms)
@@ -110,7 +113,6 @@ def check_chromosome_col(input):
         )
         return False
 
-
 def check_integer_col(input):
     column = input.map(type).eq(int)
     validity = column.all()
@@ -122,7 +124,6 @@ def check_integer_col(input):
             "The positional argument column contains non-integer values. Please check your start/end column for problems."
         )
         return False
-
 
 def check_startend_col(input):
     all_rows_valid = all(input.iloc[:, 1] < input.iloc[:, 2])
@@ -138,6 +139,27 @@ def check_startend_col(input):
         return True
 
 
+def check_bed_structure(bed_input):
+    header_test = any(
+        isinstance(value, str) for value in bed_input.iloc[0, 1:2]
+    )  ## checks for no full strings in positional argument columns, as chr is interpreted as str
+    if len(bed_input.columns) >= 3 and header_test == False:
+        ### Should contain at least three columns CHROM, POS, END without header
+        chrom_valid = check_chromosome_col(bed_input.iloc[:, 0])
+        start_valid = check_integer_col(bed_input.iloc[:, 1])
+        end_valid = check_integer_col(bed_input.iloc[:, 2])
+        order_check = check_startend_col(bed_input)
+        return all([chrom_valid, start_valid, end_valid, order_check])
+    else:
+        raise ValueError(
+            f"The provided BED file doesn't follow the required format. Please provide a BED file containing the minimal information (Chromosome, Start, End) without an header. TMB will not be calculated."
+        )
+
+def select_minimal(bed_input):
+    minimal_bed = bed_input.iloc[:,0:3]
+    return(minimal_bed)
+
+
 def main(argv=None):
     """Coordinate argument parsing and program execution."""
     args = parse_args(argv)
@@ -146,17 +168,19 @@ def main(argv=None):
         logger.error(f"The given input file {args.file_in} was not found!")
         raise ValueError(f"The given input file {args.file_in} was not found!")
     else:
-        bed_well_structured = check_bed_structure(args.file_in)
+        bedfile = pd.read_csv(args.file_in, sep="\t", header=None)
+        bed_well_structured = check_bed_structure(bedfile)
         if bed_well_structured == True:
             structured_out = pd.DataFrame(
                 {"bed_well_structured": [bed_well_structured]}
             )
+            minimal_bed = select_minimal(bedfile)
             structured_out.to_csv("bed_stats_structure.txt", header=False, index=False)
+            minimal_bed.to_csv(args.file_out, header=False, index=False, sep='\t')
         else:
             raise ValueError(
                 f"The given BED file is not well structured! Please check for floats, strings or thereof in your file!"
             )
-
 
 if __name__ == "__main__":
     sys.exit(main())

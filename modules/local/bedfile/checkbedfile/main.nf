@@ -13,6 +13,7 @@ process CHECKBEDFILE {
 
     output:
     env  valid_structure						, emit: bed_valid
+    path "minimized_*"                          , emit: bedfile_min
     path "versions.yml"							, emit: versions
 
     when:
@@ -20,9 +21,12 @@ process CHECKBEDFILE {
 
     script: // This script is bundled with the pipeline, in cio-abcd/variantinterpretation/bin/
     """
-    check_bedfiles.py \\
-        $bedfile
+    ### Start bedfile integrity check
+    process_bedfiles.py \\
+        $bedfile \\
+        'minimized_$bedfile'
 
+    ### Emit control boolean that bedfile adheres to standards
     if [ -f "bed_stats_structure.txt" ]; then
         valid_structure=true
     else

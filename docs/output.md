@@ -136,7 +136,7 @@ Annotation performed by the variant effect predictor (VEP) software.
 <summary>Output files</summary>
 
 - `reports/tmb/`
-  - `*.txt`: TXT file containing the initial and subsequent counts of eligible mutations based on the provided TMB module thresholds and the final TMB value (mutations/MBp) calculated from the vembrane TSV output after applying allele frequency, coverage and population frequency thresholds.
+  - `*.txt`: TXT file containing the initial and subsequent counts of eligible mutations based on the provided TMB module thresholds and the final TMB value (mutations/MBp) calculated from the vembrane TSV output after applying consequence filters, BED-based positional filters, allele frequency, coverage and population frequency thresholds.
   - `*.png`: Non-interactive stacked Barplot visualizing the count of mutations (# of mutations) grouped by their variant consequence against their respective allele frequency (in %). Mutations are binned based on their allele frequency (bins = 100) and the lower and upper allele frequency thresholds are plotted as grey dashed lines. Variant Consequences are picked from the Ensembl VEP variant classes on the first unique entry of a mutation based on their genomic position.
   </details>
 
