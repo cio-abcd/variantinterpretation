@@ -1,6 +1,6 @@
 process UKB_FILTER {
     tag "$meta.id"
-    label 'process_single'
+    label 'process_low'
     conda "conda-forge::python=3.9.18 conda-forge::pandas=2.1.0 conda-forge::openpyxl=3.1.2"
     errorStrategy 'ignore'
 
@@ -28,7 +28,7 @@ process UKB_FILTER {
         --variant_DBi ${variantDBi} \\
         --tmb_output ${prefix}_tmb.csv \\
         --outfile  ${prefix}_filtered_variants.maf \\
-        --removed_variants ${prefix}_removed_variants.xlsx > log_${prefix}.log
+        --removed_variants ${prefix}_removed_variants.xlsx | tee log_${prefix}.log
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

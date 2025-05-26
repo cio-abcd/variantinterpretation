@@ -77,6 +77,21 @@ intergenic_variants = VEMBRANE_TABLE_OUT_data.loc[vs_intergenic, :]
 
 # MULTIsample
 # get col names Normal and Tumor sample
+af_cols = data_report.columns.str.startswith("allele_fraction")
+
+err_str = '''
+unexpected number of allele_fraction columns in tsv, {af_cols}
+expecting normally 2 (matched) or 1 (singlesample)
+'''
+
+if len(af_cols) == 1:
+    vcftype = 'singlesample'
+elif len(af_cols) == 2:
+    vcftype = 'matched'
+else:
+    raise RuntimeError(err_str)
+
+
 AF_colnames = data_report.loc[:, data_report.columns.str.startswith\
                    ("allele_fraction")].columns.tolist()
 
