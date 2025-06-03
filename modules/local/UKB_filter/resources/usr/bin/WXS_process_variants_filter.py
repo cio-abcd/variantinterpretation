@@ -77,16 +77,17 @@ intergenic_variants = VEMBRANE_TABLE_OUT_data.loc[vs_intergenic, :]
 
 # MULTIsample
 # get col names Normal and Tumor sample
-af_cols = data_report.columns.str.startswith("allele_fraction")
+af_cols : list[bool] = data_report.columns.str.startswith("allele_fraction")
 
-err_str = '''
+err_str = f'''
 unexpected number of allele_fraction columns in tsv, {af_cols}
 expecting normally 2 (matched) or 1 (singlesample)
+but was {af_cols}
 '''
 
-if len(af_cols) == 1:
+if sum(af_cols) == 1:
     vcftype = 'singlesample'
-elif len(af_cols) == 2:
+elif sum(af_cols) == 2:
     vcftype = 'matched'
 else:
     raise RuntimeError(err_str)
