@@ -217,6 +217,7 @@ workflow VARIANTINTERPRETATION {
     // MODULE: TSV conversion with vembrane table
     //
 
+    ukb_results = Channel.empty()
     if ( params.tsv ) {
 
         TSV_CONVERSION (ch_vcf_tag,
@@ -228,14 +229,14 @@ workflow VARIANTINTERPRETATION {
         //
         // MODULE: HTML report with datavzrd
         //
-        if ( params.report ) {
-            // need to combine TSV file with datavzrd_config and annotation_col.tsv for report generation
-            tsv_config = ch_tsv.combine(ch_datavzrd_config)
-            tsv_config_colinfo = tsv_config.combine(ch_annotation_colinfo)
-            // generate report
-            HTML_REPORT ( tsv_config_colinfo )
-            ch_versions = ch_versions.mix(HTML_REPORT.out.versions)
-        }
+        // if ( params.report ) {
+        //     // need to combine TSV file with datavzrd_config and annotation_col.tsv for report generation
+        //     tsv_config = ch_tsv.combine(ch_datavzrd_config)
+        //     tsv_config_colinfo = tsv_config.combine(ch_annotation_colinfo)
+        //     // generate report
+        //     HTML_REPORT ( tsv_config_colinfo )
+        //     ch_versions = ch_versions.mix(HTML_REPORT.out.versions)
+        // }
 
         //
         // MODULE: TMB calculation
@@ -254,7 +255,11 @@ workflow VARIANTINTERPRETATION {
         //
         if ( params.UKB_report) {
             ch_samplename_tsv = ch_tsv.map { meta, tsv -> [meta.id, tsv] }
-            UKB_REPORT (ch_samplename_tsv, refseq_list, variantDBi)
+            report = UKB_REPORT (ch_samplename_tsv, refseq_list, variantDBi)
+            report_table = report.final_xlsx
+            removed_variants = report.removed_variants
+            ukb_results = ukb_results.mix(report_table)
+            ukb_results = ukb_results.mix(removed_variants)
             ch_versions = ch_versions.mix(UKB_REPORT.out.versions)
 
         }
@@ -269,7 +274,8 @@ workflow VARIANTINTERPRETATION {
             ch_versions = ch_versions.mix(UKB_FILTER.out.versions)
             ch_filtered_variants = UKB_FILTER.out.variants_filtered_maf
             ONCOKB_ANNOTATOR_UKB(ch_filtered_variants)
-            WXS_ANNOTATION_UKB(ONCOKB_ANNOTATOR_UKB.out.oncokb_out)
+            annotated_variants = WXS_ANNOTATION_UKB(ONCOKB_ANNOTATOR_UKB.out.oncokb_out).annotated_variants
+            ukb_results = ukb_results.mix(annotated_variants.map{ it -> it[1] } )
         }
 
     }
@@ -278,6 +284,7 @@ workflow VARIANTINTERPRETATION {
     ch_versions
     ch_multiqc_files
     ch_warnings
+    ukb_results
 
 }
 
