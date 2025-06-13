@@ -42,6 +42,8 @@ process ENSEMBLVEP_VEP {
         $reference \\
         --assembly $genome \\
         --species $species \\
+		--offline \\
+		--merged \\
         --cache \\
         --cache_version $cache_version \\
         --dir_cache $dir_cache \\
