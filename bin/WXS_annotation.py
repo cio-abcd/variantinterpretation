@@ -62,7 +62,7 @@ RD_colnames = UKB_ONCOKB_OUT_data.loc[:, UKB_ONCOKB_OUT_data.columns.str.startsw
   
 final_columns = ["Chromosome", "Start_Position", "End_Position", "Reference_Allele",
                  "Tumor_Seq_Allele2", AF_colnames[0], RD_colnames[0], AF_colnames[1], 
-                 RD_colnames[1], "CSQ_VARIANT_CLASS",
+                 RD_colnames[1], "CSQ_VARIANT_CLASS", "CSQ_BIOTYPE",
                  "CSQ_Consequence", "HUGO_SYMBOL", "NM-Nummer", "HGVSc", "HGVSp",
                  "CSQ_EXON", "CSQ_AF", "CSQ_MAX_AF", "CSQ_gnomADe_AF", "CSQ_gnomADg_AF",
                  "CSQ_CLIN_SIG", "ANNOTATED", "GENE_IN_ONCOKB", "VARIANT_IN_ONCOKB",
