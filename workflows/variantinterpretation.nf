@@ -77,6 +77,7 @@ workflow VARIANTINTERPRETATION {
 
     refseq_list                = params.refseq_list        ? Channel.value(params.refseq_list)                           : []
     variantDBi                 = params.variantDBi         ? Channel.value(params.variantDBi)                            : []
+    library_type               = params.library_type       ? Channel.value(params.library_type)                          : []
     //mskcc                      = params.mskcc              ? Channel.value(params.mskcc)                                 : []
 
     //
@@ -270,7 +271,7 @@ workflow VARIANTINTERPRETATION {
         if ( params.UKB_filter) {
             //ch_samplename_tsv = ch_tsv.map { meta, tsv -> [meta.id, tsv] }
 
-            UKB_FILTER(ch_tsv, refseq_list, variantDBi)
+            UKB_FILTER(ch_tsv, refseq_list, variantDBi, library_type)
             ch_versions = ch_versions.mix(UKB_FILTER.out.versions)
             ch_filtered_variants = UKB_FILTER.out.variants_filtered_maf
             ONCOKB_ANNOTATOR_UKB(ch_filtered_variants)

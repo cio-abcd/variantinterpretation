@@ -10,6 +10,7 @@ process UKB_FILTER {
     tuple val(meta), path(tsv)
     val(refseq_list)
     val(variantDBi)
+    val(library_type)
 
     output:
     tuple val(meta), path("*_tmb.csv")                     , emit: tmb
@@ -28,6 +29,7 @@ process UKB_FILTER {
         --vembrane_table ${tsv} \\
         --refseq_list ${refseq_list} \\
         --variant_DBi ${variantDBi} \\
+        --library_type ${library_type} \\
         --tmb_output ${prefix}_tmb.csv \\
         --outfile  ${prefix}_filtered_variants.maf \\
         --removed_variants ${prefix}_removed_variants.xlsx | tee log_${prefix}.log
