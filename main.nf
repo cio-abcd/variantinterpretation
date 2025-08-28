@@ -56,9 +56,6 @@ ch_annotation_fields          = params.annotation_fields       ?: ''
 // VEP extra files
 ch_vep_extra_files            = []
 
-// WES WGS switch
-// ch_library_type               = params.library_type             ?: ''
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     NAMED WORKFLOWS FOR PIPELINE

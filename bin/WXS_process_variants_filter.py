@@ -13,7 +13,7 @@ parser.add_argument("-D", "--variant_DBi", type=str)
 parser.add_argument("-o", "--outfile", type=str)
 parser.add_argument("-rv", "--removed_variants", type=str)
 parser.add_argument("-tmb", "--tmb_output", type=str)
-parser.add_argument("-l", "--library_type", type=str)
+parser.add_argument("-a", "--analysis", type=str)
 args = parser.parse_args()
 
 # Getting current date and time for log information
@@ -150,9 +150,9 @@ TMB_sub =  non_synonymous_variants[non_synonymous_variants\
 TMB_snv_final = len(TMB_snv)
 TMB_snv_delins_final = len(TMB_snv) + len(TMB_del) + len(TMB_ins)
 
-if args.library_type == "wes":
-    Regionsgroesse_MB = 30.16 
-elif args.library_type == "wgs":
+if args.analysis == "wes":
+    Regionsgroesse_MB = 30.16
+elif args.analysis == "wgs":
     Regionsgroesse_MB = 3099.73 # 3099734149
 else:
     raise ValueError("library_type value not valid! Please correct!")

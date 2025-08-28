@@ -13,6 +13,7 @@ parser.add_argument("-D", "--variant_DBi", type=str)
 parser.add_argument("-o", "--outfile", type=str)
 parser.add_argument("-rv", "--removed_variants", type=str)
 parser.add_argument("-tmb", "--tmb_output", type=str)
+parser.add_argument("-a", "--analysis", type=str)
 args = parser.parse_args()
 
 # Getting current date and time for log information
@@ -149,7 +150,12 @@ TMB_sub =  non_synonymous_variants[non_synonymous_variants\
 TMB_snv_final = len(TMB_snv)
 TMB_snv_delins_final = len(TMB_snv) + len(TMB_del) + len(TMB_ins)
 
-Regionsgroesse_MB = 3099.73 # 3099734149
+if args.analysis == "wes":
+    Regionsgroesse_MB = 30.16
+elif args.analysis == "wgs":
+    Regionsgroesse_MB = 3099.73 # 3099734149
+else:
+    raise ValueError("library_type value not valid! Please correct!")
 
 # make dataframe
 TMB = pd.DataFrame()
@@ -391,8 +397,8 @@ variants_final_dbi = pd.merge(variants_final,\
 final_format = variants_final_dbi[["CHROM", "POS", "REF", "ALT", "FILTER",
                                AF_colnames[0], RD_colnames[0], AF_colnames[1],
                                RD_colnames[1], "CSQ_VARIANT_CLASS",
-                               "CSQ_Consequence", "CSQ_IMPACT", "CSQ_MANE_SELECT",
-                               "CSQ_MANE_PLUS_CLINICAL", "CSQ_SYMBOL",
+                               "CSQ_Consequence", "CSQ_IMPACT", "CSQ_BIOTYPE",
+                               "CSQ_MANE_SELECT", "CSQ_MANE_PLUS_CLINICAL", "CSQ_SYMBOL",
                                "CSQ_Feature", "NM-Nummer", "HGVSc", "HGVSp", "CSQ_EXON",
                                "CSQ_INTRON", "CSQ_STRAND", "CSQ_DOMAINS", "CSQ_miRNA",
                                "CSQ_SOMATIC", "CSQ_AF", "CSQ_MAX_AF",

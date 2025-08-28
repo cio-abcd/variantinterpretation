@@ -75,12 +75,11 @@ workflow VARIANTINTERPRETATION {
     if (!params.bedfile && params.tag_roi) error("ERROR: Need to specify bedfile for region-of-interest tagging.")
     if (!params.bedfile && params.calculate_tmb) error("ERROR: Need to specify bedfile for calculating TMB.")
     if (!params.read_depth && params.calculate_tmb) error("ERROR: Need to specify the read_depth FORMAT field for calculating TMB.")
-
+    
+    // Channels for UKB filter
     refseq_list                = params.refseq_list        ? Channel.value(params.refseq_list)                           : []
     variantDBi                 = params.variantDBi         ? Channel.value(params.variantDBi)                            : []
-    //library_type               = params.library_type       ? Channel.value(params.library_type)                          : []
-    //mskcc                      = params.mskcc              ? Channel.value(params.mskcc)                                 : []
-
+    
     //
     // Index vcf and reference files
     //
