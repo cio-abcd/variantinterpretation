@@ -150,7 +150,7 @@ TMB_sub =  non_synonymous_variants[non_synonymous_variants\
 TMB_snv_final = len(TMB_snv)
 TMB_snv_delins_final = len(TMB_snv) + len(TMB_del) + len(TMB_ins)
 
-if args.library_tpye == "wes":
+if args.library_type == "wes":
     Regionsgroesse_MB = 30.16 
 elif args.library_type == "wgs":
     Regionsgroesse_MB = 3099.73 # 3099734149
