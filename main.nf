@@ -57,7 +57,7 @@ ch_annotation_fields          = params.annotation_fields       ?: ''
 ch_vep_extra_files            = []
 
 // WES WGS switch
-ch_library_type               = params.library_type             ?: ''
+// ch_library_type               = params.library_type             ?: ''
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -72,7 +72,7 @@ workflow CIOABCD_VARIANTINTERPRETATION {
 
     take:
     ch_samplesheet        // channel: samplesheet read in from --input
-
+    ch_library_type       // channel: WES WGS switch given by --library_type
 
     main:
 
