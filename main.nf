@@ -56,6 +56,9 @@ ch_annotation_fields          = params.annotation_fields       ?: ''
 // VEP extra files
 ch_vep_extra_files            = []
 
+// WES WGS switch
+ch_library_type               = params.library_type             ?: ''
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     NAMED WORKFLOWS FOR PIPELINE
@@ -89,7 +92,8 @@ workflow CIOABCD_VARIANTINTERPRETATION {
         ch_datavzrd_config,
         ch_annotation_colinfo,
         ch_bedfile,
-        ch_custom_filters
+        ch_custom_filters,
+        ch_library_type
     )
 
     ch_versions = VARIANTINTERPRETATION.out.ch_versions

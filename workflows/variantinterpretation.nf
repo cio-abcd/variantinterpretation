@@ -77,7 +77,7 @@ workflow VARIANTINTERPRETATION {
 
     refseq_list                = params.refseq_list        ? Channel.value(params.refseq_list)                           : []
     variantDBi                 = params.variantDBi         ? Channel.value(params.variantDBi)                            : []
-    library_type               = params.library_type       ? Channel.value(params.library_type)                          : []
+    //library_type               = params.library_type       ? Channel.value(params.library_type)                          : []
     //mskcc                      = params.mskcc              ? Channel.value(params.mskcc)                                 : []
 
     //
