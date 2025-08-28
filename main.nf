@@ -72,8 +72,7 @@ workflow CIOABCD_VARIANTINTERPRETATION {
 
     take:
     ch_samplesheet        // channel: samplesheet read in from --input
-    ch_library_type       // channel: WES WGS switch given by --library_type
-
+    
     main:
 
     //

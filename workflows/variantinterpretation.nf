@@ -56,6 +56,7 @@ workflow VARIANTINTERPRETATION {
     ch_annotation_colinfo
     ch_bedfile
     ch_custom_filters
+    ch_library_type
 
     main:
     // gather versions of each process
@@ -271,7 +272,7 @@ workflow VARIANTINTERPRETATION {
         if ( params.UKB_filter) {
             //ch_samplename_tsv = ch_tsv.map { meta, tsv -> [meta.id, tsv] }
 
-            UKB_FILTER(ch_tsv, refseq_list, variantDBi, library_type)
+            UKB_FILTER(ch_tsv, refseq_list, variantDBi, ch_library_type)
             ch_versions = ch_versions.mix(UKB_FILTER.out.versions)
             ch_filtered_variants = UKB_FILTER.out.variants_filtered_maf
             ONCOKB_ANNOTATOR_UKB(ch_filtered_variants)
