@@ -1,5 +1,5 @@
 //
-// Subworkflow with functionality specific to the nf-core/variantinterpretation pipeline
+// Subworkflow with functionality specific to the cio-abcd/variantinterpretation pipeline
 //
 
 /*
@@ -8,29 +8,25 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { UTILS_NFVALIDATION_PLUGIN } from '../../nf-core/utils_nfvalidation_plugin'
-include { paramsSummaryMap          } from 'plugin/nf-validation'
-include { fromSamplesheet           } from 'plugin/nf-validation'
-include { UTILS_NEXTFLOW_PIPELINE   } from '../../nf-core/utils_nextflow_pipeline'
+include { UTILS_NFSCHEMA_PLUGIN     } from '../../nf-core/utils_nfschema_plugin'
+include { paramsSummaryMap          } from 'plugin/nf-schema'
+include { samplesheetToList         } from 'plugin/nf-schema'
 include { completionEmail           } from '../../nf-core/utils_nfcore_pipeline'
 include { completionSummary         } from '../../nf-core/utils_nfcore_pipeline'
-include { dashedLine                } from '../../nf-core/utils_nfcore_pipeline'
-include { nfCoreLogo                } from '../../nf-core/utils_nfcore_pipeline'
 include { imNotification            } from '../../nf-core/utils_nfcore_pipeline'
 include { UTILS_NFCORE_PIPELINE     } from '../../nf-core/utils_nfcore_pipeline'
-include { workflowCitation          } from '../../nf-core/utils_nfcore_pipeline'
+include { UTILS_NEXTFLOW_PIPELINE   } from '../../nf-core/utils_nextflow_pipeline'
 
 /*
-========================================================================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     SUBWORKFLOW TO INITIALISE PIPELINE
-========================================================================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
 workflow PIPELINE_INITIALISATION {
 
     take:
     version           // boolean: Display version and exit
-    help              // boolean: Display help text
     validate_params   // boolean: Boolean whether to validate parameters against the schema at runtime
     monochrome_logs   // boolean: Do not use coloured log outputs
     nextflow_cli_args //   array: List of positional nextflow CLI args
@@ -54,16 +50,10 @@ workflow PIPELINE_INITIALISATION {
     //
     // Validate parameters and generate parameter summary to stdout
     //
-    pre_help_text = nfCoreLogo(monochrome_logs)
-    post_help_text = '\n' + workflowCitation() + '\n' + dashedLine(monochrome_logs)
-    def String workflow_command = "nextflow run ${workflow.manifest.name} -profile <docker/singularity/.../institute> --input samplesheet.csv --outdir <OUTDIR>"
-    UTILS_NFVALIDATION_PLUGIN (
-        help,
-        workflow_command,
-        pre_help_text,
-        post_help_text,
+    UTILS_NFSCHEMA_PLUGIN (
+        workflow,
         validate_params,
-        "nextflow_schema.json"
+        null
     )
 
     //
@@ -81,12 +71,7 @@ workflow PIPELINE_INITIALISATION {
     // Create channel from input file provided through params.input
     //
     Channel
-        .fromSamplesheet("input") // read in Samplesheet with nf-validation plugin
-        .toList () //here starts adding of index to preserve samplesheet order for bcftools merge. Need to convert to list to get indexing across channel element instead of within each element.
-        .flatMap { it.withIndex().collect { samplesheet_entry, idx ->  //add indeces to List, then use collect function to format it
-            samplesheet_entry[0] = samplesheet_entry[0] + [index: idx] // add index to metadata
-            return samplesheet_entry
-        }}
+        .fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
         .map { meta, vcf ->
             if (meta.group && meta.sample) {
                 meta = meta + [id: "${meta.group}-${meta.sample}".toString()] /// set ID to be a combination of group and sample if group is set
@@ -96,7 +81,9 @@ workflow PIPELINE_INITIALISATION {
             return [meta.id, meta, vcf ]
         }
         .groupTuple() //group by each group-sample combination
-        .map { validateInputSamplesheet(it)}
+        .map { samplesheet ->
+            validateInputSamplesheet(samplesheet)
+        }
         .map {
             meta, vcfs ->
                 return [ meta, vcfs.flatten() ]
@@ -109,9 +96,9 @@ workflow PIPELINE_INITIALISATION {
 }
 
 /*
-========================================================================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     SUBWORKFLOW FOR PIPELINE COMPLETION
-========================================================================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
 workflow PIPELINE_COMPLETION {
@@ -126,19 +113,26 @@ workflow PIPELINE_COMPLETION {
     multiqc_report  //  string: Path to MultiQC report
 
     main:
-
     summary_params = paramsSummaryMap(workflow, parameters_schema: "nextflow_schema.json")
+    def multiqc_reports = multiqc_report.toList()
 
     //
     // Completion email and summary
     //
     workflow.onComplete {
         if (email || email_on_fail) {
-            completionEmail(summary_params, email, email_on_fail, plaintext_email, outdir, monochrome_logs, multiqc_report.toList())
+            completionEmail(
+                summary_params,
+                email,
+                email_on_fail,
+                plaintext_email,
+                outdir,
+                monochrome_logs,
+                multiqc_reports.getVal(),
+            )
         }
 
         completionSummary(monochrome_logs)
-
         if (hook_url) {
             imNotification(summary_params, hook_url)
         }
@@ -150,9 +144,9 @@ workflow PIPELINE_COMPLETION {
 }
 
 /*
-========================================================================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     FUNCTIONS
-========================================================================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 //
 // Check and validate pipeline parameters
@@ -194,7 +188,6 @@ def genomeExistsError() {
         error(error_string)
     }
 }
-
 //
 // Generate methods description for MultiQC
 //
@@ -223,7 +216,7 @@ def toolBibliographyText() {
 }
 
 def methodsDescriptionText(mqc_methods_yaml) {
-    // Convert  to a named map so can be used as with familar NXF ${workflow} variable syntax in the MultiQC YML file
+    // Convert  to a named map so can be used as with familiar NXF ${workflow} variable syntax in the MultiQC YML file
     def meta = [:]
     meta.workflow = workflow.toMap()
     meta["manifest_map"] = workflow.manifest.toMap()
@@ -234,8 +227,10 @@ def methodsDescriptionText(mqc_methods_yaml) {
         // Removing `https://doi.org/` to handle pipelines using DOIs vs DOI resolvers
         // Removing ` ` since the manifest.doi is a string and not a proper list
         def temp_doi_ref = ""
-        String[] manifest_doi = meta.manifest_map.doi.tokenize(",")
-        for (String doi_ref: manifest_doi) temp_doi_ref += "(doi: <a href=\'https://doi.org/${doi_ref.replace("https://doi.org/", "").replace(" ", "")}\'>${doi_ref.replace("https://doi.org/", "").replace(" ", "")}</a>), "
+        def manifest_doi = meta.manifest_map.doi.tokenize(",")
+        manifest_doi.each { doi_ref ->
+            temp_doi_ref += "(doi: <a href=\'https://doi.org/${doi_ref.replace("https://doi.org/", "").replace(" ", "")}\'>${doi_ref.replace("https://doi.org/", "").replace(" ", "")}</a>), "
+        }
         meta["doi_text"] = temp_doi_ref.substring(0, temp_doi_ref.length() - 2)
     } else meta["doi_text"] = ""
     meta["nodoi_text"] = meta.manifest_map.doi ? "" : "<li>If available, make sure to update the text to include the Zenodo DOI of version of the pipeline used. </li>"

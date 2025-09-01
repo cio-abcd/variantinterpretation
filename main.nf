@@ -1,13 +1,24 @@
 #!/usr/bin/env nextflow
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    variantinterpretation
+    cio-abcd/variantinterpretation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Github : https://github.com/cio-abcd/variantinterpretation
+    Website: https://nf-co.re/variantinterpretation
+    Slack  : https://nfcore.slack.com/channels/variantinterpretation
 ----------------------------------------------------------------------------------------
 */
 
-nextflow.enable.dsl = 2
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    IMPORT FUNCTIONS / MODULES / SUBWORKFLOWS / WORKFLOWS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+include { VARIANTINTERPRETATION  } from './workflows/variantinterpretation'
+include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_variantinterpretation_pipeline'
+include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_variantinterpretation_pipeline'
+include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_variantinterpretation_pipeline'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -117,13 +128,11 @@ workflow CIOABCD_VARIANTINTERPRETATION {
 workflow {
 
     main:
-
     //
     // SUBWORKFLOW: Run initialisation tasks
     //
     PIPELINE_INITIALISATION (
         params.version,
-        params.help,
         params.validate_params,
         params.monochrome_logs,
         args,
@@ -134,7 +143,9 @@ workflow {
     //
     // WORKFLOW: Run main workflow
     //
-    CIOABCD_VARIANTINTERPRETATION (PIPELINE_INITIALISATION.out.samplesheet)
+    CIOABCD_VARIANTINTERPRETATION (
+        PIPELINE_INITIALISATION.out.samplesheet
+    )
 
     //
     // SUBWORKFLOW: Run completion tasks

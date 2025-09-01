@@ -6,28 +6,49 @@
 </h1>
 
 [![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.10036356-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.10036356)
-[![GitHub Actions CI Status](https://github.com/nf-core/variantinterpretation/actions/workflows/ci.yml/badge.svg)](https://github.com/nf-core/variantinterpretation/actions/workflows/ci.yml)
-[![GitHub Actions Linting Status](https://github.com/nf-core/variantinterpretation/actions/workflows/linting.yml/badge.svg)](https://github.com/nf-core/variantinterpretation/actions/workflows/linting.yml)[![AWS CI](https://img.shields.io/badge/CI%20tests-full%20size-FF9900?labelColor=000000&logo=Amazon%20AWS)](https://nf-co.re/variantinterpretation/results)
+[![GitHub Actions CI Status](https://github.com/cio-abcd/variantinterpretation/actions/workflows/nf-test.yml/badge.svg)](https://github.com/cio-abcd/variantinterpretation/actions/workflows/nf-test.yml)
+[![GitHub Actions Linting Status](https://github.com/cio-abcd/variantinterpretation/actions/workflows/linting.yml/badge.svg)](https://github.com/cio-abcd/variantinterpretation/actions/workflows/linting.yml)[![AWS CI](https://img.shields.io/badge/CI%20tests-full%20size-FF9900?labelColor=000000&logo=Amazon%20AWS)](https://nf-co.re/variantinterpretation/results)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)
 [![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
 
-[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A523.04.0-23aa62.svg)](https://www.nextflow.io/)
+[![Nextflow](https://img.shields.io/badge/version-%E2%89%A524.10.5-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)
+[![nf-core template version](https://img.shields.io/badge/nf--core_template-3.3.2-green?style=flat&logo=nfcore&logoColor=white&color=%2324B064&link=https%3A%2F%2Fnf-co.re)](https://github.com/nf-core/tools/releases/tag/3.3.2)
 [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
-[![Launch on Seqera Platform](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Seqera%20Platform-%234256e7)](https://cloud.seqera.io/launch?pipeline=https://github.com/nf-core/variantinterpretation)
+[![Launch on Seqera Platform](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Seqera%20Platform-%234256e7)](https://cloud.seqera.io/launch?pipeline=https://github.com/cio-abcd/variantinterpretation)
 
 ## Introduction
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 569e795 (Restored README)
 The **variantinterpretation** pipeline is a bioinformatic analysis workflow adding biological and clinical knowledge to genomic variants.
 It takes as input genomic variants in the variant calling file format (VCF), adds annotations and wraps them into an HTML report and spreadsheet-compatible TSV files.
 Variants are annotated with information that support molecular biologists and pathologists in interpreting their functional relevance in a biological and clinical context.
 Further, the pipeline enables variant filtering and deriving meaningful metrics as the tumor mutational burden (TMB).
+<<<<<<< HEAD
+=======
+**cio-abcd/variantinterpretation** is a bioinformatics pipeline that ...
+>>>>>>> ce0b66e (Changed name to cio-abcd)
+=======
+>>>>>>> 569e795 (Restored README)
 
 The pipeline is currently tailored for analyzing somatic single-nucleotide variants (SNVs) and small Insertions and Deletions (InDels).
 In principle, the workflow was designed to work with all VCF files independent from the originating variant caller.
 We tested the pipeline with the variant callers mutect2 and freebayes and are happy to get feedback about compatibility or problems with other variant callers.
 
+<<<<<<< HEAD
+<<<<<<< HEAD
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. Further it provides many options for configuration the pipeline to tailor them to your specific application. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) in order to make them available to all nf-core pipelines, and to everyone within the Nextflow community.
+=======
+<!-- TODO nf-core: Include a figure that guides the user through the major workflow steps. Many nf-core
+     workflows use the "tube map" design for that. See https://nf-co.re/docs/guidelines/graphic_design/workflow_diagrams#examples for examples.   -->
+<!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
+>>>>>>> 3fb0358 (Template update for nf-core/tools version 3.3.2)
+=======
+The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. Further it provides many options for configuration the pipeline to tailor them to your specific application. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) in order to make them available to all nf-core pipelines, and to everyone within the Nextflow community.
+>>>>>>> 569e795 (Restored README)
 
 <!-- TODO nf-core: Add full-sized test dataset and amend the paragraph below if applicable -->
 <!-- On release, automated continuous integration tests run the pipeline on a full-sized dataset on the AWS cloud infrastructure. This ensures that the pipeline runs on AWS, has sensible resource allocation defaults set to run on real-world datasets, and permits the persistent storage of results to benchmark between pipeline releases and other analysis sources.-->
@@ -72,7 +93,20 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 Creates tabix index (tbi) for the VCF file that is required for several workflow processes using [`bcftools index`](https://samtools.github.io/bcftools/bcftools.html#index).
 It requires an uncompressed or bgzip compressed VCF file.
 
+<<<<<<< HEAD
+<<<<<<< HEAD
 #### VCF checks
+=======
+```bash
+nextflow run cio-abcd/variantinterpretation \
+   -profile <docker/singularity/.../institute> \
+   --input samplesheet.csv \
+   --outdir <OUTDIR>
+```
+>>>>>>> ce0b66e (Changed name to cio-abcd)
+=======
+#### VCF checks
+>>>>>>> 569e795 (Restored README)
 
 This VCF quality control module checks for integrity of the VCF file and several requirements to the input variants. It additionally can create warnings logged in the multiQC module if the VCF file shows some characteristics that can hamper interpretation.
 
@@ -96,7 +130,15 @@ The following table gives an overview about the criteria that are checked and po
 | contains other variants than SNVs and InDels | WARNING   | Gives warning if VCF file contains other variants than SNVs and InDels.                                                                                                                                                                                                                     | `bcftools stats`         |
 | previous VEP annotation present              | WARNING   | Gives warning if previous VEP annotation is present. The test checks for VEP in the header and if the INFO column already contains a `CSQ` key.                                                                                                                                             |
 
+<<<<<<< HEAD
+<<<<<<< HEAD
 #### Pre-annotation VCF filter
+=======
+cio-abcd/variantinterpretation was originally written by CIO-ABCD.
+>>>>>>> ce0b66e (Changed name to cio-abcd)
+=======
+#### Pre-annotation VCF filter
+>>>>>>> 569e795 (Restored README)
 
 It can filter VCF files based on flags in the FILTER column using [`bcftools view`](https://samtools.github.io/bcftools/bcftools.html#view).
 This can be enabled with the `--filter_vcf` parameter providing flag names for the VCF FILTER column to be kept (e.g., "PASS").
@@ -294,7 +336,19 @@ If you would like to contribute to this pipeline, please see the [contributing g
 
 ## Citations
 
+<<<<<<< HEAD
+<<<<<<< HEAD
 If you use variantinterpretation for your analysis, please cite it using the following doi: [10.5281/zenodo.10036356](https://doi.org/10.5281/zenodo.10036356)
+=======
+<!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
+<!-- If you use cio-abcd/variantinterpretation for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
+
+<!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->
+
+>>>>>>> ce0b66e (Changed name to cio-abcd)
+=======
+If you use variantinterpretation for your analysis, please cite it using the following doi: [10.5281/zenodo.10036356](https://doi.org/10.5281/zenodo.10036356)
+>>>>>>> 569e795 (Restored README)
 An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
 
 You can cite the `nf-core` publication as follows:

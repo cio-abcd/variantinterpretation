@@ -18,6 +18,7 @@ include { TSV_CONVERSION                            } from '../subworkflows/loca
 include { VARIANTFILTER as PRESETS_FILTER_REPORT    } from '../subworkflows/local/variantfilter/main'
 include { HTML_REPORT                               } from '../subworkflows/local/html_report/main'
 include { TMB_CALCULATE	    	                    } from '../modules/local/tmbcalculation/main'
+include { DUMP_WARNINGS                             } from '../modules/local/multiqcreport_warnings'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -25,12 +26,11 @@ include { TMB_CALCULATE	    	                    } from '../modules/local/tmbcal
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
-include { paramsSummaryMap            } from 'plugin/nf-validation'
-include { paramsSummaryMultiqc        } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { softwareVersionsToYAML      } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText      } from '../subworkflows/local/utils_nfcore_variantinterpretation_pipeline'
-include { DUMP_WARNINGS               } from '../modules/local/multiqcreport_warnings'
+include { MULTIQC                } from '../modules/nf-core/multiqc/main'
+include { paramsSummaryMap       } from 'plugin/nf-schema'
+include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_variantinterpretation_pipeline'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -258,7 +258,7 @@ workflow MULTIQC_REPORT {
     softwareVersionsToYAML(ch_versions)
         .collectFile(
             storeDir: "${params.outdir}/reports/pipeline_info",
-            name: 'pipeline_software_mqc_versions.yml',
+            name: 'cio_abcd_'  +  'variantinterpretation_software_'  + 'mqc_'  + 'versions.yml',
             sort: true,
             newLine: true
         ).set { ch_collated_versions }

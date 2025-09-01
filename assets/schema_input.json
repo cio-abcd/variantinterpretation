@@ -1,6 +1,6 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "https://raw.githubusercontent.com/cio-abcd/variantinterpretation/master/assets/schema_input.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/cio-abcd/variantinterpretation/main/assets/schema_input.json",
     "title": "cio-abcd/variantinterpretation pipeline - params.input schema",
     "description": "Schema for the file provided with params.input",
     "type": "array",

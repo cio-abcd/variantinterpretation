@@ -22,6 +22,16 @@
 
 - [VEP](https://www.ensembl.org/info/docs/tools/vep/index.html)
 
+  > Danecek, P., Bonfield, J.K., Liddle, J., Marshall, J., Ohan, V., Pollard, M.O., Whitwham, A., Keane, T., McCarthy, S.A., Davies, R.M., Li, H. (2021): Twelve years of SAMtools and BCFtools. GigaScience. https://doi.org/10.1093/gigascience/giab008
+
+- [samtools](http://www.htslib.org/)
+
+  > Danecek, P., Bonfield, J.K., Liddle, J., Marshall, J., Ohan, V., Pollard, M.O., Whitwham, A., Keane, T., McCarthy, S.A., Davies, R.M., Li, H. (2021): Twelve years of SAMtools and BCFtools. GigaScience. https://doi.org/10.1093/gigascience/giab008
+
+- [GATK](https://gatk.broadinstitute.org/hc/en-us)
+
+- [VEP](https://www.ensembl.org/info/docs/tools/vep/index.html)
+
 - [MultiQC](https://pubmed.ncbi.nlm.nih.gov/27312411/)
 
   > Ewels P, Magnusson M, Lundin S, Käller M. MultiQC: summarize analysis results for multiple tools and samples in a single report. Bioinformatics. 2016 Oct 1;32(19):3047-8. doi: 10.1093/bioinformatics/btw354. Epub 2016 Jun 16. PubMed PMID: 27312411; PubMed Central PMCID: PMC5039924.

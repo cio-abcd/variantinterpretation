@@ -1,13 +1,22 @@
-repository_type: pipeline
 lint:
   files_exist:
     - CODE_OF_CONDUCT.md
     - assets/nf-core-variantinterpretation_logo_light.png
     - docs/images/nf-core-variantinterpretation_logo_light.png
     - docs/images/nf-core-variantinterpretation_logo_dark.png
+  multiqc_config:
+    - report_comment
   nextflow_config:
     - manifest.name
     - manifest.homePage
-  multiqc_config:
-    - report_comment
-nf_core_version: "2.14.1"
+nf_core_version: 3.3.2
+repository_type: pipeline
+template:
+  author: CIO-ABCD
+  description: Pipeline to add biological and clinical knowledge to genomic variants.
+  force: false
+  is_nfcore: false
+  name: variantinterpretation
+  org: cio-abcd
+  outdir: .
+  version: 1.1.0
