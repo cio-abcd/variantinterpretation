@@ -1,8 +1,10 @@
 process UKB_REPORT {
     tag "$sample_name"
-    label 'process_single'
+    //label 'process_single'
     conda "conda-forge::python=3.9.18 conda-forge::pandas=2.1.0 conda-forge::openpyxl=3.1.2"
-   
+    cpus 1
+    memory "20 GB"
+
     input:
     tuple val(sample_name), path(tsv)
     val(refseq_list)
@@ -18,14 +20,14 @@ process UKB_REPORT {
     //task.ext.when == null || task.ext.when
 
     script:
-    """  
+    """
     WXS_process_variants_report.py \\
         --vembrane_table ${tsv} \\
         --refseq_list ${refseq_list} \\
         --variant_DBi ${variantDBi} \\
         --outfile  ${sample_name}_final_processed.xlsx \\
         --removed_variants ${sample_name}_removed_variants.xlsx > log_${sample_name}.log
-    
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')
