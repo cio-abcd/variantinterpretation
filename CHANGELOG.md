@@ -3,7 +3,7 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## dev
+## v1.1.0 - [1st September 2025]
 
 ### `Added`
 
@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - added separate region-of-interest filter independent of `--tag_roi` + `--filter_vcf` for TMB_CALCULATE (PR #56)
 - added VEP consequence filter for TMB_CALCULATE (PR #56)
 
-### Changed
+### `Changed`
 
 - increase compatibility with calling workflow from another pipeline (PR #52)
   - moved scripts from bin/ to their respective module/resources/usr/bin
