@@ -55,6 +55,7 @@ ch_annotation_fields          = params.annotation_fields       ?: ''
 
 // VEP extra files
 ch_vep_extra_files            = []
+ch_library_type               = params.library_type ?: 'wgs'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -69,7 +70,7 @@ workflow CIOABCD_VARIANTINTERPRETATION {
 
     take:
     ch_samplesheet        // channel: samplesheet read in from --input
-    
+
     main:
 
     //
@@ -96,14 +97,16 @@ workflow CIOABCD_VARIANTINTERPRETATION {
     ch_multiqc_files = VARIANTINTERPRETATION.out.ch_multiqc_files
     ch_warnings = VARIANTINTERPRETATION.out.ch_warnings
 
+    /*
     MULTIQC_REPORT (
         ch_versions,
         ch_multiqc_files,
         ch_warnings,
     )
+    */
 
     emit:
-    multiqc_report = MULTIQC_REPORT.out.multiqc_report // channel: /path/to/multiqc_report.html
+    multiqc_report = Channel.empty() //MULTIQC_REPORT.out.multiqc_report // channel: /path/to/multiqc_report.html
 
 }
 /*
