@@ -75,11 +75,11 @@ workflow VARIANTINTERPRETATION {
     if (!params.bedfile && params.tag_roi) error("ERROR: Need to specify bedfile for region-of-interest tagging.")
     if (!params.bedfile && params.calculate_tmb) error("ERROR: Need to specify bedfile for calculating TMB.")
     if (!params.read_depth && params.calculate_tmb) error("ERROR: Need to specify the read_depth FORMAT field for calculating TMB.")
-    
+
     // Channels for UKB filter
     refseq_list                = params.refseq_list        ? Channel.value(params.refseq_list)                           : []
     variantDBi                 = params.variantDBi         ? Channel.value(params.variantDBi)                            : []
-    
+
     //
     // Index vcf and reference files
     //
@@ -254,30 +254,26 @@ workflow VARIANTINTERPRETATION {
         //
         // MODULE: UKB report
         //
-        if ( params.UKB_report) {
-            ch_samplename_tsv = ch_tsv.map { meta, tsv -> [meta.id, tsv] }
-            report = UKB_REPORT (ch_samplename_tsv, refseq_list, variantDBi)
-            report_table = report.final_xlsx
-            removed_variants = report.removed_variants
-            ukb_results = ukb_results.mix(report_table)
-            ukb_results = ukb_results.mix(removed_variants)
-            ch_versions = ch_versions.mix(UKB_REPORT.out.versions)
+        ch_samplename_tsv = ch_tsv.map { meta, tsv -> [meta.id, tsv] }
+        report = UKB_REPORT (ch_samplename_tsv, refseq_list, variantDBi)
+        report_table = report.final_xlsx
+        removed_variants = report.removed_variants
+        ukb_results = ukb_results.mix(report_table)
+        ukb_results = ukb_results.mix(removed_variants)
+        ch_versions = ch_versions.mix(UKB_REPORT.out.versions)
 
-        }
 
         //
         // MODULE: UKB filter
         //
-        if ( params.UKB_filter) {
-            //ch_samplename_tsv = ch_tsv.map { meta, tsv -> [meta.id, tsv] }
+        //ch_samplename_tsv = ch_tsv.map { meta, tsv -> [meta.id, tsv] }
 
-            UKB_FILTER(ch_tsv, refseq_list, variantDBi, ch_library_type)
-            ch_versions = ch_versions.mix(UKB_FILTER.out.versions)
-            ch_filtered_variants = UKB_FILTER.out.variants_filtered_maf
-            ONCOKB_ANNOTATOR_UKB(ch_filtered_variants)
-            annotated_variants = WXS_ANNOTATION_UKB(ONCOKB_ANNOTATOR_UKB.out.oncokb_out).annotated_variants
-            ukb_results = ukb_results.mix(annotated_variants.map{ it -> it[1] } )
-        }
+        UKB_FILTER(ch_tsv, refseq_list, variantDBi, ch_library_type)
+        ch_versions = ch_versions.mix(UKB_FILTER.out.versions)
+        ch_filtered_variants = UKB_FILTER.out.variants_filtered_maf
+        ONCOKB_ANNOTATOR_UKB(ch_filtered_variants)
+        annotated_variants = WXS_ANNOTATION_UKB(ONCOKB_ANNOTATOR_UKB.out.oncokb_out).annotated_variants
+        ukb_results = ukb_results.mix(annotated_variants.map{ it -> it[1] } )
 
     }
 
