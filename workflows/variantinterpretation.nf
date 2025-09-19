@@ -271,9 +271,10 @@ workflow VARIANTINTERPRETATION {
         UKB_FILTER(ch_tsv, refseq_list, variantDBi, ch_library_type)
         ch_versions = ch_versions.mix(UKB_FILTER.out.versions)
         ch_filtered_variants = UKB_FILTER.out.variants_filtered_maf
+        tmb = UKB_FILTER.out.tmb.map{it -> it[1]}
         ONCOKB_ANNOTATOR_UKB(ch_filtered_variants)
         annotated_variants = WXS_ANNOTATION_UKB(ONCOKB_ANNOTATOR_UKB.out.oncokb_out).annotated_variants
-        ukb_results = ukb_results.mix(annotated_variants.map{ it -> it[1] } )
+        ukb_results = ukb_results.mix(annotated_variants.map{ it -> it[1] } ).mix(tmb)
 
     }
 
