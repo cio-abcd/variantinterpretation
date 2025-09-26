@@ -1,0 +1,43 @@
+Changes in component 'nf-core/bcftools/annotate'
+'modules/nf-core/bcftools/annotate/environment.yml' is unchanged
+'modules/nf-core/bcftools/annotate/meta.yml' is unchanged
+Changes in 'bcftools/annotate/main.nf':
+--- modules/nf-core/bcftools/annotate/main.nf
++++ modules/nf-core/bcftools/annotate/main.nf
+@@ -11,7 +11,6 @@
+     tuple val(meta), path(input), path(index)
+     path(annotations)
+     path(annotations_index)
+-    path(header_lines)
+ 
+     output:
+     tuple val(meta), path("*.{vcf,vcf.gz,bcf,bcf.gz}"), emit: vcf
+@@ -25,7 +24,6 @@
+     script:
+     def args    = task.ext.args ?: ''
+     def prefix  = task.ext.prefix ?: "${meta.id}"
+-    def header_file = header_lines ? "--header-lines ${header_lines}" : ''
+     def annotations_file = annotations ? "--annotations ${annotations}" : ''
+     def extension = args.contains("--output-type b") || args.contains("-Ob") ? "bcf.gz" :
+                     args.contains("--output-type u") || args.contains("-Ou") ? "bcf" :
+@@ -33,6 +31,10 @@
+                     args.contains("--output-type v") || args.contains("-Ov") ? "vcf" :
+                     "vcf"
+     def index_command = !index ? "bcftools index $input" : ''
++    
++    def f = file("roi_header_lines.txt")
++    f.text = "##INFO=<ID=ROI,Number=1,Type=String,Description=\"Region is present in the target regions BED file specified in variantinterpretation pipeline\">"
++
+ 
+     if ("$input" == "${prefix}.${extension}") error "Input and output names are the same, set prefix in module configuration to disambiguate!"
+     """
+
+'modules/nf-core/bcftools/annotate/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/bcftools/annotate/tests/vcf_gz_index_csi.config' is unchanged
+'modules/nf-core/bcftools/annotate/tests/vcf.config' is unchanged
+'modules/nf-core/bcftools/annotate/tests/bcf.config' is unchanged
+'modules/nf-core/bcftools/annotate/tests/vcf_gz_index.config' is unchanged
+'modules/nf-core/bcftools/annotate/tests/tags.yml' is unchanged
+'modules/nf-core/bcftools/annotate/tests/main.nf.test' is unchanged
+'modules/nf-core/bcftools/annotate/tests/vcf_gz_index_tbi.config' is unchanged
+************************************************************

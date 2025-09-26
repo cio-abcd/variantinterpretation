@@ -11,7 +11,6 @@ process BCFTOOLS_ANNOTATE {
     tuple val(meta), path(input), path(index)
     path(annotations)
     path(annotations_index)
-    path(header_lines)
 
     output:
     tuple val(meta), path("*.{vcf,vcf.gz,bcf,bcf.gz}"), emit: vcf
@@ -25,7 +24,6 @@ process BCFTOOLS_ANNOTATE {
     script:
     def args    = task.ext.args ?: ''
     def prefix  = task.ext.prefix ?: "${meta.id}"
-    def header_file = header_lines ? "--header-lines ${header_lines}" : ''
     def annotations_file = annotations ? "--annotations ${annotations}" : ''
     def extension = args.contains("--output-type b") || args.contains("-Ob") ? "bcf.gz" :
                     args.contains("--output-type u") || args.contains("-Ou") ? "bcf" :
@@ -33,16 +31,17 @@ process BCFTOOLS_ANNOTATE {
                     args.contains("--output-type v") || args.contains("-Ov") ? "vcf" :
                     "vcf"
     def index_command = !index ? "bcftools index $input" : ''
-
+    
     if ("$input" == "${prefix}.${extension}") error "Input and output names are the same, set prefix in module configuration to disambiguate!"
     """
     $index_command
+
+    echo "##INFO=<ID=ROI,Number=1,Type=String,Description=\\"Region is present in the target regions BED file specified in variantinterpretation pipeline\\">" > roi_header_lines.txt
 
     bcftools \\
         annotate \\
         $args \\
         $annotations_file \\
-        $header_file \\
         --output ${prefix}.${extension} \\
         --threads $task.cpus \\
         $input
