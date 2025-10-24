@@ -162,7 +162,6 @@ variants_valid = variants_valid .reset_index(drop="TRUE")
 keep_idx = []
 remove_idx = []
 for rsv_idx, rsv in enumerate(variants_valid["CSQ_HGVSc"]):
-    tmp_rsv = rsv.split(":c.")[1]
 	# TODO: fix, this hotfix ignore noncoding for now to allow finishing pipeline run
     if ':c.' not in rsv and ':n.' in rsv:
         remove_idx.append(rsv_idx)
