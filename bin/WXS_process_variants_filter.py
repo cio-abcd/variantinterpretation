@@ -278,7 +278,7 @@ for rsv_idx, rsv in enumerate(variants_valid["CSQ_HGVSc"]):
 
                 tmp1 = tmp_rsv.split("-")[1]
                 tmp1_1 = re.findall(r"\d+", tmp1)[0]
-                if int(tmp1_1) > 100:
+                if int(tmp1_1) > 130:
                     remove_idx.append(rsv_idx) # exclude
                 else:
                     keep_idx.append(rsv_idx) # keep
