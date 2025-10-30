@@ -33,7 +33,7 @@ print("Script: WXS_process_variants_report.py")
 VEMBRANE_TABLE_OUT = args.vembrane_table
 VEMBRANE_TABLE_OUT_data = pd.read_csv(VEMBRANE_TABLE_OUT, sep="\t",low_memory=False)
 
-# Get PASS variants and others # not needed, since bcftools has filtered out the 
+# Get PASS variants and others # not needed, since bcftools has filtered out the
 # others
 #vs_PASS = []
 #vs_other = []
@@ -42,7 +42,7 @@ VEMBRANE_TABLE_OUT_data = pd.read_csv(VEMBRANE_TABLE_OUT, sep="\t",low_memory=Fa
 #        vs_PASS.append(vs_index)
 #    else:
 #        vs_other.append(vs_index)
-        
+
 # PASS variants
 #data_PASS = VEMBRANE_TABLE_OUT_data.loc[vs_PASS, :]
 
@@ -54,10 +54,10 @@ for ir_index, csq_consequence in enumerate(VEMBRANE_TABLE_OUT_data["CSQ_Conseque
         vs_intergenic.append(ir_index)
     else:
         vs_report.append(ir_index)
-        
+
 #vs_filter_intergenic = VEMBRANE_TABLE_OUT_data[VEMBRANE_TABLE_OUT_data["CSQ_Consequence"]=="intergenic_variant"]
 #data_report = VEMBRANE_TABLE_OUT_data[VEMBRANE_TABLE_OUT_data["CSQ_Consequence"]!="intergenic_variant"]
-        
+
 # Report variants
 data_report = VEMBRANE_TABLE_OUT_data.loc[vs_report, :]
 
@@ -79,7 +79,7 @@ AF_colnames = data_report.loc[:, data_report.columns.str.startswith\
 
 RD_colnames = data_report.loc[:, data_report.columns.str.startswith\
                    ("read_depth")].columns.tolist()
-    
+
 # Variants with AF>5%
 data_report_AF = data_report[data_report[AF_colnames[1]] >= 0.05]
 
@@ -116,7 +116,7 @@ data_report_AF = data_report_AF.reset_index(drop="TRUE")
 #nan_variants = data_report_AF.loc[nan_index , :]
 
 # Reset indices
-#variants= variants.reset_index()  
+#variants= variants.reset_index()
 
 variants = data_report_AF
 
@@ -127,7 +127,7 @@ for i in range(len(variants["CSQ_Feature"])):
         NM_idx.append(i)
     else:
         no_refseq_match_idx.append(i)
-               
+
 # Filter variants accoriing to NM_idx list
 # Store result in new variable
 refseq_variants = variants.loc[NM_idx, :]
@@ -157,32 +157,39 @@ hgvsc_nan = refseq_variants.loc[nan_index , :]
 # Reset indices
 variants_valid = variants_valid .reset_index(drop="TRUE")
 
-# Exclude intron variants 
+# Exclude intron variants
 # rsv = refseq_variant
 keep_idx = []
 remove_idx = []
 for rsv_idx, rsv in enumerate(variants_valid["CSQ_HGVSc"]):
-    tmp_rsv = rsv.split(":c.")[1]
-    
+	# TODO: fix, this hotfix ignore noncoding for now to allow finishing pipeline run
+    if ':c.' not in rsv and ':n.' in rsv:
+        remove_idx.append(rsv_idx)
+        continue
+
+    splits = rsv.split(':c.')
+    assert len(splits) > 1, f'error, splits of {rsv_idx} are: {splits}'
+    tmp_rsv = splits[1]
+
     # exclude e.g. NM.x:c.-... and NM.x:c+...
     if tmp_rsv.startswith("-") or tmp_rsv.startswith("+") or tmp_rsv.startswith("*"):
         remove_idx.append(rsv_idx) # exclude
-        
+
     # exclude e.g. NM.x:c.10+100 (>100) and NM.x:c.10-100 (>100)
     elif (len(re.findall(r"[+]",tmp_rsv)) == 1 or \
         len(re.findall(r"[-]",tmp_rsv)) == 1) and \
         (not tmp_rsv.startswith("-") and not tmp_rsv.startswith("+")):
             if re.search(r"[+]",tmp_rsv):
-                
+
                 tmp0 = tmp_rsv.split("+")[1]
                 tmp0_0 = re.findall(r"\d+", tmp0)[0]
                 if int(tmp0_0) > 100:
                     remove_idx.append(rsv_idx) # exclude
                 else:
                     keep_idx.append(rsv_idx) # keep
-                    
+
             elif re.search(r"[-]",tmp_rsv):
-                     
+
                 tmp1 = tmp_rsv.split("-")[1]
                 tmp1_1 = re.findall(r"\d+", tmp1)[0]
                 if int(tmp1_1) > 100:
@@ -197,9 +204,9 @@ for rsv_idx, rsv in enumerate(variants_valid["CSQ_HGVSc"]):
         len(re.findall(r"[-]",tmp_rsv)) == 2) and \
         (not tmp_rsv.startswith("-") and not tmp_rsv.startswith("+")) and \
             len(re.findall(r"[_]", tmp_rsv)) == 1:
-                
+
                 if re.search(r"[+]",tmp_rsv):
-                    
+
                     tmp2 = tmp_rsv.split("+")
                     tmp3 = tmp2[1].split("_")[0] # No.1
                     tmp4 = re.findall(r"\d+", tmp2[2])[0] # No.2
@@ -207,9 +214,9 @@ for rsv_idx, rsv in enumerate(variants_valid["CSQ_HGVSc"]):
                         remove_idx.append(rsv_idx) # exclude
                     else:
                         keep_idx.append(rsv_idx) # keep
-                              
+
                 elif re.search(r"[-]",tmp_rsv):
-                    
+
                     tmp5 = tmp_rsv.split("-")
                     tmp6 = tmp5[1].split("_")[0] # No.1
                     tmp7 = re.findall(r"\d+", tmp5[2])[0] # No.2
@@ -219,15 +226,15 @@ for rsv_idx, rsv in enumerate(variants_valid["CSQ_HGVSc"]):
                         keep_idx.append(rsv_idx) # keep
                 else:
                     keep_idx.append(rsv_idx) # keep
-                        
+
     else:
         keep_idx.append(rsv_idx) # keep
-     
+
 # variants final
 variants_final = variants_valid.loc[keep_idx, :]
 
 # variants exlude
-variants_exlude = variants_valid.loc[remove_idx , :] 
+variants_exlude = variants_valid.loc[remove_idx , :]
 
 # Customizing table output
 # multiply AF columns *100
@@ -265,12 +272,12 @@ for index_p, NP in variants_final["CSQ_HGVSp"].items():
 # Get rs numbers
 variants_final["rs_number"] = ""
 for index_rs, rs in variants_final["CSQ_Existing_variation"].items():
-    
+
     if rs != "[]":
         for i in rs.split("'"):
             if i.startswith("rs"):
                 variants_final.loc[index_rs, "rs_number"] = i
-                
+
 # Merge/join internal variantDB (variantDBi)
 # Change to current "Variantenliste" if needed
 variantDBi = pd.read_excel(args.variant_DBi)
@@ -283,12 +290,12 @@ variants_final_dbi = pd.merge(variants_final,\
 
 # get more columns singesample
 #final_format = variants_final_dbi[["CHROM", "POS", "REF", "ALT", "FILTER",
-#                               "allele_fraction","read_depth", "CSQ_VARIANT_CLASS", 
+#                               "allele_fraction","read_depth", "CSQ_VARIANT_CLASS",
 #                               "CSQ_Consequence", "CSQ_IMPACT", "CSQ_MANE_SELECT",
 #                               "CSQ_MANE_PLUS_CLINICAL", "CSQ_SYMBOL",
 #                               "CSQ_Feature", "NM-Nummer", "HGVSc", "HGVSp", "CSQ_EXON",
 #                               "CSQ_INTRON", "CSQ_STRAND", "CSQ_DOMAINS", "CSQ_miRNA",
-#                               "CSQ_SOMATIC", "CSQ_AF", "CSQ_MAX_AF", 
+#                               "CSQ_SOMATIC", "CSQ_AF", "CSQ_MAX_AF",
 #                               "CSQ_gnomADe_AF", "CSQ_gnomADg_AF", "CSQ_CLIN_SIG",
 #                               "CSQ_SIFT","CSQ_PolyPhen", "rs_number", "Wertung",
 #                               "CSQ_PUBMED"]]
@@ -296,19 +303,19 @@ variants_final_dbi = pd.merge(variants_final,\
 # Round AF to max 2 decimals
 #final_format.loc[:,"allele_fraction"]  = final_format\
 #                                   ["allele_fraction"].apply(lambda x: round(x,2))
-#                                   
+#
 # Sort Frequency
 #final = final_format.sort_values(by=["allele_fraction"], ascending=False)
 
 # get more columns multisample
 final_format = variants_final_dbi[["CHROM", "POS", "REF", "ALT", "FILTER",
-                               AF_colnames[0], RD_colnames[0], AF_colnames[1], 
-                               RD_colnames[1], "CSQ_VARIANT_CLASS", 
+                               AF_colnames[0], RD_colnames[0], AF_colnames[1],
+                               RD_colnames[1], "CSQ_VARIANT_CLASS",
                                "CSQ_Consequence", "CSQ_IMPACT", "CSQ_MANE_SELECT",
                                "CSQ_MANE_PLUS_CLINICAL", "CSQ_SYMBOL",
                                "CSQ_Feature", "NM-Nummer", "HGVSc", "HGVSp", "CSQ_EXON",
                                "CSQ_INTRON", "CSQ_STRAND", "CSQ_DOMAINS", "CSQ_miRNA",
-                               "CSQ_SOMATIC", "CSQ_AF", "CSQ_MAX_AF", 
+                               "CSQ_SOMATIC", "CSQ_AF", "CSQ_MAX_AF",
                                "CSQ_gnomADe_AF", "CSQ_gnomADg_AF", "CSQ_CLIN_SIG",
                                "CSQ_SIFT","CSQ_PolyPhen", "rs_number", "Wertung",
                                "CSQ_PUBMED"]]
@@ -322,16 +329,16 @@ final_format.loc[:,AF_colnames[1]]  = final_format\
 
 # Sort Frequency
 final = final_format.sort_values(by=[AF_colnames[1]], ascending=False)
-  
+
 # save final file as UKB report when advanced_annotation is false
 final.to_excel(args.outfile, index = False, engine = None)
 
 # save file removed
-discarded_data = [intergenic_variants, data_below_AF, no_refseq_match_variants, 
+discarded_data = [intergenic_variants, data_below_AF, no_refseq_match_variants,
                   hgvsc_nan, variants_exlude]
 removed = pd.concat(discarded_data)
-removed.to_excel(args.removed_variants, 
-                 index = False, 
+removed.to_excel(args.removed_variants,
+                 index = False,
                  engine= None)
 
 # Log information
