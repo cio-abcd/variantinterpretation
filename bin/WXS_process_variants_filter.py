@@ -261,7 +261,7 @@ for rsv_idx, rsv in enumerate(variants_valid["CSQ_HGVSc"]):
     if tmp_rsv.startswith("-") or tmp_rsv.startswith("+") or tmp_rsv.startswith("*"):
         remove_idx.append(rsv_idx) # exclude
 
-    # exclude e.g. NM.x:c.10+100 (>100) and NM.x:c.10-100 (>100)
+    # exclude e.g. NM.x:c.10+200 (>200) and NM.x:c.10-200 (>200)
     elif (len(re.findall(r"[+]",tmp_rsv)) == 1 or \
         len(re.findall(r"[-]",tmp_rsv)) == 1) and \
         (not tmp_rsv.startswith("-") and not tmp_rsv.startswith("+")):
@@ -269,7 +269,7 @@ for rsv_idx, rsv in enumerate(variants_valid["CSQ_HGVSc"]):
 
                 tmp0 = tmp_rsv.split("+")[1]
                 tmp0_0 = re.findall(r"\d+", tmp0)[0]
-                if int(tmp0_0) > 100:
+                if int(tmp0_0) > 200:
                     remove_idx.append(rsv_idx) # exclude
                 else:
                     keep_idx.append(rsv_idx) # keep
@@ -278,7 +278,7 @@ for rsv_idx, rsv in enumerate(variants_valid["CSQ_HGVSc"]):
 
                 tmp1 = tmp_rsv.split("-")[1]
                 tmp1_1 = re.findall(r"\d+", tmp1)[0]
-                if int(tmp1_1) > 130:
+                if int(tmp1_1) > 200:
                     remove_idx.append(rsv_idx) # exclude
                 else:
                     keep_idx.append(rsv_idx) # keep
