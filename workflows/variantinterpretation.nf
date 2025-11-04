@@ -251,19 +251,6 @@ workflow VARIANTINTERPRETATION {
             }
         }
 
-        //
-        // MODULE: UKB report
-        //
-        ch_samplename_tsv = ch_tsv.map { meta, tsv -> [meta.id, tsv] }
-        report = UKB_REPORT (ch_samplename_tsv, refseq_list, variantDBi)
-        report_table = report.final_xlsx
-        removed_variants = report.removed_variants
-        ukb_results = ukb_results.mix(report_table)
-        ukb_results = ukb_results.mix(removed_variants)
-        ch_versions = ch_versions.mix(UKB_REPORT.out.versions)
-
-
-        //
         // MODULE: UKB filter
         //
         //ch_samplename_tsv = ch_tsv.map { meta, tsv -> [meta.id, tsv] }
