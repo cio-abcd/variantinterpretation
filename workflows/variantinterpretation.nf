@@ -18,7 +18,6 @@ include { TSV_CONVERSION                            } from '../subworkflows/loca
 include { VARIANTFILTER as PRESETS_FILTER_REPORT    } from '../subworkflows/local/variantfilter/main'
 include { HTML_REPORT                               } from '../subworkflows/local/html_report/main'
 include { TMB_CALCULATE	    	                    } from '../modules/local/tmbcalculation/main'
-include { UKB_REPORT                                } from '../modules/local/UKB_report/main'
 include { UKB_FILTER                                } from '../modules/local/UKB_filter/main'
 include { ONCOKB_ANNOTATOR_UKB                      } from '../modules/local/oncokb_annotator_ukb/main'
 include { WXS_ANNOTATION_UKB                        } from '../modules/local/wxs_annotation_ukb/main'
