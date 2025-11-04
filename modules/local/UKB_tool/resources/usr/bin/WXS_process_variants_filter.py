@@ -37,18 +37,8 @@ VEMBRANE_TABLE_OUT = args.vembrane_table
 #VEMBRANE_TABLE_OUT = "4_FF_T1.tsv"
 VEMBRANE_TABLE_OUT_data = pd.read_csv(VEMBRANE_TABLE_OUT, sep="\t",low_memory=False)
 
-# Get PASS variants and others # not needed, since bcftools has filtered out the
-# others
-#vs_PASS = []
-#vs_other = []
-#for vs_index, filter_status in enumerate(VEMBRANE_TABLE_OUT_data["FILTER"]):
-#    if filter_status == "['PASS']":
-#        vs_PASS.append(vs_index)
-#    else:
-#        vs_other.append(vs_index)
-
-# PASS variants
-#data_PASS = VEMBRANE_TABLE_OUT_data.loc[vs_PASS, :]
+RefSeq_NM = pd.read_csv(transcript_list)
+variantDBi = pd.read_excel(args.variant_DBi)
 
 # Remove INTERGENIC_VARIANTS
 vs_intergenic = []
@@ -59,22 +49,11 @@ for ir_index, csq_consequence in enumerate(VEMBRANE_TABLE_OUT_data["CSQ_Conseque
     else:
         vs_report.append(ir_index)
 
-#vs_filter_intergenic = VEMBRANE_TABLE_OUT_data[VEMBRANE_TABLE_OUT_data["CSQ_Consequence"]=="intergenic_variant"]
-#data_report = VEMBRANE_TABLE_OUT_data[VEMBRANE_TABLE_OUT_data["CSQ_Consequence"]!="intergenic_variant"]
-
 # Report variants
 data_report = VEMBRANE_TABLE_OUT_data.loc[vs_report, :]
 
 # Removed variants
 intergenic_variants = VEMBRANE_TABLE_OUT_data.loc[vs_intergenic, :]
-
-# SINGLEsample
-
-# Variants with AF>5%
-#data_report_AF = data_report[data_report["allele_fraction"] >= 0.05]
-#
-# Remove variants
-#data_below_AF = data_report[data_report["allele_fraction"] < 0.05]
 
 # MULTIsample
 # get col names Normal and Tumor sample
@@ -179,7 +158,6 @@ TMB.to_csv(args.tmb_output, index=False)
 # Load RefSeq transcripts to list
 transcript_list = args.refseq_list
 #transcript_list = "12032025_use_in_wgs_pilot_refseq.txt"
-RefSeq_NM = pd.read_csv(transcript_list)
 RefSeq_NM_lst = RefSeq_NM["NM_RefSeq_final"].values.tolist()
 
 # Check transcript input for " "
@@ -189,25 +167,6 @@ for RefSeq_idx in range(len(RefSeq_NM)):
 
 # Reset indices
 data_report_AF = data_report_AF.reset_index(drop="TRUE")
-
-# Separate nan values from column "CSQ_Feature"
-#nan_index = []
-#valid_transcript_index = []
-#for i in range(len(data_report_AF["CSQ_Feature"])):
-#    if pd.isna(data_report_AF["CSQ_Feature"].loc[i]) == True:
-#        nan_index.append(i)
-#    else:
-#        valid_transcript_index.append(i)
-#
-# variants with valid transcript
-#variants = data_report_AF.loc[valid_transcript_index, :]
-#
-# intergenic variants
-#nan_variants = data_report_AF.loc[nan_index , :]
-
-# Reset indices
-#variants= variants.reset_index()
-
 variants = data_report_AF
 
 NM_idx = []
@@ -366,32 +325,12 @@ for index_rs, rs in variants_final["CSQ_Existing_variation"].items():
 
 # Merge/join internal variantDB (variantDBi)
 # Change to current "Variantenliste" if needed
-variantDBi = pd.read_excel(args.variant_DBi)
 
 variants_final_dbi = pd.merge(variants_final,\
                   variantDBi,\
                   left_on = ["rs_number"],\
                   right_on = ["name dbsnp_v151_ensembl_hg38_no_alt_analysis_set"],\
                   how = "left")
-
-# get more columns singesample
-#final_format = variants_final_dbi[["CHROM", "POS", "REF", "ALT", "FILTER",
-#                               "allele_fraction","read_depth", "CSQ_VARIANT_CLASS",
-#                               "CSQ_Consequence", "CSQ_IMPACT", "CSQ_MANE_SELECT",
-#                               "CSQ_MANE_PLUS_CLINICAL", "CSQ_SYMBOL",
-#                               "CSQ_Feature", "NM-Nummer", "HGVSc", "HGVSp", "CSQ_EXON",
-#                               "CSQ_INTRON", "CSQ_STRAND", "CSQ_DOMAINS", "CSQ_miRNA",
-#                               "CSQ_SOMATIC", "CSQ_AF", "CSQ_MAX_AF",
-#                               "CSQ_gnomADe_AF", "CSQ_gnomADg_AF", "CSQ_CLIN_SIG",
-#                               "CSQ_SIFT","CSQ_PolyPhen", "rs_number", "Wertung",
-#                               "CSQ_PUBMED"]]
-#
-# Round AF to max 2 decimals
-#final_format.loc[:,"allele_fraction"]  = final_format\
-#                                   ["allele_fraction"].apply(lambda x: round(x,2))
-#
-# Sort Frequency
-#final = final_format.sort_values(by=["allele_fraction"], ascending=False)
 
 # get more columns multisample
 final_format = variants_final_dbi[["CHROM", "POS", "REF", "ALT", "FILTER",
@@ -430,11 +369,6 @@ final["Tumor_Sample_Barcode"] = tumor_id
 final["Matched_Norm_Sample_Barcode"] = normal_id
 final["NCBI_Build"] = "GRCh38"
 final.to_csv(args.outfile, sep="\t", index = False)
-# save output for vcf_filter
-#variants_for_vcf_filter = final[["CHROM","POS","REF","ALT"]]
-#unique_variants_for_vcf_filter = variants_for_vcf_filter.drop_duplicates()
-#unique_variants_for_vcf_filter.to_csv(args.outfile, sep="\t", header = False,
-#                               index = False)
 
 # save file removed
 discarded_data = [intergenic_variants, data_below_AF, no_refseq_match_variants,
