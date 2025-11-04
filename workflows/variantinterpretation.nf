@@ -19,7 +19,7 @@ include { VARIANTFILTER as PRESETS_FILTER_REPORT    } from '../subworkflows/loca
 include { HTML_REPORT                               } from '../subworkflows/local/html_report/main'
 include { TMB_CALCULATE	    	                    } from '../modules/local/tmbcalculation/main'
 include { UKB_FILTER                                } from '../modules/local/UKB_filter/main'
-include { UKB_tool                                } from '../modules/local/UKB_tool/main'
+include { UKB_TOOL                                } from '../modules/local/UKB_tool/main'
 include { ONCOKB_ANNOTATOR_UKB                      } from '../modules/local/oncokb_annotator_ukb/main'
 include { WXS_ANNOTATION_UKB                        } from '../modules/local/wxs_annotation_ukb/main'
 /*
@@ -265,9 +265,9 @@ workflow VARIANTINTERPRETATION {
             ukb_results = ukb_results.mix(annotated_variants.map{ it -> it[1] } ).mix(tmb)
         } else {
             println "using new ukb_tool"
-            toolout = UKB_tool(ch_tsv, refseq_list, variantDBi, ch_library_type)
-            tmb = toolout.tmb
-            annotated_variants = toolout.annotated_variants
+            filtout = UKB_TOOL(ch_tsv, refseq_list, variantDBi, ch_library_type)
+            tmb = filtout.tmb.map{it -> it[1]}
+            annotated_variants = filtout.annotated_variants
             ukb_results = ukb_results.mix(annotated_variants.map{ it -> it[1]} ).mix(tmb)
         }
 

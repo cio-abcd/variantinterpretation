@@ -1,4 +1,4 @@
-process UKB_FILTER {
+process UKB_TOOL {
     tag "$meta.id"
     conda "conda-forge::python=3.9.18 conda-forge::pandas=2.1.0 conda-forge::openpyxl=3.1.2"
     errorStrategy 'ignore'
@@ -13,17 +13,13 @@ process UKB_FILTER {
     val(library_type)
 
     output:
-    tuple val(meta), path("*_tmb.csv")                     , emit: tmb
-    tuple val(meta), path("*_removed_variants.xlsx")       , emit: removed_variants
-    tuple val(meta), path("log_*.log")                     , emit: log
-    tuple val(meta), path("*_annotated_variants.xlsx"), emit: annotated_variants
+    tuple val(meta), path("${meta.id}_tmb.csv")                     , emit: tmb
+    tuple val(meta), path("${meta.id}_removed_variants.xlsx")       , emit: removed_variants
+    tuple val(meta), path("${meta.id}_annotated_variants.xlsx"), emit: annotated_variants
     path "versions.yml"                                    , emit: versions
 
-    when:
-    task.ext.when == null || task.ext.when
-
     script:
-    def prefix = task.ext.prefix ?: "${meta.id}"
+    def prefix = "${meta.id}"
     """
     WXS_process_variants_filter.py \\
         --vembrane_table ${tsv} \\
@@ -47,26 +43,3 @@ process UKB_FILTER {
     """
 }
 
-workflow UKB_tool {
-    take:
-    ch_tsv
-    refseq_list
-    variantDBi
-    ch_library_type
-
-    main:
-
-	/*
-	filtout = UKB_FILTER(ch_tsv, refseq_list, variantDBi, ch_library_type)
-	oncokb_out = ONCOKB_ANNOTATOR_UKB(
-		filtout.variants_filtered_maf
-	)
-	*/
-	filtout = UKB_FILTER(ch_tsv, refseq_list, variantDBi, ch_library_type)
-	tmb = filtout.tmb.map{it -> it[1]}
-	annotated_variants = filtout.annotated_variants
-
-	emit:
-	annotated_variants
-    tmb
-}
