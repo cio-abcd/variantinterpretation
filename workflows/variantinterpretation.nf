@@ -19,6 +19,7 @@ include { VARIANTFILTER as PRESETS_FILTER_REPORT    } from '../subworkflows/loca
 include { HTML_REPORT                               } from '../subworkflows/local/html_report/main'
 include { TMB_CALCULATE	    	                    } from '../modules/local/tmbcalculation/main'
 include { UKB_FILTER                                } from '../modules/local/UKB_filter/main'
+include { UKB_tool                                } from '../modules/local/UKB_tool/main'
 include { ONCOKB_ANNOTATOR_UKB                      } from '../modules/local/oncokb_annotator_ukb/main'
 include { WXS_ANNOTATION_UKB                        } from '../modules/local/wxs_annotation_ukb/main'
 /*
@@ -251,16 +252,24 @@ workflow VARIANTINTERPRETATION {
         }
 
         // MODULE: UKB filter
-        //
-        //ch_samplename_tsv = ch_tsv.map { meta, tsv -> [meta.id, tsv] }
 
-        UKB_FILTER(ch_tsv, refseq_list, variantDBi, ch_library_type)
-        ch_versions = ch_versions.mix(UKB_FILTER.out.versions)
-        ch_filtered_variants = UKB_FILTER.out.variants_filtered_maf
-        tmb = UKB_FILTER.out.tmb.map{it -> it[1]}
-        ONCOKB_ANNOTATOR_UKB(ch_filtered_variants)
-        annotated_variants = WXS_ANNOTATION_UKB(ONCOKB_ANNOTATOR_UKB.out.oncokb_out).annotated_variants
-        ukb_results = ukb_results.mix(annotated_variants.map{ it -> it[1] } ).mix(tmb)
+        def use_old_filter = false
+
+        if( use_old_filter == true ) {
+            UKB_FILTER(ch_tsv, refseq_list, variantDBi, ch_library_type)
+            ch_versions = ch_versions.mix(UKB_FILTER.out.versions)
+            ch_filtered_variants = UKB_FILTER.out.variants_filtered_maf
+            tmb = UKB_FILTER.out.tmb.map{it -> it[1]}
+            ONCOKB_ANNOTATOR_UKB(ch_filtered_variants)
+            annotated_variants = WXS_ANNOTATION_UKB(ONCOKB_ANNOTATOR_UKB.out.oncokb_out).annotated_variants
+            ukb_results = ukb_results.mix(annotated_variants.map{ it -> it[1] } ).mix(tmb)
+        } else {
+            println "using new ukb_tool"
+            toolout = UKB_tool(ch_tsv, refseq_list, variantDBi, ch_library_type)
+            tmb = toolout.tmb
+            annotated_variants = toolout.annotated_variants
+            ukb_results = ukb_results.mix(annotated_variants.map{ it -> it[1]} ).mix(tmb)
+        }
 
     }
 
