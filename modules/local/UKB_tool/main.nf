@@ -22,10 +22,11 @@ process UKB_TOOL {
     def prefix = "${meta.id}"
     """
     WXS_process_variants_filter.py \\
-        --vembrane_table ${tsv} \\
-        --refseq_list ${refseq_list} \\
-        --variant_DBi ${variantDBi} \\
-        --analysis ${library_type} \\
+        'paired' \\
+        ${library_type} \\
+        ${refseq_list} \\
+        ${variantDBi} \\
+        ${tsv} \\
         --tmb_output ${prefix}_tmb.csv \\
         --outfile  ${prefix}_filtered_variants.maf \\
         --removed_variants ${prefix}_removed_variants.xlsx | tee log_${prefix}.log

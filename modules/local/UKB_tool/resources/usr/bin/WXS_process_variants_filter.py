@@ -4,32 +4,31 @@ import pandas as pd
 import argparse
 from datetime import datetime
 import re
+from pathlib import Path
 
 # Using argparse for positinal arguments
 parser = argparse.ArgumentParser()
-parser.add_argument("-v", "--vembrane_table", type=str)
-parser.add_argument("-r", "--refseq_list", type=str)
-parser.add_argument("-D", "--variant_DBi", type=str)
-parser.add_argument("-o", "--outfile", type=str)
-parser.add_argument("-rv", "--removed_variants", type=str)
-parser.add_argument("-tmb", "--tmb_output", type=str)
-parser.add_argument("-a", "--analysis", type=str)
+parser.add_argument("vcf_type", type=str, choices=['singlesample','paired'])
+parser.add_argument("library_type", type=str, choices=['panel', 'wes','wgs'])
+parser.add_argument("refseq_list", type=Path)
+parser.add_argument("variant_DBi", type=Path)
+parser.add_argument("vembrane_table", type=Path)
+parser.add_argument("--removed_variants", type=Path)
+parser.add_argument("--tmb_output", type=Path)
+parser.add_argument("-o", "--outfile", type=Path)
 args = parser.parse_args()
 
-# Getting current date and time for log information
-date_time_now = datetime.now()
+if args.vcf_type != 'paired':
+    raise NotImplemented()
+if args.library_type not in ['wes','wgs']:
+    raise NotImplemented()
 
-# dd/mm/YY H:M:S
-dt_string = date_time_now.strftime("%d/%m/%Y %H:%M:%S")
+dt_string = datetime.now.strftime("%d/%m/%Y %H:%M:%S") # dd/mm/YY H:M:S
 print("Start:", dt_string)
-
-# Process information
 print("Input_vembrane_table:", args.vembrane_table)
 print("Output_file_1:", args.outfile)
 print("Output_file_2:", args.removed_variants)
 print("Output_file_3:", args.tmb_output)
-
-# Script used
 print("Script: WXS_process_variants_filter.py")
 
 # Get VEMBRANE_TABLE.out data
@@ -105,14 +104,9 @@ unique_variants_tmb = variants_tmb.drop_duplicates(
                       subset = ["CHROM", "POS", "REF", "ALT", AF_colnames[1],
                                 RD_colnames[1]]).reset_index(drop=True)
 
-#synonymous_variants = unique_variants_tmb[unique_variants_tmb\
-#                                          ["CSQ_HGVSp"].str.contains(r'=', na=False)]
-
 non_synonymous_variants = unique_variants_tmb[unique_variants_tmb\
                                           ["CSQ_Consequence"] != "synonymous_variant"]
 # get SNV, DEL, INS
-#variant_clases = set(non_synonymous_variants["CSQ_VARIANT_CLASS"].to_list())
-
 TMB_snv =  non_synonymous_variants[non_synonymous_variants\
                                    ["CSQ_VARIANT_CLASS"] == "SNV"]
 
@@ -288,7 +282,6 @@ variants_final.loc[:, variants_final.columns.str.startswith\
                    [:, variants_final.columns.str.startswith\
                    ("allele_fraction")].mul(100)
 
-#final_variants.filter(regex=r'^allele_*', axis=1).mul(100)
 
 # Get NM only in new column NM-Nummer
 variants_final["NM-Nummer"] = ""
@@ -378,12 +371,6 @@ removed.to_excel(args.removed_variants,
                  index = False,
                  engine= None)
 
-# Log information
 print("--> Writing file for variants for oncokb and file for removed data to xlsx file: successful!")
-
-# Getting current date and time for log information
-date_time_now = datetime.now()
-
-# dd/mm/YY H:M:S
-dt_string = date_time_now.strftime("%d/%m/%Y %H:%M:%S")
+dt_string = datetime.now.strftime("%d/%m/%Y %H:%M:%S") # dd/mm/YY H:M:S
 print("End:", dt_string)
