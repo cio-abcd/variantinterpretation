@@ -197,35 +197,25 @@ for rsv_idx, rsv in enumerate(variants_valid["CSQ_HGVSc"]):
     if l3 or l4 or tmp_rsv.startswith("*"):
         keep = False
 
-    # exclude e.g. NM.x:c.10+200 (>200) and NM.x:c.10-200 (>200)
-    elif l1 == 1 or l2 == 1:
-        if re.search(r"[+]",tmp_rsv):
-            tmp0 = tmp_rsv.split("+")[1]
-            tmp0_0 = re.findall(r"\d+", tmp0)[0]
-            if int(tmp0_0) > 200:
-                keep = False
+    for direction in "+-":
+        if re.search(r"["+direction+"]",tmp_rsv):
+            # exclude e.g. NM.x:c.10+200 (>200) and NM.x:c.10-200 (>200)
+            if l1 == 1 or l2 == 1:
+                tmp0 = tmp_rsv.split(direction)[1]
+                tmp0_0 = re.findall(r"\d+", tmp0)[0]
+                if int(tmp0_0) > 200:
+                    keep = False
 
-        if re.search(r"[-]",tmp_rsv):
-            tmp1 = tmp_rsv.split("-")[1]
-            tmp1_1 = re.findall(r"\d+", tmp1)[0]
-            if int(tmp1_1) > 200:
-                keep = False
+            # exclude e.g. NM_003629.4:c.107-17070_107-17069delinsAT
+            if l1 == 2 or l2 == 2 and len(re.findall(r"[_]", tmp_rsv)) == 1:
+                tmp0 = tmp_rsv.split(direction)
+                tmp8 = tmp0[1]
+                tmp9 = tmp0[2]
+                tmp3 = tmp8.split("_")[0] # No.1
+                tmp4 = re.findall(r"\d+", tmp9)[0] # No.2
+                if int(tmp3) and int(tmp4) > 100:
+                    keep = False
 
-    # exclude e.g. NM_003629.4:c.107-17070_107-17069delinsAT
-    elif l1 == 2 or l2 == 2 and len(re.findall(r"[_]", tmp_rsv)) == 1:
-        if re.search(r"[+]",tmp_rsv):
-            tmp2 = tmp_rsv.split("+")
-            tmp3 = tmp2[1].split("_")[0] # No.1
-            tmp4 = re.findall(r"\d+", tmp2[2])[0] # No.2
-            if int(tmp3) and int(tmp4) > 100:
-                keep = False
-
-        if re.search(r"[-]",tmp_rsv):
-            tmp5 = tmp_rsv.split("-")
-            tmp6 = tmp5[1].split("_")[0] # No.1
-            tmp7 = re.findall(r"\d+", tmp5[2])[0] # No.2
-            if int(tmp6) and int(tmp7) > 100:
-                keep = False
 
     if keep:
         keep_idx.append(rsv_idx) # keep
