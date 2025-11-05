@@ -180,43 +180,53 @@ variants_valid  = variants_valid[~variants_valid["CSQ_HGVSc"].str.contains(r':n.
 # Reset indices
 variants_valid = variants_valid .reset_index(drop="TRUE")
 
-# Exclude intron variants
-# rsv = refseq_variant
-keep_idx = []
-remove_idx = []
-for rsv_idx, rsv in enumerate(variants_valid["CSQ_HGVSc"]):
+def check_intron(rsv):
     tmp_rsv = rsv.split(":c.")[1]
     keep = True
 
-    l1 = len(re.findall(r"[+]",tmp_rsv))
-    l2 = len(re.findall(r"[-]",tmp_rsv))
-    l3 = tmp_rsv.startswith("-")
-    l4 = tmp_rsv.startswith("+")
-
-    # exclude e.g. NM.x:c.-... and NM.x:c+...
-    if l3 or l4 or tmp_rsv.startswith("*"):
+    # exclude NM.x:c*
+    if tmp_rsv.startswith("*"):
         keep = False
 
     for direction in "+-":
-        if re.search(r"["+direction+"]",tmp_rsv):
+        # exclude e.g. NM.x:c.-... and NM.x:c+...
+        if tmp_rsv.startswith(direction):
+            keep = False
+
+        l1 = len(re.findall(r"[+]",tmp_rsv))
+        l2 = len(re.findall(r"[-]",tmp_rsv))
+
+        l3 = len(re.findall(r"["+direction+"]",tmp_rsv))
+
+        if l3 > 0:
+            tmp0 = tmp_rsv.split(direction)
+            tmp8=tmp0[1]
+
             # exclude e.g. NM.x:c.10+200 (>200) and NM.x:c.10-200 (>200)
             if l1 == 1 or l2 == 1:
-                tmp0 = tmp_rsv.split(direction)[1]
-                tmp0_0 = re.findall(r"\d+", tmp0)[0]
+                tmp0_0 = re.findall(r"\d+", tmp8)[0]
                 if int(tmp0_0) > 200:
                     keep = False
 
             # exclude e.g. NM_003629.4:c.107-17070_107-17069delinsAT
             if l1 == 2 or l2 == 2 and len(re.findall(r"[_]", tmp_rsv)) == 1:
-                tmp0 = tmp_rsv.split(direction)
-                tmp8 = tmp0[1]
                 tmp9 = tmp0[2]
-                tmp3 = tmp8.split("_")[0] # No.1
-                tmp4 = re.findall(r"\d+", tmp9)[0] # No.2
+                tmp3 = tmp8.split("_")[0]
+                tmp4 = re.findall(r"\d+", tmp9)[0]
                 if int(tmp3) and int(tmp4) > 100:
                     keep = False
 
+    return keep
 
+
+
+# Exclude intron variants
+# based on HGVS nomenclature, see: https://hgvs-nomenclature.org/stable/
+# rsv = refseq_variant
+keep_idx = []
+remove_idx = []
+for rsv_idx, rsv in enumerate(variants_valid["CSQ_HGVSc"]):
+    keep = check_intron(rsv)
     if keep:
         keep_idx.append(rsv_idx) # keep
     else:
