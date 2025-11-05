@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
-import pandas as pd
 import argparse
 from datetime import datetime
-import re
 from pathlib import Path
+import re
+
+import pandas as pd
 
 # Using argparse for positinal arguments
 parser = argparse.ArgumentParser()
@@ -23,7 +24,7 @@ if args.vcf_type != 'paired':
 if args.library_type not in ['wes','wgs']:
     raise NotImplemented()
 
-dt_string = datetime.now.strftime("%d/%m/%Y %H:%M:%S") # dd/mm/YY H:M:S
+dt_string = datetime.now().strftime("%d/%m/%Y %H:%M:%S") # dd/mm/YY H:M:S
 print("Start:", dt_string)
 print("Input_vembrane_table:", args.vembrane_table)
 print("Output_file_1:", args.outfile)
@@ -36,7 +37,11 @@ VEMBRANE_TABLE_OUT = args.vembrane_table
 #VEMBRANE_TABLE_OUT = "4_FF_T1.tsv"
 VEMBRANE_TABLE_OUT_data = pd.read_csv(VEMBRANE_TABLE_OUT, sep="\t",low_memory=False)
 
+# Load RefSeq transcripts to list
+transcript_list = args.refseq_list
+#transcript_list = "12032025_use_in_wgs_pilot_refseq.txt"
 RefSeq_NM = pd.read_csv(transcript_list)
+RefSeq_NM_lst = RefSeq_NM["NM_RefSeq_final"].values.tolist()
 variantDBi = pd.read_excel(args.variant_DBi)
 
 # Remove INTERGENIC_VARIANTS
@@ -71,29 +76,18 @@ elif sum(af_cols) == 2:
 else:
     raise RuntimeError(err_str)
 
-
-AF_colnames = data_report.loc[:, data_report.columns.str.startswith\
-                   ("allele_fraction")].columns.tolist()
-
-RD_colnames = data_report.loc[:, data_report.columns.str.startswith\
-                   ("read_depth")].columns.tolist()
+AF_colnames = data_report.loc[:, data_report.columns.str.startswith("allele_fraction")].columns.tolist()
+RD_colnames = data_report.loc[:, data_report.columns.str.startswith("read_depth")].columns.tolist()
 
 # Variants with AF>5%
 data_report_AF = data_report[data_report[AF_colnames[1]] >= 0.05]
-
-# Remove variants
 data_below_AF = data_report[data_report[AF_colnames[1]] < 0.05]
 
 # TMB calculation
 # filter variants
-intergenic_variants_AF = intergenic_variants[intergenic_variants\
-                                            [AF_colnames[1]] >= 0.05]
-
-intergenic_variants_AF_RD = intergenic_variants_AF[intergenic_variants_AF\
-                                            [RD_colnames[1]] >= 30]
-
-data_report_AF_RD = data_report_AF[data_report_AF\
-                                            [RD_colnames[1]] >= 30]
+intergenic_variants_AF = intergenic_variants[intergenic_variants[AF_colnames[1]] >= 0.05]
+intergenic_variants_AF_RD = intergenic_variants_AF[intergenic_variants_AF[RD_colnames[1]] >= 30]
+data_report_AF_RD = data_report_AF[data_report_AF[RD_colnames[1]] >= 30]
 
 # concat variants
 variants_tmb_frames = [data_report_AF_RD, intergenic_variants_AF_RD]
@@ -104,28 +98,20 @@ unique_variants_tmb = variants_tmb.drop_duplicates(
                       subset = ["CHROM", "POS", "REF", "ALT", AF_colnames[1],
                                 RD_colnames[1]]).reset_index(drop=True)
 
-non_synonymous_variants = unique_variants_tmb[unique_variants_tmb\
-                                          ["CSQ_Consequence"] != "synonymous_variant"]
-# get SNV, DEL, INS
-TMB_snv =  non_synonymous_variants[non_synonymous_variants\
-                                   ["CSQ_VARIANT_CLASS"] == "SNV"]
-
-TMB_del =  non_synonymous_variants[non_synonymous_variants\
-                                   ["CSQ_VARIANT_CLASS"] == "deletion"]
-
-TMB_ins =  non_synonymous_variants[non_synonymous_variants\
-                                   ["CSQ_VARIANT_CLASS"] == "insertion"]
-
-TMB_sub =  non_synonymous_variants[non_synonymous_variants\
-                                   ["CSQ_VARIANT_CLASS"] == "substitution"]
+non_synonymous_variants = unique_variants_tmb[unique_variants_tmb["CSQ_Consequence"] != "synonymous_variant"]
+TMB_snv =  non_synonymous_variants[non_synonymous_variants["CSQ_VARIANT_CLASS"] == "SNV"]
+TMB_del =  non_synonymous_variants[non_synonymous_variants["CSQ_VARIANT_CLASS"] == "deletion"]
+TMB_ins =  non_synonymous_variants[non_synonymous_variants["CSQ_VARIANT_CLASS"] == "insertion"]
+TMB_sub =  non_synonymous_variants[non_synonymous_variants["CSQ_VARIANT_CLASS"] == "substitution"]
 
 # count numbers
 TMB_snv_final = len(TMB_snv)
 TMB_snv_delins_final = len(TMB_snv) + len(TMB_del) + len(TMB_ins)
 
-if args.analysis == "wes":
+# TODO: calculate this from a bedfile
+if args.library_type == "wes":
     Regionsgroesse_MB = 30.16
-elif args.analysis == "wgs":
+elif args.library_type == "wgs":
     Regionsgroesse_MB = 3099.73 # 3099734149
 else:
     raise ValueError("library_type value not valid! Please correct!")
@@ -133,9 +119,8 @@ else:
 # make dataframe
 TMB = pd.DataFrame()
 
-header_col = ["Anzahl TMB Mut. missense", "Anzahl TMB Mut. Missense + InDel", "Regionsgroesse [Mb]",\
-              "TMB Missense", \
-              "TMB Missense + InDel"]
+header_col = ["Anzahl TMB Mut. missense", "Anzahl TMB Mut. Missense + InDel",
+              "Regionsgroesse [Mb]","TMB Missense","TMB Missense + InDel"]
 
 for col in header_col:
     TMB [col] = ""
@@ -145,14 +130,6 @@ TMB.loc[0, "Anzahl TMB Mut. Missense + InDel"] = TMB_snv_delins_final
 TMB.loc[0, "Regionsgroesse [Mb]"] = Regionsgroesse_MB
 TMB.loc[0, "TMB Missense"] = round(TMB_snv_final/Regionsgroesse_MB, 2)
 TMB.loc[0, "TMB Missense + InDel"] = round(TMB_snv_delins_final/Regionsgroesse_MB, 2)
-
-TMB.to_csv(args.tmb_output, index=False)
-
-
-# Load RefSeq transcripts to list
-transcript_list = args.refseq_list
-#transcript_list = "12032025_use_in_wgs_pilot_refseq.txt"
-RefSeq_NM_lst = RefSeq_NM["NM_RefSeq_final"].values.tolist()
 
 # Check transcript input for " "
 for RefSeq_idx in range(len(RefSeq_NM)):
@@ -210,61 +187,65 @@ remove_idx = []
 for rsv_idx, rsv in enumerate(variants_valid["CSQ_HGVSc"]):
     tmp_rsv = rsv.split(":c.")[1]
 
+    l1 = len(re.findall(r"[+]",tmp_rsv))
+    l2 = len(re.findall(r"[-]",tmp_rsv))
+    l3 = tmp_rsv.startswith("-")
+    l4 = tmp_rsv.startswith("+")
+
+    hc1 = (not l3 and not l4)
+
+    c1 = hc1 and (l1 == 1 or l2 == 1)
+    c2 = hc1 and (l1 == 2 or l2 == 2) and len(re.findall(r"[_]", tmp_rsv)) == 1
+
     # exclude e.g. NM.x:c.-... and NM.x:c+...
     if tmp_rsv.startswith("-") or tmp_rsv.startswith("+") or tmp_rsv.startswith("*"):
         remove_idx.append(rsv_idx) # exclude
 
     # exclude e.g. NM.x:c.10+200 (>200) and NM.x:c.10-200 (>200)
-    elif (len(re.findall(r"[+]",tmp_rsv)) == 1 or \
-        len(re.findall(r"[-]",tmp_rsv)) == 1) and \
-        (not tmp_rsv.startswith("-") and not tmp_rsv.startswith("+")):
-            if re.search(r"[+]",tmp_rsv):
+    elif c1:
+        if re.search(r"[+]",tmp_rsv):
 
-                tmp0 = tmp_rsv.split("+")[1]
-                tmp0_0 = re.findall(r"\d+", tmp0)[0]
-                if int(tmp0_0) > 200:
-                    remove_idx.append(rsv_idx) # exclude
-                else:
-                    keep_idx.append(rsv_idx) # keep
-
-            elif re.search(r"[-]",tmp_rsv):
-
-                tmp1 = tmp_rsv.split("-")[1]
-                tmp1_1 = re.findall(r"\d+", tmp1)[0]
-                if int(tmp1_1) > 200:
-                    remove_idx.append(rsv_idx) # exclude
-                else:
-                    keep_idx.append(rsv_idx) # keep
+            tmp0 = tmp_rsv.split("+")[1]
+            tmp0_0 = re.findall(r"\d+", tmp0)[0]
+            if int(tmp0_0) > 200:
+                remove_idx.append(rsv_idx) # exclude
             else:
                 keep_idx.append(rsv_idx) # keep
 
+        elif re.search(r"[-]",tmp_rsv):
+
+            tmp1 = tmp_rsv.split("-")[1]
+            tmp1_1 = re.findall(r"\d+", tmp1)[0]
+            if int(tmp1_1) > 200:
+                remove_idx.append(rsv_idx) # exclude
+            else:
+                keep_idx.append(rsv_idx) # keep
+        else:
+            keep_idx.append(rsv_idx) # keep
+
     # exclude e.g. NM_003629.4:c.107-17070_107-17069delinsAT
-    elif (len(re.findall(r"[+]",tmp_rsv)) == 2 or \
-        len(re.findall(r"[-]",tmp_rsv)) == 2) and \
-        (not tmp_rsv.startswith("-") and not tmp_rsv.startswith("+")) and \
-            len(re.findall(r"[_]", tmp_rsv)) == 1:
+    elif c2:
+        if re.search(r"[+]",tmp_rsv):
 
-                if re.search(r"[+]",tmp_rsv):
+            tmp2 = tmp_rsv.split("+")
+            tmp3 = tmp2[1].split("_")[0] # No.1
+            tmp4 = re.findall(r"\d+", tmp2[2])[0] # No.2
+            if int(tmp3) and int(tmp4) > 100:
+                remove_idx.append(rsv_idx) # exclude
+            else:
+                keep_idx.append(rsv_idx) # keep
 
-                    tmp2 = tmp_rsv.split("+")
-                    tmp3 = tmp2[1].split("_")[0] # No.1
-                    tmp4 = re.findall(r"\d+", tmp2[2])[0] # No.2
-                    if int(tmp3) and int(tmp4) > 100:
-                        remove_idx.append(rsv_idx) # exclude
-                    else:
-                        keep_idx.append(rsv_idx) # keep
+        elif re.search(r"[-]",tmp_rsv):
 
-                elif re.search(r"[-]",tmp_rsv):
-
-                    tmp5 = tmp_rsv.split("-")
-                    tmp6 = tmp5[1].split("_")[0] # No.1
-                    tmp7 = re.findall(r"\d+", tmp5[2])[0] # No.2
-                    if int(tmp6) and int(tmp7) > 100:
-                        remove_idx.append(rsv_idx) # exclude
-                    else:
-                        keep_idx.append(rsv_idx) # keep
-                else:
-                    keep_idx.append(rsv_idx) # keep
+            tmp5 = tmp_rsv.split("-")
+            tmp6 = tmp5[1].split("_")[0] # No.1
+            tmp7 = re.findall(r"\d+", tmp5[2])[0] # No.2
+            if int(tmp6) and int(tmp7) > 100:
+                remove_idx.append(rsv_idx) # exclude
+            else:
+                keep_idx.append(rsv_idx) # keep
+        else:
+            keep_idx.append(rsv_idx) # keep
 
     else:
         keep_idx.append(rsv_idx) # keep
@@ -277,10 +258,8 @@ variants_exlude = variants_valid.loc[remove_idx , :]
 
 # Customizing table output
 # multiply AF columns *100
-variants_final.loc[:, variants_final.columns.str.startswith\
-                   ("allele_fraction")] = variants_final.loc\
-                   [:, variants_final.columns.str.startswith\
-                   ("allele_fraction")].mul(100)
+new_val = variants_final.loc[:, variants_final.columns.str.startswith("allele_fraction")].mul(100)
+variants_final.loc[:, variants_final.columns.str.startswith("allele_fraction")] = new_val
 
 
 # Get NM only in new column NM-Nummer
@@ -318,11 +297,10 @@ for index_rs, rs in variants_final["CSQ_Existing_variation"].items():
 
 # Merge/join internal variantDB (variantDBi)
 # Change to current "Variantenliste" if needed
-
-variants_final_dbi = pd.merge(variants_final,\
-                  variantDBi,\
-                  left_on = ["rs_number"],\
-                  right_on = ["name dbsnp_v151_ensembl_hg38_no_alt_analysis_set"],\
+variants_final_dbi = pd.merge(variants_final,
+                  variantDBi,
+                  left_on = ["rs_number"],
+                  right_on = ["name dbsnp_v151_ensembl_hg38_no_alt_analysis_set"],
                   how = "left")
 
 # get more columns multisample
@@ -339,11 +317,8 @@ final_format = variants_final_dbi[["CHROM", "POS", "REF", "ALT", "FILTER",
                                "CSQ_PUBMED"]]
 
 # Round AF to max 2 decimals
-final_format.loc[:,AF_colnames[0]]  = final_format\
-                                   [AF_colnames[0]].apply(lambda x: round(x,2))
-
-final_format.loc[:,AF_colnames[1]]  = final_format\
-                                   [AF_colnames[1]].apply(lambda x: round(x,2))
+final_format.loc[:,AF_colnames[0]]  = final_format[AF_colnames[0]].apply(lambda x: round(x,2))
+final_format.loc[:,AF_colnames[1]]  = final_format[AF_colnames[1]].apply(lambda x: round(x,2))
 
 # Sort Frequency
 final = final_format.sort_values(by=[AF_colnames[1]], ascending=False)
@@ -361,16 +336,18 @@ tumor_id = (re.findall(r'(?<=allele_fraction)[WGS\d+\-]*', AF_colnames[1]))[0] +
 final["Tumor_Sample_Barcode"] = tumor_id
 final["Matched_Norm_Sample_Barcode"] = normal_id
 final["NCBI_Build"] = "GRCh38"
-final.to_csv(args.outfile, sep="\t", index = False)
 
 # save file removed
 discarded_data = [intergenic_variants, data_below_AF, no_refseq_match_variants,
                   hgvsc_nan, variants_exlude]
 removed = pd.concat(discarded_data)
+
+final.to_csv(args.outfile, sep="\t", index = False)
+TMB.to_csv(args.tmb_output, index=False)
 removed.to_excel(args.removed_variants,
                  index = False,
                  engine= None)
 
 print("--> Writing file for variants for oncokb and file for removed data to xlsx file: successful!")
-dt_string = datetime.now.strftime("%d/%m/%Y %H:%M:%S") # dd/mm/YY H:M:S
+dt_string = datetime.now().strftime("%d/%m/%Y %H:%M:%S") # dd/mm/YY H:M:S
 print("End:", dt_string)

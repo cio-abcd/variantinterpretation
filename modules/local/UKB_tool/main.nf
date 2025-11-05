@@ -1,7 +1,8 @@
 process UKB_TOOL {
     tag "$meta.id"
-    conda "conda-forge::python=3.9.18 conda-forge::pandas=2.1.0 conda-forge::openpyxl=3.1.2"
-    errorStrategy 'ignore'
+    conda "conda-forge::python=3.9.18 conda-forge::pandas=2.1.0 conda-forge::openpyxl=3.1.2 conda-forge::requests"
+    //errorStrategy 'ignore'
+    secret 'oncokb_token'
 
     cpus 1
     memory "40 GB"
