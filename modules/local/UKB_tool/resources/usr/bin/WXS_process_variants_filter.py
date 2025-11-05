@@ -186,69 +186,51 @@ keep_idx = []
 remove_idx = []
 for rsv_idx, rsv in enumerate(variants_valid["CSQ_HGVSc"]):
     tmp_rsv = rsv.split(":c.")[1]
+    keep = True
 
     l1 = len(re.findall(r"[+]",tmp_rsv))
     l2 = len(re.findall(r"[-]",tmp_rsv))
     l3 = tmp_rsv.startswith("-")
     l4 = tmp_rsv.startswith("+")
 
-    hc1 = (not l3 and not l4)
-
-    c1 = hc1 and (l1 == 1 or l2 == 1)
-    c2 = hc1 and (l1 == 2 or l2 == 2) and len(re.findall(r"[_]", tmp_rsv)) == 1
-
     # exclude e.g. NM.x:c.-... and NM.x:c+...
-    if tmp_rsv.startswith("-") or tmp_rsv.startswith("+") or tmp_rsv.startswith("*"):
-        remove_idx.append(rsv_idx) # exclude
+    if l3 or l4 or tmp_rsv.startswith("*"):
+        keep = False
 
     # exclude e.g. NM.x:c.10+200 (>200) and NM.x:c.10-200 (>200)
-    elif c1:
+    elif l1 == 1 or l2 == 1:
         if re.search(r"[+]",tmp_rsv):
-
             tmp0 = tmp_rsv.split("+")[1]
             tmp0_0 = re.findall(r"\d+", tmp0)[0]
             if int(tmp0_0) > 200:
-                remove_idx.append(rsv_idx) # exclude
-            else:
-                keep_idx.append(rsv_idx) # keep
+                keep = False
 
-        elif re.search(r"[-]",tmp_rsv):
-
+        if re.search(r"[-]",tmp_rsv):
             tmp1 = tmp_rsv.split("-")[1]
             tmp1_1 = re.findall(r"\d+", tmp1)[0]
             if int(tmp1_1) > 200:
-                remove_idx.append(rsv_idx) # exclude
-            else:
-                keep_idx.append(rsv_idx) # keep
-        else:
-            keep_idx.append(rsv_idx) # keep
+                keep = False
 
     # exclude e.g. NM_003629.4:c.107-17070_107-17069delinsAT
-    elif c2:
+    elif l1 == 2 or l2 == 2 and len(re.findall(r"[_]", tmp_rsv)) == 1:
         if re.search(r"[+]",tmp_rsv):
-
             tmp2 = tmp_rsv.split("+")
             tmp3 = tmp2[1].split("_")[0] # No.1
             tmp4 = re.findall(r"\d+", tmp2[2])[0] # No.2
             if int(tmp3) and int(tmp4) > 100:
-                remove_idx.append(rsv_idx) # exclude
-            else:
-                keep_idx.append(rsv_idx) # keep
+                keep = False
 
-        elif re.search(r"[-]",tmp_rsv):
-
+        if re.search(r"[-]",tmp_rsv):
             tmp5 = tmp_rsv.split("-")
             tmp6 = tmp5[1].split("_")[0] # No.1
             tmp7 = re.findall(r"\d+", tmp5[2])[0] # No.2
             if int(tmp6) and int(tmp7) > 100:
-                remove_idx.append(rsv_idx) # exclude
-            else:
-                keep_idx.append(rsv_idx) # keep
-        else:
-            keep_idx.append(rsv_idx) # keep
+                keep = False
 
-    else:
+    if keep:
         keep_idx.append(rsv_idx) # keep
+    else:
+        remove_idx.append(rsv_idx) # exclude
 
 # variants final
 variants_final = variants_valid.loc[keep_idx, :]
