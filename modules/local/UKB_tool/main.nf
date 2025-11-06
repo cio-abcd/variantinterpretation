@@ -15,7 +15,7 @@ process UKB_TOOL {
 
     output:
     tuple val(meta), path("${meta.id}_tmb.csv")                     , emit: tmb
-    tuple val(meta), path("${meta.id}_removed_variants.xlsx")       , emit: removed_variants
+    tuple val(meta), path("${meta.id}_removed_variants.shard_*.xlsx")       , emit: removed_variants
     tuple val(meta), path("${meta.id}_annotated_variants.xlsx"), emit: annotated_variants
     path "versions.yml"                                    , emit: versions
 
@@ -30,7 +30,7 @@ process UKB_TOOL {
         ${tsv} \\
         --tmb_output ${prefix}_tmb.csv \\
         --outfile  ${prefix}_filtered_variants.maf \\
-        --removed_variants ${prefix}_removed_variants.xlsx | tee log_${prefix}.log
+        --removed_variants ${prefix}_removed_variants | tee log_${prefix}.log
 
     MafAnnotator.py -i ${prefix}_filtered_variants.maf -o ${prefix}_oncokb_out.maf -r GRCh38 -b \$oncokb_token
 

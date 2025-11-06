@@ -326,9 +326,24 @@ removed = pd.concat(discarded_data)
 
 final.to_csv(args.outfile, sep="\t", index = False)
 TMB.to_csv(args.tmb_output, index=False)
-removed.to_excel(args.removed_variants,
-                 index = False,
-                 engine= None)
+
+# shard table because some wgs have too many variants for reqular excel output
+def shard_table(table, shard_size=1_000_000):
+    n_shards, mod = divmod(len(table),shard_size)
+    if mod != 0:
+        n_shards += 1
+
+    n_shards = max(1, n_shards) # write empty table (shard_0) too, in case
+
+    for i in range(n_shards):
+        yield table[i*shard_size:(i+1)*shard_size]
+
+
+for shard_i, table_shard in enumerate(shard_table(removed)):
+    out_path = Path(args.removed_variants)
+    out_name_no_suffix = out_path.with_suffix('')
+    out_name = out_name_no_suffix.with_suffix(f'.shard_{shard_i}.xlsx')
+    table_shard.to_excel(str(out_name),index = False,engine= None)
 
 print("--> Writing file for variants for oncokb and file for removed data to xlsx file: successful!")
 dt_string = datetime.now().strftime("%d/%m/%Y %H:%M:%S") # dd/mm/YY H:M:S
