@@ -180,6 +180,33 @@ variants_valid  = variants_valid[~variants_valid["CSQ_HGVSc"].str.contains(r':n.
 # Reset indices
 variants_valid = variants_valid .reset_index(drop="TRUE")
 
+# heuristic, filter out variants that are too far inside an intron, as those are less interesting
+ALLOWED_DISTANCE_FROM_EXON = 200
+
+# NM_000.00:c. ...
+regex = r'^NM_\d+\.\d+\:(?P<variant_type>c)\.(?P<e_pos1>\d+)(?P<i_pos1>[+-]\d+)?(?P<e_pos2>_\d+(?P<i_pos2>[+-]\d+)?)?$'
+pattern = re.compile(regex, flags=re.ASCII)
+
+def is_interesting_intron(rsv):
+    match = pattern.fullmatch(rsv)
+    md = match.groupdict()
+    exon_pos1 = md['e_pos1']
+    intron_offs1 = md['i_pos1']
+    exon_pos2 = md['e_pos2']
+    intron_offs2 = md['i_pos2']
+
+    min_dist = abs(int(intron_offs1.removeprefix('-').removeprefix('+')))
+    if intron_offs2:
+        min_dist2 = abs(int(intron_offs2.removeprefix('-').removeprefix('+')))
+        min_dist = min(min_dist, min_dist2)
+
+    if min_dist > ALLOWED_DISTANCE_FROM_EXON:
+        return False
+
+    return True
+
+
+'''
 def check_intron(rsv):
     tmp_rsv = rsv.split(":c.")[1]
     keep = True
@@ -188,35 +215,44 @@ def check_intron(rsv):
     if tmp_rsv.startswith("*"):
         keep = False
 
-    for direction in "+-":
+
+
+    for direction in "-+":
         # exclude e.g. NM.x:c.-... and NM.x:c+...
         if tmp_rsv.startswith(direction):
             keep = False
 
-        l1 = len(re.findall(r"[+]",tmp_rsv))
-        l2 = len(re.findall(r"[-]",tmp_rsv))
+        n_exon_distance_entries = len(re.findall(r"["+direction+"]",tmp_rsv))
 
-        l3 = len(re.findall(r"["+direction+"]",tmp_rsv))
+        # starts and/or ends in an intron
+        if 2 >= n_exon_distance_entries >= 1:
+            positions = tmp_rsv.split(direction)
+            tmp8=exon_pos1[1]
 
-        if l3 > 0:
-            tmp0 = tmp_rsv.split(direction)
-            tmp8=tmp0[1]
 
-            # exclude e.g. NM.x:c.10+200 (>200) and NM.x:c.10-200 (>200)
-            if l1 == 1 or l2 == 1:
-                tmp0_0 = re.findall(r"\d+", tmp8)[0]
-                if int(tmp0_0) > 200:
-                    keep = False
+            # get intron distance from first or last exon position
+            intron_pos1 = re.findall(r"\d+", tmp8)[0]
 
             # exclude e.g. NM_003629.4:c.107-17070_107-17069delinsAT
-            if l1 == 2 or l2 == 2 and len(re.findall(r"[_]", tmp_rsv)) == 1:
-                tmp9 = tmp0[2]
+            # intron, multiple nucleotide variant, delins
+            # indicated by HGVS range
+            if n_exon_distance_entries == 2 and len(re.findall(r"[_]", tmp_rsv)) == 1:
+                tmp9 = positions[2]
                 tmp3 = tmp8.split("_")[0]
                 tmp4 = re.findall(r"\d+", tmp9)[0]
-                if int(tmp3) and int(tmp4) > 100:
+                intron_pos2 = int(tmp4)
+                if int(tmp3) and int(tmp4) > ALLOWED_DISTANCE_FROM_EXON:
                     keep = False
 
+            # exclude e.g. NM.x:c.10+200 (>200) and NM.x:c.10-200 (>200)
+            # intron single nucleotide variant
+            if int(intron_pos1) > ALLOWED_DISTANCE_FROM_EXON:
+                keep = False
+            else:
+                raise RuntimeError()
+
     return keep
+'''
 
 
 
@@ -226,7 +262,7 @@ def check_intron(rsv):
 keep_idx = []
 remove_idx = []
 for rsv_idx, rsv in enumerate(variants_valid["CSQ_HGVSc"]):
-    keep = check_intron(rsv)
+    keep = is_interesting_intron(rsv)
     if keep:
         keep_idx.append(rsv_idx) # keep
     else:
