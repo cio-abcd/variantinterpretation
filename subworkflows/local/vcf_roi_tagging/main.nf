@@ -41,7 +41,7 @@ workflow TAGROI {
     )
 
     ch_posttabix = FIRST_COMPRESS.out.output.map{ in -> in[1] }.collect() // isolate filepath
-    ch_posttabix_idx = TABIX_TABIX.out.tbi.map{ in -> in[1] }.collect() // isolate filepath
+    ch_posttabix_idx = TABIX_TABIX.out.index.map{ in -> in[1] }.collect() // isolate filepath
 
     ch_versions = ch_versions.mix(FIRST_COMPRESS.out.versions)
     ch_versions = ch_versions.mix(TABIX_TABIX.out.versions)
