@@ -86,7 +86,7 @@ workflow VARIANTINTERPRETATION {
     fasta_ref = ch_fasta.map { ch_fasta -> ['ref', ch_fasta] }
     SAMTOOLS_DICT( fasta_ref )
     ch_versions = ch_versions.mix(SAMTOOLS_DICT.out.versions)
-    SAMTOOLS_FAIDX( fasta_ref, [[], []] )
+    SAMTOOLS_FAIDX( fasta_ref, [[], []], [] )
     ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
 
     //
