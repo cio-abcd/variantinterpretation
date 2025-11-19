@@ -158,17 +158,8 @@
                 "vep_cache_source": {
                     "type": "string",
                     "help_text": "Leave empty (null) if ensembl (standard) cache is used.",
-<<<<<<< HEAD
-                    "enum": [
-                        "None",
-                        "refseq",
-                        "merged"
-                    ],
-                    "description": "Specified VEP cache. Either Ensembl (default, null), Refseq or merged."
-=======
                     "enum": ["None", "refseq", "merged"],
                     "description": "Specified VEP cache type. Either Ensembl (default, null), Refseq or merged."
->>>>>>> f67427b (Fixed errors in schema.)
                 },
                 "check_existing": {
                     "type": "boolean",
@@ -244,20 +235,9 @@
             "properties": {
                 "transcriptfilter": {
                     "type": "string",
-<<<<<<< HEAD
-                    "enum": [
-                        "None",
-                        "PICK",
-                        "CANONICAL",
-                        "MANE_SELECT"
-                    ],
-                    "description": "Transcript annotation column for filtering.",
-                    "help_text": "If variant does not have any match, all annotation will be removed and variant is flagged in FILTER column.\nCan work simultaneously with \"transcriptfilter\" param."
-=======
                     "enum": ["None", "PICK", "CANONICAL", "MANE_SELECT"],
                     "description": "Name of annotation column that should be used to filter for transcripts, e.g. 'PICK' in the VEP cache.",
                     "help_text": "If the variant does not have any transcript annotation in the respective column, all annotations will be removed and variant is flagged in FILTER column.\nCan work simultaneously with \"transcriptlist\" parameter."
->>>>>>> f67427b (Fixed errors in schema.)
                 },
                 "transcriptlist": {
                     "type": "string",
