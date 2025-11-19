@@ -151,8 +151,8 @@
                 },
                 "vep_cache_version": {
                     "type": "integer",
-                    "default": 113,
-                    "description": "Version of VEP cache to use.",
+                    "default": 115,
+                    "description": "Version of VEP cache to use. Should be 115 to match vep version included in this workflow.",
                     "help_text": "Should always match the implemented VEP tool version."
                 },
                 "vep_cache_source": {

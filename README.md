@@ -133,22 +133,22 @@ To add HGVS nomenclature for variants, you need to specify a FASTA file which is
 You can easily enable/disable VEP options using several parameter, also see the parameter documentation [docs/params.md](docs/params.md).
 
 The databases and their respective version is documentated within the VCF file under the VEP flag.
-Currently, we use VEP version 113 and hence using the VEP cache from v113 is highly recommended. It contains the following databases:
+Currently, we use VEP version 115 and hence using the VEP cache from v115 is highly recommended. It contains the following databases:
 
-- ensembl=113
+- ensembl=115
 - assembly="GRCh38.p14"
-- MANE=v1.3
-- gencode="47"
-- refseq="GCF_000001405.40-RS_2023_10 (GCF_000001405.40_GRCh38.p14_genomic.gff)"
+- MANE=v1.4
+- gencode="49"
+- refseq="GCF_000001405.40-RS_2024_08 (GCF_000001405.40_GRCh38.p14_genomic.gff)"
 - regbuild="1.0"
 - polyphen="2.2.3"
 - sift="6.2.1"
 - dbSNP="156"
-- COSMIC="99"
+- COSMIC="101"
 - HGMD-PUBLIC="2020.4"
-- ClinVar="2024-04"
+- ClinVar="2025-02"
 - 1000genomes="phase3 (remapped)"
-- gnomAD exomes="r4.1"
+- gnomAD exomes="v4.1"
 - gnomAD genomes="v4.1"
 
 ### Filtering
