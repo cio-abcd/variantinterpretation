@@ -57,17 +57,11 @@ def process_variants(args):
 
     # Get VEMBRANE_TABLE.out data
     VEMBRANE_TABLE_OUT = args.vembrane_table
-    #VEMBRANE_TABLE_OUT = "4_FF_T1.tsv"
     VEMBRANE_TABLE_OUT_data = pd.read_csv(VEMBRANE_TABLE_OUT, sep="\t",low_memory=False)
 
     # Load RefSeq transcripts to list
-    # transcript_list = args.refseq_list
-    #transcript_list = "12032025_use_in_wgs_pilot_refseq.txt"
-    #RefSeq_NM = pd.read_csv(transcript_list)
     RefSeq_NM = pd.DataFrame(transcript_list, columns=transcript_list_header)
     RefSeq_NM_lst = RefSeq_NM["NM_RefSeq_final"].values.tolist()
-    #variantDBi = pd.read_excel(args.variant_DBi)
-    #variantDBi = pd.read_csv(Path(os.path.dirname(os.path.relpath(__file__))))
     variantDBi = pd.read_csv(io.StringIO(variant_list_csv))
 
     # Remove INTERGENIC_VARIANTS
@@ -231,57 +225,6 @@ def process_variants(args):
 
         return True
 
-
-    '''
-    def check_intron(rsv):
-        tmp_rsv = rsv.split(":c.")[1]
-        keep = True
-
-        # exclude NM.x:c*
-        if tmp_rsv.startswith("*"):
-            keep = False
-
-
-
-        for direction in "-+":
-            # exclude e.g. NM.x:c.-... and NM.x:c+...
-            if tmp_rsv.startswith(direction):
-                keep = False
-
-            n_exon_distance_entries = len(re.findall(r"["+direction+"]",tmp_rsv))
-
-            # starts and/or ends in an intron
-            if 2 >= n_exon_distance_entries >= 1:
-                positions = tmp_rsv.split(direction)
-                tmp8=exon_pos1[1]
-
-
-                # get intron distance from first or last exon position
-                intron_pos1 = re.findall(r"\d+", tmp8)[0]
-
-                # exclude e.g. NM_003629.4:c.107-17070_107-17069delinsAT
-                # intron, multiple nucleotide variant, delins
-                # indicated by HGVS range
-                if n_exon_distance_entries == 2 and len(re.findall(r"[_]", tmp_rsv)) == 1:
-                    tmp9 = positions[2]
-                    tmp3 = tmp8.split("_")[0]
-                    tmp4 = re.findall(r"\d+", tmp9)[0]
-                    intron_pos2 = int(tmp4)
-                    if int(tmp3) and int(tmp4) > ALLOWED_DISTANCE_FROM_EXON:
-                        keep = False
-
-                # exclude e.g. NM.x:c.10+200 (>200) and NM.x:c.10-200 (>200)
-                # intron single nucleotide variant
-                if int(intron_pos1) > ALLOWED_DISTANCE_FROM_EXON:
-                    keep = False
-                else:
-                    raise RuntimeError()
-
-        return keep
-    '''
-
-
-
     # Exclude intron variants
     # based on HGVS nomenclature, see: https://hgvs-nomenclature.org/stable/
     # rsv = refseq_variant
@@ -431,7 +374,6 @@ def run_oncokb_annotation(oncokb_token):
 
     stderr_handler = logging.StreamHandler(sys.stderr)
     log.addHandler(stderr_handler)
-
     log.info('running oncokb annotation')
 
     # set default values
@@ -508,11 +450,6 @@ def annotation(args):
     logger.info('running wxs final annotation')
     # previously in WXS_annotation.py
     onco_maf = ONCOKB_ANNOTATE_TMP_FILE
-    date_time_now = datetime.now()
-
-    # dd/mm/YY H:M:S
-    dt_string = date_time_now.strftime("%d/%m/%Y %H:%M:%S")
-
     # OncoKB output data
     UKB_ONCOKB_OUT_data = pd.read_csv(onco_maf, sep="\t",low_memory=False)
 
@@ -527,27 +464,20 @@ def annotation(args):
     UKB_ONCOKB_OUT_data.insert(end_position_index, "End_Position", "")
 
     for i, pos in enumerate(UKB_ONCOKB_OUT_data["Start_Position"]):
-        if UKB_ONCOKB_OUT_data.loc[i,"Reference_Allele"] in ["A", "C", "G", "T"] and \
-            len(UKB_ONCOKB_OUT_data.loc[i,"Reference_Allele"]) == 1:
-                UKB_ONCOKB_OUT_data.loc[i,"End_Position"] = UKB_ONCOKB_OUT_data.loc\
-                    [i,"Start_Position"]
+        if UKB_ONCOKB_OUT_data.loc[i,"Reference_Allele"] in ["A", "C", "G", "T"] and len(UKB_ONCOKB_OUT_data.loc[i,"Reference_Allele"]) == 1:
+                UKB_ONCOKB_OUT_data.loc[i,"End_Position"] = UKB_ONCOKB_OUT_data.loc[i,"Start_Position"]
         elif len(UKB_ONCOKB_OUT_data.loc[i,"Reference_Allele"]) > 1:
             tmp_end_position0 = len(UKB_ONCOKB_OUT_data.loc[i,"Reference_Allele"]) - 1
-            UKB_ONCOKB_OUT_data.loc[i,"End_Position"] =  UKB_ONCOKB_OUT_data.\
-                loc[i,"Start_Position"] + tmp_end_position0
+            UKB_ONCOKB_OUT_data.loc[i,"End_Position"] =  UKB_ONCOKB_OUT_data.loc[i,"Start_Position"] + tmp_end_position0
         elif UKB_ONCOKB_OUT_data.loc[i,"Reference_Allele"] not in ["A", "C", "G", "T"]:
             tmp_end_position1 = len(UKB_ONCOKB_OUT_data.loc[i,"Reference_Allele"]) + 1
-            UKB_ONCOKB_OUT_data.loc[i,"End_Position"] =  UKB_ONCOKB_OUT_data.\
-                loc[i,"Start_Position"] + tmp_end_position1
+            UKB_ONCOKB_OUT_data.loc[i,"End_Position"] =  UKB_ONCOKB_OUT_data.loc[i,"Start_Position"] + tmp_end_position1
 
-    # final wgs pilot output
     # MULTIsample
     # get col names Normal and Tumor sample
-    AF_colnames = UKB_ONCOKB_OUT_data.loc[:, UKB_ONCOKB_OUT_data.columns.str.startswith\
-                       ("allele_fraction")].columns.tolist()
+    AF_colnames = UKB_ONCOKB_OUT_data.loc[:, UKB_ONCOKB_OUT_data.columns.str.startswith("allele_fraction")].columns.tolist()
 
-    RD_colnames = UKB_ONCOKB_OUT_data.loc[:, UKB_ONCOKB_OUT_data.columns.str.startswith\
-                       ("read_depth")].columns.tolist()
+    RD_colnames = UKB_ONCOKB_OUT_data.loc[:, UKB_ONCOKB_OUT_data.columns.str.startswith("read_depth")].columns.tolist()
 
     final_columns = ["Chromosome", "Start_Position", "End_Position", "Reference_Allele",
                      "Tumor_Seq_Allele2", AF_colnames[0], RD_colnames[0], AF_colnames[1],
