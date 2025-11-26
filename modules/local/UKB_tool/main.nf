@@ -9,8 +9,6 @@ process UKB_TOOL {
 
     input:
     tuple val(meta), path(tsv)
-    //val(refseq_list)
-    //val(variantDBi)
     val(library_type)
 
     output:
@@ -31,12 +29,6 @@ process UKB_TOOL {
         --outfile  ${prefix}_filtered_variants.maf \\
         --annotated_outfile  ${prefix}_annotated_variants.xlsx \\
         --removed_variants ${prefix}_removed_variants | tee log_${prefix}.log
-
-    # MafAnnotator.py -i ${prefix}_filtered_variants.maf -o ${prefix}_oncokb_out.maf -r GRCh38 -b \$oncokb_token
-
-    # WXS_annotation.py \\
-    #     --onco_maf ${prefix}_oncokb_out.maf \\
-    #     --annotated_outfile ${prefix}_annotated_variants.xlsx > log_${prefix}.log
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
