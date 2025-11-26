@@ -4,8 +4,7 @@
 import re
 
 transcript_list_header = ['NM_RefSeq_final']
-transcript_list_raw = '''
-NM_000038
+transcript_list_raw = '''NM_000038
 NM_000043
 NM_000044
 NM_000051

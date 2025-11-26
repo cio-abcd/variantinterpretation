@@ -25,6 +25,9 @@ parser.add_argument("vembrane_table", type=Path)
 parser.add_argument("--removed_variants", type=Path)
 parser.add_argument("--tmb_output", type=Path)
 parser.add_argument("-o", "--outfile", type=Path)
+parser.add_argument("--annotated_outfile", type=Path)
+
+parser.add_argument("--use_oncokb_token", default=None, type=str)
 args = parser.parse_args()
 
 if args.vcf_type != 'paired':
@@ -395,3 +398,96 @@ for shard_i, table_shard in enumerate(shard_table(removed)):
 print("--> Writing file for variants for oncokb and file for removed data to xlsx file: successful!")
 dt_string = datetime.now().strftime("%d/%m/%Y %H:%M:%S") # dd/mm/YY H:M:S
 print("End:", dt_string)
+
+print('running oncokb annotation')
+
+# originally from https://github.com/oncokb/oncokb-annotator AGPL-3.0 license
+# but is and will be totally replaced shortly
+
+import sys
+import argparse
+import logging
+
+from AnnotatorCore import setsampleidsfileterfile
+from AnnotatorCore import setcancerhotspotsbaseurl
+from AnnotatorCore import setoncokbbaseurl
+from AnnotatorCore import setoncokbapitoken
+from AnnotatorCore import readCancerTypes
+from AnnotatorCore import validate_oncokb_token
+from AnnotatorCore import processalterationevents
+from AnnotatorCore import QueryType
+from AnnotatorCore import ReferenceGenome
+
+
+def run_oncokb_annotation():
+    logging.basicConfig(level=logging.INFO)
+    log = logging.getLogger('MafAnnotator')
+
+    # set default values
+    previous_result_file = ''
+    input_clinical_file = ''
+    sample_ids_filter = ''
+    default_cancer_type = ''
+    oncokb_api_url = ''
+    annotate_hotspots = False
+    cancer_hotspots_base_url = ''
+    query_type = None
+    include_descriptions = False
+
+    input_file = args.outfile
+    oncokb_api_bearer_token = args.use_oncokb_token
+    default_reference_genome = 'GRCh38'
+    output_file = args.annotated_outfile
+
+    docstr = (
+        '\n'
+        'MafAnnotator.py -i <input MAF file> -o <output MAF file> [-p previous results] [-c <input clinical file>] '
+        '[-s sample list filter] [-t <default tumor type>] [-u oncokb-base-url] [-b oncokb api bear token] [-a] '
+        '[-q query type] [-r default reference genome] [-d include descriptions]\n'
+        'For definitions of the MAF format, please see https://docs.gdc.cancer.gov/Data/File_Formats/MAF_Format/\n\n'
+        'Essential MAF columns for querying HGVSp_Short and HGVSp(case insensitive):\n'
+        '    Hugo_Symbol: Hugo gene symbol\n'
+        '    Tumor_Sample_Barcode: sample ID\n'
+        '    HGVSp(query type: HGVSp): protein change in HGVSp format\n'
+        '    HGVSp_Short(query type: HGVSp_Short): protein change in HGVSp format using 1-letter amino-acid codes\n'
+        'Essential MAF columns for querying HGVSg(case insensitive):\n'
+        '    Tumor_Sample_Barcode: sample ID\n'
+        '    HGVSg: Genomic change in HGVSg format\n'
+        'Essential MAF columns for querying genomic change(case insensitive):\n'
+        '    Tumor_Sample_Barcode: sample ID\n'
+        '    Chromosome: Chromosome number\n'
+        '    Start_Position: Mutation start coordinate\n'
+        '    End_Position: Mutation end coordinate\n'
+        '    Reference_Allele: The plus strand reference allele at this position\n'
+        '    Tumor_Seq_Allele1: Primary data genotype for tumor sequencing (discovery) allele\n'
+        '    Tumor_Seq_Allele2: Tumor sequencing (discovery) allele 2\n'
+        'Essential clinical columns:\n'
+        '    SAMPLE_ID: sample ID\n'
+        '    ONCOTREE_CODE: tumor type code from oncotree (http://oncotree.mskcc.org)\n'
+        'Cancer type will be assigned based on the following priority:\n'
+        '    1) ONCOTREE_CODE in clinical data file\n'
+        '    2) ONCOTREE_CODE exist in MAF\n'
+        '    3) default tumor type (-t)\n'
+        'Query type only allows the following values (case-insensitive):\n'
+        '    - HGVSp_Short\n'
+        '      It reads from column HGVSp_Short or Alteration\n'
+        '    - HGVSp\n'
+        '      It reads from column HGVSp or Alteration\n'
+        '    - HGVSg\n'
+        '      It reads from column HGVSg or Alteration\n'
+        '    - Genomic_Change\n'
+        '      It reads from columns Chromosome, Start_Position, End_Position, Reference_Allele, Tumor_Seq_Allele1 and Tumor_Seq_Allele2  \n'
+        'Reference Genome only allows the following values(case-insensitive):\n'
+        '    - GRCh37\n'
+        '      GRCh38\n'
+        'Default OncoKB base url is https://www.oncokb.org.\n'
+        )
+
+    setoncokbapitoken(oncokb_api_bearer_token)
+    cancertypemap = {}
+    validate_oncokb_token()
+    processalterationevents(input_file, output_file, previous_result_file, default_cancer_type,
+                            cancertypemap, annotate_hotspots, user_input_query_type, default_reference_genome,
+                            include_descriptions)
+
+    log.info('done!')
