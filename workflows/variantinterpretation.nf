@@ -265,7 +265,8 @@ workflow VARIANTINTERPRETATION {
             ukb_results = ukb_results.mix(annotated_variants.map{ it -> it[1] } ).mix(tmb)
         } else {
             println "using new ukb_tool"
-            filtout = UKB_TOOL(ch_tsv, refseq_list, variantDBi, ch_library_type)
+            //filtout = UKB_TOOL(ch_tsv, refseq_list, variantDBi, ch_library_type)
+            filtout = UKB_TOOL(ch_tsv, ch_library_type)
             tmb = filtout.tmb.map{it -> it[1]}
             annotated_variants = filtout.annotated_variants
             ukb_results = ukb_results.mix(annotated_variants.map{ it -> it[1]} ).mix(tmb)

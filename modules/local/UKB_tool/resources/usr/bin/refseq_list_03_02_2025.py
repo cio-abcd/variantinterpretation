@@ -1,4 +1,10 @@
-NM_RefSeq_final
+# while its ugly to have the data embedded in here
+# its still better than having to track it externally
+# and all the associated boilerplate
+import re
+
+transcript_list_header = ['NM_RefSeq_final']
+transcript_list_raw = '''
 NM_000038
 NM_000043
 NM_000044
@@ -810,4 +816,8 @@ NM_213647
 NR_001566
 NR_002819
 NR_026800
-NR_109973
+NR_109973'''
+
+transcript_list = list([x.strip() for x in transcript_list_raw.splitlines()])
+for x in transcript_list:
+    assert x.startswith('NM_') or x.startswith('NR_'), f'incorrect looking refseq entry: {x}'

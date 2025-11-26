@@ -4,15 +4,23 @@ import argparse
 from datetime import datetime
 from pathlib import Path
 import re
+import os
+import io
 
 import pandas as pd
+
+from refseq_list_03_02_2025 import transcript_list, transcript_list_header
+
+import sys
+from variantenliste22_12_15_restyled_csv import variant_list_csv
+
 
 # Using argparse for positinal arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("vcf_type", type=str, choices=['singlesample','paired'])
 parser.add_argument("library_type", type=str, choices=['panel', 'wes','wgs'])
-parser.add_argument("refseq_list", type=Path)
-parser.add_argument("variant_DBi", type=Path)
+#parser.add_argument("refseq_list", type=Path)
+#parser.add_argument("variant_DBi", type=Path)
 parser.add_argument("vembrane_table", type=Path)
 parser.add_argument("--removed_variants", type=Path)
 parser.add_argument("--tmb_output", type=Path)
@@ -38,11 +46,14 @@ VEMBRANE_TABLE_OUT = args.vembrane_table
 VEMBRANE_TABLE_OUT_data = pd.read_csv(VEMBRANE_TABLE_OUT, sep="\t",low_memory=False)
 
 # Load RefSeq transcripts to list
-transcript_list = args.refseq_list
+# transcript_list = args.refseq_list
 #transcript_list = "12032025_use_in_wgs_pilot_refseq.txt"
-RefSeq_NM = pd.read_csv(transcript_list)
+#RefSeq_NM = pd.read_csv(transcript_list)
+RefSeq_NM = pd.DataFrame(transcript_list, columns=transcript_list_header)
 RefSeq_NM_lst = RefSeq_NM["NM_RefSeq_final"].values.tolist()
-variantDBi = pd.read_excel(args.variant_DBi)
+#variantDBi = pd.read_excel(args.variant_DBi)
+#variantDBi = pd.read_csv(Path(os.path.dirname(os.path.relpath(__file__))))
+variantDBi = pd.read_csv(io.StringIO(variant_list_csv))
 
 # Remove INTERGENIC_VARIANTS
 vs_intergenic = []

@@ -9,8 +9,8 @@ process UKB_TOOL {
 
     input:
     tuple val(meta), path(tsv)
-    val(refseq_list)
-    val(variantDBi)
+    //val(refseq_list)
+    //val(variantDBi)
     val(library_type)
 
     output:
@@ -25,8 +25,6 @@ process UKB_TOOL {
     WXS_process_variants_filter.py \\
         'paired' \\
         ${library_type} \\
-        ${refseq_list} \\
-        ${variantDBi} \\
         ${tsv} \\
         --tmb_output ${prefix}_tmb.csv \\
         --outfile  ${prefix}_filtered_variants.maf \\
