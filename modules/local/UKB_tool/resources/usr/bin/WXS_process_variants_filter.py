@@ -16,7 +16,7 @@ from variantenliste22_12_15_restyled_csv import variant_list_csv
 
 ONCOKB_ANNOTATE_TMP_FILE = 'oncokb_outfile'
 
-logger = logging.getLogger('wxs_process_variants')
+logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 stderr_handler = logging.StreamHandler(sys.stderr)
@@ -46,13 +46,14 @@ def cli():
     return args
 
 def process_variants(args):
-    dt_string = datetime.now().strftime("%d/%m/%Y %H:%M:%S") # dd/mm/YY H:M:S
-    logger.info("Start:", dt_string)
-    logger.info("Input_vembrane_table:", args.vembrane_table)
-    logger.info("Output_file_1:", args.outfile)
-    logger.info("Output_file_2:", args.removed_variants)
-    logger.info("Output_file_3:", args.tmb_output)
-    logger.info("Script: WXS_process_variants_filter.py")
+    logger.info(f'''
+    starting wxs_process_variants
+    Input_vembrane_table: {args.vembrane_table}
+    Output_file_1: {args.outfile}
+    Output_file_2: {args.removed_variants}
+    Output_file_3: {args.tmb_output}
+    Script: WXS_process_variants_filter.py
+    ''')
 
     # Get VEMBRANE_TABLE.out data
     VEMBRANE_TABLE_OUT = args.vembrane_table
@@ -406,10 +407,7 @@ def process_variants(args):
         out_name = out_name_no_suffix.with_suffix(f'.shard_{shard_i}.xlsx')
         table_shard.to_excel(str(out_name),index = False,engine= None)
 
-    logger.info("--> Writing file for variants for oncokb and file for removed data to xlsx file: successful!")
-    dt_string = datetime.now().strftime("%d/%m/%Y %H:%M:%S") # dd/mm/YY H:M:S
-    logger.info("End:", dt_string)
-    logger.info('running oncokb annotation')
+    logger.info('Writing file for variants for oncokb and file for removed data to xlsx file: successful!')
 
 
 # originally from https://github.com/oncokb/oncokb-annotator AGPL-3.0 license
@@ -433,6 +431,8 @@ def run_oncokb_annotation(oncokb_token):
 
     stderr_handler = logging.StreamHandler(sys.stderr)
     log.addHandler(stderr_handler)
+
+    log.info('running oncokb annotation')
 
     # set default values
     previous_result_file = ''
@@ -505,20 +505,13 @@ def run_oncokb_annotation(oncokb_token):
 
 
 def annotation(args):
+    logger.info('running wxs final annotation')
     # previously in WXS_annotation.py
     onco_maf = ONCOKB_ANNOTATE_TMP_FILE
     date_time_now = datetime.now()
 
     # dd/mm/YY H:M:S
     dt_string = date_time_now.strftime("%d/%m/%Y %H:%M:%S")
-    logger.info("Start:", dt_string)
-
-    # Process information
-    logger.info("Input_oncokb_out:", onco_maf)
-    logger.info("Output_file:", args.annotated_outfile)
-
-    # Script used
-    logger.info("Script: WXS_annotation.py")
 
     # OncoKB output data
     UKB_ONCOKB_OUT_data = pd.read_csv(onco_maf, sep="\t",low_memory=False)
@@ -566,19 +559,8 @@ def annotation(args):
                      "rs_number", "Wertung"]
 
     final_output = UKB_ONCOKB_OUT_data[final_columns]
-
-    # save file final
     final_output.to_excel(args.annotated_outfile, index = False, engine = None)
-
-    # Log information
-    logger.info("--> Writing file annotated_variants to xlsx file: successful!")
-
-    # Getting current date and time for log information
-    date_time_now = datetime.now()
-
-    # dd/mm/YY H:M:S
-    dt_string = date_time_now.strftime("%d/%m/%Y %H:%M:%S")
-    logger.info("End:", dt_string)
+    logger.info('Writing file annotated_variants to xlsx file: successful!')
 
 
 args = cli()
