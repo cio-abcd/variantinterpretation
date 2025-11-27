@@ -53,6 +53,9 @@ ch_vep_genome                 = params.vep_genome              ?: Channel.empty(
 ch_vep_species                = params.vep_species             ?: Channel.empty()
 ch_annotation_fields          = params.annotation_fields       ?: ''
 
+// yikes, nextflow type coerces the argument values (true or false) into booleans instead of treating them as strings or smth.
+use_proprietary = params.use_proprietary
+
 // VEP extra files
 ch_vep_extra_files            = []
 ch_library_type               = params.library_type ?: ''
@@ -60,6 +63,7 @@ ch_library_type               = params.library_type ?: ''
 if (ch_library_type != "wes" && ch_library_type != "wgs") {
     throw new IllegalArgumentException("library_type must be 'wes' or 'wgs'")
     }
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -95,6 +99,7 @@ workflow CIOABCD_VARIANTINTERPRETATION {
         ch_bedfile,
         ch_custom_filters,
         ch_library_type
+        use_proprietary
     )
 
     ch_versions = VARIANTINTERPRETATION.out.ch_versions

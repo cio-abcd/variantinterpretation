@@ -58,6 +58,7 @@ workflow VARIANTINTERPRETATION {
     ch_bedfile
     ch_custom_filters
     ch_library_type
+    use_proprietary_arg
 
     main:
     // gather versions of each process
@@ -66,6 +67,21 @@ workflow VARIANTINTERPRETATION {
     ch_multiqc_files = Channel.empty()
     // gather warnings
     ch_warnings = Channel.empty()
+
+    // yikes, nextflow type coerces the argument values (true and false, ...) into boolean instead of keeping them strings
+	if (use_proprietary_arg == null) {
+      use_proprietary = false
+	} else if (use_proprietary_arg == true) {
+	  use_proprietary = true
+	} else if (use_proprietary_arg == false) {
+	  use_proprietary = false
+	} else {
+	  throw new IllegalArgumentException("use_proprietary must be boolean: true or false")
+	}
+
+	if (use_proprietary){
+		  println 'enabeling proprietary features'
+	}
 
     //
     // Check parameter combinations and give warnings
@@ -255,7 +271,7 @@ workflow VARIANTINTERPRETATION {
         // MODULE: UKB filter
 
         def use_old_filter = false
-        def use_onkokb_token = true
+        use_oncokb_token = use_proprietary
 
         if( use_old_filter == true ) {
             UKB_FILTER(ch_tsv, refseq_list, variantDBi, ch_library_type)
@@ -269,7 +285,8 @@ workflow VARIANTINTERPRETATION {
 
             println "using new ukb_tool"
             //filtout = UKB_TOOL(ch_tsv, refseq_list, variantDBi, ch_library_type)
-            if( use_onkokb_token == true ){
+            if( use_oncokb_token == true ){
+                println 'using onkokb token'
                 filtout = UKB_TOOL_oncokb(ch_tsv, ch_library_type)
                 }
             else {
