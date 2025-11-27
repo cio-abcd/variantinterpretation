@@ -351,6 +351,7 @@ def process_variants(args):
         table_shard.to_excel(str(out_name),index = False,engine= None)
 
     logger.info('Writing file for variants for oncokb and file for removed data to xlsx file: successful!')
+    return final
 
 
 # originally from https://github.com/oncokb/oncokb-annotator AGPL-3.0 license
@@ -445,6 +446,13 @@ def run_oncokb_annotation(oncokb_token):
 
     log.info('done!')
 
+def oncokb_stub_annotation(args, output_variants_df):
+    ''' stub out oncokb annotation for non-proprietary use, generate a empty csv file '''
+    for onkokb_added_column in ['ANNOTATED', 'GENE_IN_ONCOKB', 'VARIANT_IN_ONCOKB', 'MUTATION_EFFECT', 'ONCOGENIC']:
+        output_variants_df[onkokb_added_column] = None
+
+    output_variants_df.to_csv(ONCOKB_ANNOTATE_TMP_FILE, index=False,sep='\t' )
+
 
 def annotation(args):
     logger.info('running wxs final annotation')
@@ -494,6 +502,9 @@ def annotation(args):
 
 
 args = cli()
-process_variants(args)
-run_oncokb_annotation(args.use_oncokb_token)
+output_variants_df = process_variants(args)
+if args.use_oncokb_token is not None:
+    run_oncokb_annotation(args.use_oncokb_token)
+else:
+    oncokb_stub_annotation(args, output_variants_df)
 annotation(args)
