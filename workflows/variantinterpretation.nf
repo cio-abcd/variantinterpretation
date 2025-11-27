@@ -20,6 +20,7 @@ include { HTML_REPORT                               } from '../subworkflows/loca
 include { TMB_CALCULATE	    	                    } from '../modules/local/tmbcalculation/main'
 include { UKB_FILTER                                } from '../modules/local/UKB_filter/main'
 include { UKB_TOOL                                } from '../modules/local/UKB_tool/main'
+include { UKB_TOOL_oncokb                                } from '../modules/local/UKB_tool/main'
 include { ONCOKB_ANNOTATOR_UKB                      } from '../modules/local/oncokb_annotator_ukb/main'
 include { WXS_ANNOTATION_UKB                        } from '../modules/local/wxs_annotation_ukb/main'
 /*
@@ -254,6 +255,7 @@ workflow VARIANTINTERPRETATION {
         // MODULE: UKB filter
 
         def use_old_filter = false
+        def use_onkokb_token = true
 
         if( use_old_filter == true ) {
             UKB_FILTER(ch_tsv, refseq_list, variantDBi, ch_library_type)
@@ -264,9 +266,15 @@ workflow VARIANTINTERPRETATION {
             annotated_variants = WXS_ANNOTATION_UKB(ONCOKB_ANNOTATOR_UKB.out.oncokb_out).annotated_variants
             ukb_results = ukb_results.mix(annotated_variants.map{ it -> it[1] } ).mix(tmb)
         } else {
+
             println "using new ukb_tool"
             //filtout = UKB_TOOL(ch_tsv, refseq_list, variantDBi, ch_library_type)
-            filtout = UKB_TOOL(ch_tsv, ch_library_type)
+            if( use_onkokb_token == true ){
+                filtout = UKB_TOOL_oncokb(ch_tsv, ch_library_type)
+                }
+            else {
+                filtout = UKB_TOOL(ch_tsv, ch_library_type)
+                }
             tmb = filtout.tmb.map{it -> it[1]}
             annotated_variants = filtout.annotated_variants
             ukb_results = ukb_results.mix(annotated_variants.map{ it -> it[1]} ).mix(tmb)
