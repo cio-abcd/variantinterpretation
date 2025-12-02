@@ -1,4 +1,6 @@
-Changes in module 'nf-core/bcftools/merge'
+Changes in component 'nf-core/bcftools/merge'
+'modules/nf-core/bcftools/merge/meta.yml' is unchanged
+Changes in 'bcftools/merge/main.nf':
 --- modules/nf-core/bcftools/merge/main.nf
 +++ modules/nf-core/bcftools/merge/main.nf
 @@ -9,8 +9,6 @@
@@ -7,8 +9,20 @@ Changes in module 'nf-core/bcftools/merge'
      tuple val(meta), path(vcfs), path(tbis)
 -    tuple val(meta2), path(fasta)
 -    tuple val(meta3), path(fai)
-     path(bed)
+     tuple val(meta4), path(bed)
  
      output:
 
+'modules/nf-core/bcftools/merge/environment.yml' is unchanged
+'modules/nf-core/bcftools/merge/tests/bcf.config' is unchanged
+'modules/nf-core/bcftools/merge/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/bcftools/merge/tests/nextflow.config' is unchanged
+'modules/nf-core/bcftools/merge/tests/vcf_gz.config' is unchanged
+'modules/nf-core/bcftools/merge/tests/vcf.config' is unchanged
+'modules/nf-core/bcftools/merge/tests/nextflow.gvcf.config' is unchanged
+'modules/nf-core/bcftools/merge/tests/vcf_gz_index_csi.config' is unchanged
+'modules/nf-core/bcftools/merge/tests/vcf_gz_index_tbi.config' is unchanged
+'modules/nf-core/bcftools/merge/tests/main.nf.test' is unchanged
+'modules/nf-core/bcftools/merge/tests/vcf_gz_index.config' is unchanged
+'modules/nf-core/bcftools/merge/tests/bcf_gz.config' is unchanged
 ************************************************************

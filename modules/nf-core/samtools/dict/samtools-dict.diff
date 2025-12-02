@@ -1,4 +1,5 @@
-Changes in module 'nf-core/samtools/dict'
+Changes in component 'nf-core/samtools/dict'
+Changes in 'samtools/dict/main.nf':
 --- modules/nf-core/samtools/dict/main.nf
 +++ modules/nf-core/samtools/dict/main.nf
 @@ -19,12 +19,13 @@
@@ -17,4 +18,8 @@ Changes in module 'nf-core/samtools/dict'
      cat <<-END_VERSIONS > versions.yml
      "${task.process}":
 
+'modules/nf-core/samtools/dict/environment.yml' is unchanged
+'modules/nf-core/samtools/dict/meta.yml' is unchanged
+'modules/nf-core/samtools/dict/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/samtools/dict/tests/main.nf.test' is unchanged
 ************************************************************
