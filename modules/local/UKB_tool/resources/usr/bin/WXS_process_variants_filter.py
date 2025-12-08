@@ -204,11 +204,15 @@ def process_variants(args):
     ALLOWED_DISTANCE_FROM_EXON = 200
 
     # NM_000.00:c. ...
-    regex = r'^NM_\d+\.\d+\:(?P<variant_type>c)\.(?P<e_pos1>\d+)(?P<i_pos1>[+-]\d+)?(?P<e_pos2>_\d+(?P<i_pos2>[+-]\d+)?)?$'
+    # regex = r'^NM_\d+\.\d+\:(?P<variant_type>c)\.(?P<e_pos1>\d+)(?P<i_pos1>[+-]\d+)?(?P<e_pos2>_\d+(?P<i_pos2>[+-]\d+)?)?([ACGT]>[ACGT])?$'
+    regex = '^NM_\d+\.\d+\:(?P<variant_type>c)\.(?P<e_pos1>\d+)(?P<i_pos1>[+-]\d+)?(?P<e_pos2>_\d+(?P<i_pos2>[+-]\d+)?)?(([AGTC]>[AGTC])|delins[AGTC]{2}|dup|del|ins[AGTC]+)?$'
     pattern = re.compile(regex, flags=re.ASCII)
 
     def is_interesting_intron(rsv):
         match = pattern.fullmatch(rsv)
+        if match is None:
+            logger.warning(f'hgvs did not match regex pattern: {rsv}')
+            return True
         md = match.groupdict()
         exon_pos1 = md['e_pos1']
         intron_offs1 = md['i_pos1']
