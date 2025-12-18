@@ -115,7 +115,7 @@ def check_chrom_def(vcffile, meta_id, log_level):
         report_message = f'{log_level}: {meta_id} "CHROM" column only contains integers. Chromosome names need the "chr" prefix in the "CHROM" column.'
     else:
         # check for pattern
-        pattern = re.compile(r"^chr.*")
+        pattern = re.compile(r"^(chr|HLA).*")
         chrmatch = [bool(pattern.match(c)) for c in chromosomes]
         if all(chrmatch):
             report_message = (
