@@ -197,6 +197,10 @@ def process_variants(args):
     # exclude :n. variants
     variants_valid  = variants_valid[~variants_valid["CSQ_HGVSc"].str.contains(r':n.')]
 
+    variants_valid  = variants_valid[~variants_valid["CSQ_HGVSc"].str.contains(r':c.-')]
+    variants_valid  = variants_valid[~variants_valid["CSQ_HGVSc"].str.contains(r':c.+')]
+    variants_valid  = variants_valid[~variants_valid["CSQ_HGVSc"].str.contains(r':c.*')]
+
     # Reset indices
     variants_valid = variants_valid .reset_index(drop="TRUE")
 
@@ -219,12 +223,20 @@ def process_variants(args):
         exon_pos2 = md['e_pos2']
         intron_offs2 = md['i_pos2']
 
-        min_dist = abs(int(intron_offs1.removeprefix('-').removeprefix('+')))
+        min_dist = None
+
+        if intron_offs1:
+            min_dist = abs(int(intron_offs1.removeprefix('-').removeprefix('+')))
+
         if intron_offs2:
             min_dist2 = abs(int(intron_offs2.removeprefix('-').removeprefix('+')))
-            min_dist = min(min_dist, min_dist2)
 
-        if min_dist > ALLOWED_DISTANCE_FROM_EXON:
+        if intron_offs1 and intron_off2:
+            min_dist = min(min_dist, min_dist2)
+        elif intron_offs2:
+            min_dist = min_dist2
+
+        if min_dist and min_dist > ALLOWED_DISTANCE_FROM_EXON:
             return False
 
         return True
