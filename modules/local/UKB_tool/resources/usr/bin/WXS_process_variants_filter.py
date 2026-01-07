@@ -197,9 +197,13 @@ def process_variants(args):
     # exclude :n. variants
     variants_valid  = variants_valid[~variants_valid["CSQ_HGVSc"].str.contains(r':n.')]
 
+    # exclude nucleotides upsteam (5') of ATG-translation codon, see https://hgvs-nomenclature.org/stable/background/numbering/
     variants_valid  = variants_valid[~variants_valid["CSQ_HGVSc"].str.contains(r':c.-')]
-    variants_valid  = variants_valid[~variants_valid["CSQ_HGVSc"].str.contains(r':c.+')]
+    # exclude nucleotides downsteam (3') of ATG-translation codon
     variants_valid  = variants_valid[~variants_valid["CSQ_HGVSc"].str.contains(r':c.*')]
+    # this is maybe actually incorrect:
+    # i couldnt find c.+ in
+    # variants_valid  = variants_valid[~variants_valid["CSQ_HGVSc"].str.contains(r':c.+')]
 
     # Reset indices
     variants_valid = variants_valid .reset_index(drop="TRUE")
