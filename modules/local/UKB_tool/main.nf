@@ -4,7 +4,8 @@ process UKB_TOOL {
     //errorStrategy 'ignore'
 
     cpus 1
-    memory "40 GB"
+    memory "200 GB"
+    time 5.h
 
     input:
     tuple val(meta), path(tsv)
@@ -42,7 +43,8 @@ process UKB_TOOL_oncokb {
     secret 'oncokb_token'
 
     cpus 1
-    memory "40 GB"
+    memory "200 GB"
+    time 5.h
 
     input:
     tuple val(meta), path(tsv)
