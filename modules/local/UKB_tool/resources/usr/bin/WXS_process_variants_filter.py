@@ -195,12 +195,12 @@ def process_variants(args):
     hgvsc_nan = refseq_variants.loc[nan_index , :]
 
     # exclude :n. variants
-    variants_valid  = variants_valid[~variants_valid["CSQ_HGVSc"].str.contains(r':n.')]
+    variants_valid  = variants_valid[~variants_valid["CSQ_HGVSc"].str.contains(r':n.', regex=False)]
 
     # exclude nucleotides upsteam (5') of ATG-translation codon, see https://hgvs-nomenclature.org/stable/background/numbering/
-    variants_valid  = variants_valid[~variants_valid["CSQ_HGVSc"].str.contains(r':c.-')]
+    variants_valid  = variants_valid[~variants_valid["CSQ_HGVSc"].str.contains(r':c.-', regex=False)]
     # exclude nucleotides downsteam (3') of ATG-translation codon
-    variants_valid  = variants_valid[~variants_valid["CSQ_HGVSc"].str.contains(r':c.*')]
+    variants_valid  = variants_valid[~variants_valid["CSQ_HGVSc"].str.contains(r':c.*', regex=False)]
     # this is maybe actually incorrect:
     # i couldnt find c.+ in
     # variants_valid  = variants_valid[~variants_valid["CSQ_HGVSc"].str.contains(r':c.+')]
