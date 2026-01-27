@@ -213,7 +213,7 @@ def process_variants(args):
 
     # NM_000.00:c. ...
     # regex = r'^NM_\d+\.\d+\:(?P<variant_type>c)\.(?P<e_pos1>\d+)(?P<i_pos1>[+-]\d+)?(?P<e_pos2>_\d+(?P<i_pos2>[+-]\d+)?)?([ACGT]>[ACGT])?$'
-    regex = '^NM_\d+\.\d+\:(?P<variant_type>c)\.(?P<e_pos1>\d+)(?P<i_pos1>[+-]\d+)?(?P<e_pos2>_\d+(?P<i_pos2>[+-]\d+)?)?(([AGTC]>[AGTC])|delins[AGTC]{2}|dup|del|ins[AGTC]+)?$'
+    regex = r'^NM_\d+\.\d+\:(?P<variant_type>c)\.(?P<e_pos1>\d+)(?P<i_pos1>[+-]\d+)?(?P<e_pos2>_\d+(?P<i_pos2>[+-]\d+)?)?(([AGTC]>[AGTC])|delins[AGTC]{2}|dup|del|ins[AGTC]+)?(inv|delins[ACTG]+)?$'
     pattern = re.compile(regex, flags=re.ASCII)
 
     def is_interesting_intron(rsv):
@@ -235,7 +235,7 @@ def process_variants(args):
         if intron_offs2:
             min_dist2 = abs(int(intron_offs2.removeprefix('-').removeprefix('+')))
 
-        if intron_offs1 and intron_off2:
+        if intron_offs1 and intron_offs2:
             min_dist = min(min_dist, min_dist2)
         elif intron_offs2:
             min_dist = min_dist2
