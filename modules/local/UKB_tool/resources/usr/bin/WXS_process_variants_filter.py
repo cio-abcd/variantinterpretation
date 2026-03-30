@@ -105,42 +105,93 @@ def process_variants(args):
 
     # TMB calculation
     # filter variants
-    intergenic_variants_AF = intergenic_variants[intergenic_variants[AF_colnames[1]] >= 0.05]
-    intergenic_variants_AF_RD = intergenic_variants_AF[intergenic_variants_AF[RD_colnames[1]] >= 30]
-    data_report_AF_RD = data_report_AF[data_report_AF[RD_colnames[1]] >= 30]
 
-    # concat variants
-    variants_tmb_frames = [data_report_AF_RD, intergenic_variants_AF_RD]
-    variants_tmb = pd.concat(variants_tmb_frames)
+    if args.library_type == "wes" or args.library_type == "wgs":
+
+    # Variants with AF>5%
+    data_report_AF_tmb = data_report[data_report[AF_colnames[1]] >= 0.05]
+
+    data_report_AF_RD_tmb = data_report_AF_tmb[data_report_AF_tmb\
+                                                  [RD_colnames[1]] >= 30]
+
+    variants_tmb = data_report_AF_RD_tmb
 
     # remove duplicates based on CHROM, POS, REF, ALT, AF_colnames[1], RD_colnames[1]
     unique_variants_tmb = variants_tmb.drop_duplicates(
                           subset = ["CHROM", "POS", "REF", "ALT", AF_colnames[1],
                                     RD_colnames[1]]).reset_index(drop=True)
 
-    non_synonymous_variants = unique_variants_tmb[unique_variants_tmb["CSQ_Consequence"] != "synonymous_variant"]
-    TMB_snv =  non_synonymous_variants[non_synonymous_variants["CSQ_VARIANT_CLASS"] == "SNV"]
-    TMB_del =  non_synonymous_variants[non_synonymous_variants["CSQ_VARIANT_CLASS"] == "deletion"]
-    TMB_ins =  non_synonymous_variants[non_synonymous_variants["CSQ_VARIANT_CLASS"] == "insertion"]
-    TMB_sub =  non_synonymous_variants[non_synonymous_variants["CSQ_VARIANT_CLASS"] == "substitution"]
+    non_synonymous_variants = unique_variants_tmb[unique_variants_tmb\
+                                              ["CSQ_Consequence"] != "synonymous_variant"]
+
+    # coding_SO_term
+    coding_SO_term = ["synonymous_variant",
+                      "missense_variant",
+                      "inframe_insertion",
+                      "inframe_deletion",
+                      "stop_gained",
+                      "frameshift_variant",
+                      "coding_sequence_variant",
+                      "start_lost",
+                      "stop_lost",
+                      "start_retained_variant",
+                      "stop_retained_variant",
+                      "incomplete_terminal_codon_variant",
+                      "transcript_ablation",
+                      "transcript_amplification",
+                      "protein_altering_variant",
+                      "coding_transcript_variant",
+                      "NMD_transcript_variant"]
+
+    # filter against coding_SO_term (keep)
+    non_synonymous_variants_coding = non_synonymous_variants[non_synonymous_variants\
+                                                             ["CSQ_Consequence"].isin(coding_SO_term)]
+
+    # keep rows were value is "nan"
+    non_synonymous_variants_coding_nan = non_synonymous_variants_coding[non_synonymous_variants_coding\
+                                                                        ["CSQ_gnomADe_AF"].isna()]
+
+    # filter CSQ_gnomADe_AF notna and keep values below 0.001
+    non_synonymous_variants_coding_notnan = non_synonymous_variants_coding[(non_synonymous_variants_coding\
+                                                                            ["CSQ_gnomADe_AF"].notna()) & (non_synonymous_variants_coding\
+                                                                            ["CSQ_gnomADe_AF"] <= 0.001)]
+
+    #concat tmb variants
+    variants_tmb_frames = [non_synonymous_variants_coding_nan, non_synonymous_variants_coding_notnan]
+    variants_tmb_final = pd.concat(variants_tmb_frames)
+
+    # get SNV, DEL, INS
+    TMB_snv =  variants_tmb_final[variants_tmb_final\
+                                       ["CSQ_VARIANT_CLASS"] == "SNV"]
+
+    TMB_del =  variants_tmb_final[variants_tmb_final\
+                                       ["CSQ_VARIANT_CLASS"] == "deletion"]
+
+    TMB_ins =  variants_tmb_final[variants_tmb_final\
+                                       ["CSQ_VARIANT_CLASS"] == "insertion"]
+
+    TMB_sub =  variants_tmb_final[variants_tmb_final\
+                                       ["CSQ_VARIANT_CLASS"] == "substitution"]
 
     # count numbers
     TMB_snv_final = len(TMB_snv)
     TMB_snv_delins_final = len(TMB_snv) + len(TMB_del) + len(TMB_ins)
 
     # TODO: calculate this from a bedfile
-    if args.library_type == "wes":
-        Regionsgroesse_MB = 30.16
-    elif args.library_type == "wgs":
-        Regionsgroesse_MB = 3099.73 # 3099734149
+    #Regionsgroesse_MB = 3099.73 # 3099734149
+    if args.library_type == "wes" or args.library_type == "wgs":
+        Regionsgroesse_MB = 33.936165 # old 30.16
+    #elif args.analysis == "wgs":
+    #Regionsgroesse_MB = 3099.73 # 3099734149 IS NOT CLINICAL
     else:
         raise ValueError("library_type value not valid! Please correct!")
 
     # make dataframe
     TMB = pd.DataFrame()
 
-    header_col = ["Anzahl TMB Mut. missense", "Anzahl TMB Mut. Missense + InDel",
-                  "Regionsgroesse [Mb]","TMB Missense","TMB Missense + InDel"]
+    header_col = ["Anzahl TMB Mut. missense", "Anzahl TMB Mut. Missense + InDel", "Regionsgroesse [Mb]",\
+                  "TMB Missense", \
+                  "TMB Missense + InDel"]
 
     for col in header_col:
         TMB [col] = ""
@@ -175,6 +226,29 @@ def process_variants(args):
     # remove no_refseq_match
     no_refseq_match_variants = variants.loc[no_refseq_match_idx, :]
 
+    # find TERT and keep TERT
+    tert = refseq_variants[refseq_variants["CSQ_SYMBOL"] == "TERT" ]
+    # filter against nan in CSQ_HGVSc
+    tert_filtered = tert[tert["CSQ_HGVSc"].isna()]
+    tert_filtered  = tert_filtered.reset_index(drop="TRUE")
+    if tert_filtered.empty == False:
+        tert_df_length = len(tert_filtered)
+        for i in range(tert_df_length):
+            # Tert promoter mutations are CSQ_HGVSp nan
+            if isinstance(tert_filtered.loc[i,"CSQ_HGVSp"],str) == False and pd.notna\
+                         (tert_filtered.loc[i,"CSQ_HGVSp"]) == False:
+            #print(type(tert.loc[i,"CSQ_Existing_variation"]))
+            # pathogenic variants with rs
+            # c.-124C>T = rs1242535815
+            # c.-146C>T = rs1561215364
+            # c.-57A>C = rs878855297
+               if tert_filtered.loc[i,"CSQ_Existing_variation"] == "['rs1242535815']":
+                   tert_filtered.loc[i,"CSQ_HGVSc"] = "NM_198253.3:c.-124C>T"
+               elif tert_filtered.loc[i,"CSQ_Existing_variation"] == "['rs1561215364']":
+                   tert_filtered.loc[i,"CSQ_HGVSc"] = "NM_198253.3:c.-146C>T"
+               elif tert_filtered.loc[i,"CSQ_Existing_variation"] == "['rs878855297']":
+                   tert_filtered.loc[i,"CSQ_HGVSc"] = "NM_198253.3:c.-57A>C"
+
     # Reset indices
     refseq_variants = refseq_variants.reset_index(drop="TRUE")
 
@@ -206,7 +280,7 @@ def process_variants(args):
     # variants_valid  = variants_valid[~variants_valid["CSQ_HGVSc"].str.contains(r':c.+')]
 
     # Reset indices
-    variants_valid = variants_valid .reset_index(drop="TRUE")
+    variants_valid = variants_valid.reset_index(drop="TRUE")
 
     # heuristic, filter out variants that are too far inside an intron, as those are less interesting
     ALLOWED_DISTANCE_FROM_EXON = 200
@@ -262,6 +336,16 @@ def process_variants(args):
 
     # variants exlude
     variants_exlude = variants_valid.loc[remove_idx , :]
+
+    # Reset indices
+    variants_final = variants_final.reset_index(drop="TRUE")
+
+    # add Tert Promoter mutations if there
+    #check_tert = variants_final[variants_final["CSQ_SYMBOL"] == "TERT" ]
+    if tert_filtered.empty == False:
+        variants_final_frames = [variants_final, tert_filtered]
+        variants_final = pd.concat(variants_final_frames)
+        variants_final = variants_final.reset_index(drop="TRUE")
 
     # Customizing table output
     # multiply AF columns *100
@@ -337,8 +421,8 @@ def process_variants(args):
                                   "ALT": "Tumor_Seq_Allele2",
                                   "CSQ_SYMBOL": "HUGO_SYMBOL"})
 
-    normal_id = (re.findall(r'(?<=allele_fraction)[WGS\d+\-]*', AF_colnames[0]))[0] + "_N_1"
-    tumor_id = (re.findall(r'(?<=allele_fraction)[WGS\d+\-]*', AF_colnames[1]))[0] + "_T_1"
+    normal_id = (re.findall(r'(?<=allele_fraction)[W*S\d+\-]*', AF_colnames[0]))[0] + "_N_1"
+    tumor_id = (re.findall(r'(?<=allele_fraction)[W*S\d+\-]*', AF_colnames[1]))[0] + "_T_1"
 
     final["Tumor_Sample_Barcode"] = tumor_id
     final["Matched_Norm_Sample_Barcode"] = normal_id
