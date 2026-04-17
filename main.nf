@@ -98,7 +98,7 @@ workflow CIOABCD_VARIANTINTERPRETATION {
         ch_annotation_colinfo,
         ch_bedfile,
         ch_custom_filters,
-        ch_library_type
+        ch_library_type,
         use_proprietary
     )
 

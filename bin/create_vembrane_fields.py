@@ -153,7 +153,7 @@ if __name__ == "__main__":
         vembrane_strings.append(
             'for_each_sample(lambda s: FORMAT["' + str(args.read_depth) + '"][s])'
         )
-        header_strings.append('for_each_sample(lambda sample: f"read_depth{sample}]")')
+        header_strings.append('for_each_sample(lambda sample: f"read_depth{sample}")')
 
     if args.format_fields:
         # Formatting the FORMAT fields.

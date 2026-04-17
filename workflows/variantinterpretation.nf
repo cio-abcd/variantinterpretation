@@ -17,7 +17,7 @@ include { ENSEMBLVEP_VEP                            } from '../modules/nf-core/e
 include { TSV_CONVERSION                            } from '../subworkflows/local/tsv_conversion/main'
 include { VARIANTFILTER as PRESETS_FILTER_REPORT    } from '../subworkflows/local/variantfilter/main'
 include { HTML_REPORT                               } from '../subworkflows/local/html_report/main'
-include { TMB_CALCULATE	    	                    } from '../modules/local/tmbcalculation/main'
+include { TMB_CALCULATE		                    } from '../modules/local/tmbcalculation/main'
 include { UKB_FILTER                                } from '../modules/local/UKB_filter/main'
 include { UKB_TOOL                                } from '../modules/local/UKB_tool/main'
 include { UKB_TOOL_oncokb                                } from '../modules/local/UKB_tool/main'
@@ -259,9 +259,16 @@ workflow VARIANTINTERPRETATION {
         //
         // MODULE: TMB calculation
         //
+        //TSV_CONVERSION.out.tsv.view()
+        somatic_files = TSV_CONVERSION.out.tsv.filter { meta, file ->
+                             meta.id.contains('_Tpavesomatic')
+                        }
+                            //meta.id.contains('_Tpavesomatic_T1') or //meta.id.contains('_T1')
+                        //}
+        somatic_files.view()
         if ( params.bedfile && params.calculate_tmb ) {
                 if ( CHECKBEDFILE.out.bed_valid ) {
-                        TMB_CALCULATE ( TSV_CONVERSION.out.tsv,
+                        TMB_CALCULATE ( somatic_files,
                                         ch_bedfile
                     )
                     ch_versions = ch_versions.mix(TMB_CALCULATE.out.versions)

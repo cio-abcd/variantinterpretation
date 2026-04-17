@@ -100,21 +100,21 @@ def process_variants(args):
     RD_colnames = data_report.loc[:, data_report.columns.str.startswith("read_depth")].columns.tolist()
 
     # Variants with AF>5%
-    data_report_AF = data_report[data_report[AF_colnames[1]] >= 0.05]
-    data_below_AF = data_report[data_report[AF_colnames[1]] < 0.05]
+    data_report_AF = data_report[data_report[AF_colnames[1]] >= 0.01]
+    data_below_AF = data_report[data_report[AF_colnames[1]] < 0.01]
 
     # TMB calculation
     # filter variants
 
     if args.library_type == "wes" or args.library_type == "wgs":
 
-    # Variants with AF>5%
-    data_report_AF_tmb = data_report[data_report[AF_colnames[1]] >= 0.05]
+        # Variants with AF>5%
+        data_report_AF_tmb = data_report[data_report[AF_colnames[1]] >= 0.05]
 
-    data_report_AF_RD_tmb = data_report_AF_tmb[data_report_AF_tmb\
+        data_report_AF_RD_tmb = data_report_AF_tmb[data_report_AF_tmb\
                                                   [RD_colnames[1]] >= 30]
 
-    variants_tmb = data_report_AF_RD_tmb
+        variants_tmb = data_report_AF_RD_tmb
 
     # remove duplicates based on CHROM, POS, REF, ALT, AF_colnames[1], RD_colnames[1]
     unique_variants_tmb = variants_tmb.drop_duplicates(
@@ -313,6 +313,10 @@ def process_variants(args):
             min_dist = min(min_dist, min_dist2)
         elif intron_offs2:
             min_dist = min_dist2
+
+        if exon_pos1 and intron_offs1 and intron_offs2 and exon_pos2 :
+            if int(intron_offs1) >= 10 or int(intron_offs1) <= -10 and exon_pos2.startswith("_"):
+                return False
 
         if min_dist and min_dist > ALLOWED_DISTANCE_FROM_EXON:
             return False
