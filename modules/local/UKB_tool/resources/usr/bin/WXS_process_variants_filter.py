@@ -13,6 +13,7 @@ import pandas as pd
 
 from refseq_list_03_02_2025 import transcript_list, transcript_list_header
 from variantenliste22_12_15_restyled_csv import variant_list_csv
+from interpretation_db_csv import interpretation_db
 
 ONCOKB_ANNOTATE_TMP_FILE = 'oncokb_outfile'
 
@@ -432,12 +433,30 @@ def process_variants(args):
     final["Matched_Norm_Sample_Barcode"] = normal_id
     final["NCBI_Build"] = "GRCh38"
 
+    # add interpretation db info
+    interpretation_db_data = pd.read_csv(io.StringIO(interpretation_db))
+
+    cols_of_interpretation_db = ["NM-Nummer", "HGVSc", "HGVSp", "Chromosome",
+                     "Start_Position", "Reference_Allele", "Tumor_Seq_Allele2",
+                     "HUGO_SYMBOL", "patient_id", "count",
+                     "patient_id_combined"]
+
+    interpretation_db_col = interpretation_db_data[cols_of_interpretation_db]
+
+    cols_for_join = ["NM-Nummer", "HGVSc", "HGVSp", "Chromosome",
+                     "Start_Position", "Reference_Allele", "Tumor_Seq_Allele2",
+                     "HUGO_SYMBOL"]
+
+    # merge
+    final_interpretation_db_merged =  final.merge(interpretation_db_col, on=cols_for_join, how="left")
+
     # save file removed
     discarded_data = [intergenic_variants, data_below_AF, no_refseq_match_variants,
                       hgvsc_nan, variants_exlude]
     removed = pd.concat(discarded_data)
 
-    final.to_csv(args.outfile, sep="\t", index = False)
+    #final.to_csv(args.outfile, sep="\t", index = False)
+    final_interpretation_db_merged.to_csv(args.outfile, sep="\t", index = False)
     TMB.to_csv(args.tmb_output, index=False)
 
     # shard table because some wgs have too many variants for reqular excel output
