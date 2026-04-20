@@ -438,24 +438,22 @@ def process_variants(args):
 
     cols_of_interpretation_db = ["NM-Nummer", "HGVSc", "HGVSp", "Chromosome",
                      "Start_Position", "Reference_Allele", "Tumor_Seq_Allele2",
-                     "HUGO_SYMBOL", "patient_id", "count",
+                     "HUGO_SYMBOL", "interpretation_db_intern", "patient_id", "count",
                      "patient_id_combined"]
 
     interpretation_db_col = interpretation_db_data[cols_of_interpretation_db]
 
-    cols_for_join = ["NM-Nummer", "HGVSc", "HGVSp", "Chromosome",
-                     "Start_Position", "Reference_Allele", "Tumor_Seq_Allele2",
-                     "HUGO_SYMBOL"]
+    cols_for_join = ["Chromosome", "Start_Position", "Reference_Allele", "Tumor_Seq_Allele2",
+                     "HUGO_SYMBOL", "NM-Nummer", "HGVSc", "HGVSp"]
 
     # merge
-    final_interpretation_db_merged =  final.merge(interpretation_db_col, on=cols_for_join, how="left")
+    final_interpretation_db_merged = final.merge(interpretation_db_col, on=cols_for_join, how="left")
 
     # save file removed
     discarded_data = [intergenic_variants, data_below_AF, no_refseq_match_variants,
                       hgvsc_nan, variants_exlude]
     removed = pd.concat(discarded_data)
 
-    #final.to_csv(args.outfile, sep="\t", index = False)
     final_interpretation_db_merged.to_csv(args.outfile, sep="\t", index = False)
     TMB.to_csv(args.tmb_output, index=False)
 
@@ -478,7 +476,7 @@ def process_variants(args):
         table_shard.to_excel(str(out_name),index = False,engine= None)
 
     logger.info('Writing file for variants for oncokb and file for removed data to xlsx file: successful!')
-    return final
+    return final_interpretation_db_merged
 
 
 # originally from https://github.com/oncokb/oncokb-annotator AGPL-3.0 license
