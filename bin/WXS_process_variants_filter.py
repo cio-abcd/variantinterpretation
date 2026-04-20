@@ -621,7 +621,7 @@ def annotation(args):
                      "CSQ_EXON", "CSQ_AF", "CSQ_MAX_AF", "CSQ_gnomADe_AF", "CSQ_gnomADg_AF",
                      "CSQ_CLIN_SIG", "ANNOTATED", "GENE_IN_ONCOKB", "VARIANT_IN_ONCOKB",
                      "MUTATION_EFFECT", "ONCOGENIC", "CSQ_SIFT", "CSQ_PolyPhen",
-                     "rs_number", "Wertung"]
+                     "rs_number", "interpretation_db_intern", "Wertung", "count", "patient_id_combined"]
 
     final_output = UKB_ONCOKB_OUT_data[final_columns]
     final_output.to_excel(args.annotated_outfile, index = False, engine = None)
