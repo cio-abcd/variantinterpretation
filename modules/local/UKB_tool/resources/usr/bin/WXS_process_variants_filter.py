@@ -436,7 +436,7 @@ def process_variants(args):
     # add interpretation db info
     interpretation_db_data = pd.read_csv(io.StringIO(interpretation_db))
 
-    cols_of_interpretation_db = ["NM-Nummer", "HGVSc", "HGVSp", "Chromosome",
+    cols_of_interpretation_db = ["NM-Nummer", "HGVSc", "Chromosome",
                      "Start_Position", "Reference_Allele", "Tumor_Seq_Allele2",
                      "HUGO_SYMBOL", "interpretation_db_intern", "patient_id", "count",
                      "patient_id_combined"]
@@ -444,7 +444,7 @@ def process_variants(args):
     interpretation_db_col = interpretation_db_data[cols_of_interpretation_db]
 
     cols_for_join = ["Chromosome", "Start_Position", "Reference_Allele", "Tumor_Seq_Allele2",
-                     "HUGO_SYMBOL", "NM-Nummer", "HGVSc", "HGVSp"]
+                     "HUGO_SYMBOL", "NM-Nummer", "HGVSc"]
 
     # merge
     final_interpretation_db_merged = final.merge(interpretation_db_col, on=cols_for_join, how="left")
