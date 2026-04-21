@@ -20,7 +20,7 @@ include { HTML_REPORT                               } from '../subworkflows/loca
 include { TMB_CALCULATE		                    } from '../modules/local/tmbcalculation/main'
 include { UKB_FILTER                                } from '../modules/local/UKB_filter/main'
 include { UKB_TOOL                                } from '../modules/local/UKB_tool/main'
-include { UKB_TOOL_oncokb                                } from '../modules/local/UKB_tool/main'
+include { UKB_TOOL_ONCOKB                                } from '../modules/local/UKB_tool/main'
 include { ONCOKB_ANNOTATOR_UKB                      } from '../modules/local/oncokb_annotator_ukb/main'
 include { WXS_ANNOTATION_UKB                        } from '../modules/local/wxs_annotation_ukb/main'
 /*
@@ -261,11 +261,9 @@ workflow VARIANTINTERPRETATION {
         //
         //TSV_CONVERSION.out.tsv.view()
         somatic_files = TSV_CONVERSION.out.tsv.filter { meta, file ->
-                             meta.id.contains('_Tpavesomatic')
+                             !meta.id.contains('_Tpavegermline')
                         }
-                            //meta.id.contains('_Tpavesomatic_T1') or //meta.id.contains('_T1')
-                        //}
-        somatic_files.view()
+             
         if ( params.bedfile && params.calculate_tmb ) {
                 if ( CHECKBEDFILE.out.bed_valid ) {
                         TMB_CALCULATE ( somatic_files,
@@ -294,8 +292,8 @@ workflow VARIANTINTERPRETATION {
             //filtout = UKB_TOOL(ch_tsv, refseq_list, variantDBi, ch_library_type)
             if( use_oncokb_token == true ){
                 println 'using onkokb token'
-                filtout = UKB_TOOL_oncokb(ch_tsv, ch_library_type)
-                }
+                filtout = UKB_TOOL_ONCOKB(ch_tsv, ch_library_type)
+            }
             else {
                 filtout = UKB_TOOL(ch_tsv, ch_library_type)
                 }

@@ -493,32 +493,48 @@ from AnnotatorCore import ( setsampleidsfileterfile
     , ReferenceGenome
     )
 
+#import ctypes as ct
+#from enum import Enum
+#from requests.adapters import HTTPAdapter
+#from urllib3 import Retry
+#import csv
+#from datetime import date
 
 def run_oncokb_annotation(oncokb_token):
     logging.basicConfig(level=logging.INFO)
-    log = logging.getLogger('MafAnnotator')
+    log = logging.getLogger("MafAnnotator")
 
     stderr_handler = logging.StreamHandler(sys.stderr)
     log.addHandler(stderr_handler)
-    log.info('running oncokb annotation')
+    log.info("running oncokb annotation")
 
     # set default values
-    previous_result_file = ''
-    input_clinical_file = ''
-    sample_ids_filter = ''
-    default_cancer_type = ''
-    oncokb_api_url = ''
+    previous_result_file = ""
+    input_clinical_file = ""
+    sample_ids_filter = ""
+    default_cancer_type = ""
+    # API timeout is set to two minutes
+    REQUEST_TIMEOUT = 240
+    API_REQUEST_RETRY_STATUS_FORCELIST = [429, 500, 502, 503, 504]
+    #csv.field_size_limit(int(ct.c_ulong(
+    #    -1).value // 2))  # Deal with overflow problem on Windows, https://stackoverflow.co/120m/questions/15063936/csv-error-field-larger-than-field-limit-131072
+    #sizeLimit = csv.field_size_limit()
+    #csv.field_size_limit(sizeLimit)  # for reading large files
+
+    DEFAULT_ONCOKB_URL = "https://www.oncokb.org"
+    oncokb_api_url = DEFAULT_ONCOKB_URL + "/api"
+    oncokb_annotation_api_url = oncokb_api_url + "/v1"
     annotate_hotspots = False
-    cancer_hotspots_base_url = ''
-    query_type = None
+    cancer_hotspots_base_url = ""
+    query_type =  None
     include_descriptions = False
+    if "germline" not in args.outfile.stem:
+        input_file = args.outfile
+        oncokb_api_bearer_token = oncokb_token
+        default_reference_genome = 'GRCh38'
+        output_file = ONCOKB_ANNOTATE_TMP_FILE
 
-    input_file = args.outfile
-    oncokb_api_bearer_token = oncokb_token
-    default_reference_genome = 'GRCh38'
-    output_file = ONCOKB_ANNOTATE_TMP_FILE
-
-    docstr = (
+        docstr = (
         '\n'
         'MafAnnotator.py -i <input MAF file> -o <output MAF file> [-p previous results] [-c <input clinical file>] '
         '[-s sample list filter] [-t <default tumor type>] [-u oncokb-base-url] [-b oncokb api bear token] [-a] '
@@ -562,19 +578,38 @@ def run_oncokb_annotation(oncokb_token):
         'Default OncoKB base url is https://www.oncokb.org.\n'
         )
 
-    setoncokbapitoken(oncokb_api_bearer_token)
-    cancertypemap = {}
-    validate_oncokb_token()
-    processalterationevents(input_file, output_file, previous_result_file, default_cancer_type,
-                            cancertypemap, annotate_hotspots, query_type, default_reference_genome,
-                            include_descriptions)
+        #if oncokb_api_url:
+        #    setoncokbbaseurl(oncokb_api_url)
+
+        #user_input_query_type = None
+        #if query_type is not None:
+        #    try:
+        #        user_input_query_type = QueryType[query_type.upper()]
+        #    except KeyError:
+        #        log.error(
+        #            'Query type is not acceptable. Only the following allows(case insensitive): HGVSp_Short, HGVSp, HGVSg, Genomic_Change')
+        #        raise
+
+        setoncokbapitoken(oncokb_api_bearer_token)
+        cancertypemap = {}
+        validate_oncokb_token()
+        processalterationevents(input_file, output_file, previous_result_file, default_cancer_type,
+                                cancertypemap, annotate_hotspots, query_type, default_reference_genome,
+                                include_descriptions)
+
+    else:
+        germline_data = pd.read_csv(args.outfile, sep="\t",low_memory=False)
+        # at the beginning germline output no annotation - may change in the future
+        for oncokb_added_column_to_germline_data in ['ANNOTATED', 'GENE_IN_ONCOKB', 'VARIANT_IN_ONCOKB', 'MUTATION_EFFECT', 'ONCOGENIC']:
+            germline_data[oncokb_added_column_to_germline_data] = None
+        germline_data.to_csv(ONCOKB_ANNOTATE_TMP_FILE, index=False,sep='\t')
 
     log.info('done!')
 
 def oncokb_stub_annotation(args, output_variants_df):
     ''' stub out oncokb annotation for non-proprietary use, generate a empty csv file '''
-    for onkokb_added_column in ['ANNOTATED', 'GENE_IN_ONCOKB', 'VARIANT_IN_ONCOKB', 'MUTATION_EFFECT', 'ONCOGENIC']:
-        output_variants_df[onkokb_added_column] = None
+    for oncokb_added_column in ['ANNOTATED', 'GENE_IN_ONCOKB', 'VARIANT_IN_ONCOKB', 'MUTATION_EFFECT', 'ONCOGENIC']:
+        output_variants_df[oncokb_added_column] = None
 
     output_variants_df.to_csv(ONCOKB_ANNOTATE_TMP_FILE, index=False,sep='\t' )
 
