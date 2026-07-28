@@ -508,6 +508,9 @@ def run_oncokb_annotation(oncokb_token):
     cancer_hotspots_base_url = ""
     query_type =  None
     include_descriptions = False
+
+    # TODO: fix this by making the germline vcf a optional input to this tool,
+    # this tool should then produce a single output table for both germline and somatic
     if "germline" not in args.outfile.stem:
         input_file = args.outfile
         oncokb_api_bearer_token = oncokb_token
