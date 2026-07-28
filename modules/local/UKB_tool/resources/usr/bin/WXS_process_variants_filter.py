@@ -152,21 +152,12 @@ def process_variants(args):
     variants_tmb_final = non_synonymous_variants[filter_coding]
 
     # get SNV, DEL, INS
-    TMB_snv =  variants_tmb_final[variants_tmb_final\
-                                       ["CSQ_VARIANT_CLASS"] == "SNV"]
+    TMB_snv =  (variants_tmb_final["CSQ_VARIANT_CLASS"] == "SNV").sum()
+    TMB_del =  (variants_tmb_final[variants_tmb_final["CSQ_VARIANT_CLASS"] == "deletion").sum()
+    TMB_ins =  (ariants_tmb_final[variants_tmb_final["CSQ_VARIANT_CLASS"] == "insertion").sum()
+    TMB_sub =  (ariants_tmb_final[variants_tmb_final["CSQ_VARIANT_CLASS"] == "substitution").sum()
 
-    TMB_del =  variants_tmb_final[variants_tmb_final\
-                                       ["CSQ_VARIANT_CLASS"] == "deletion"]
-
-    TMB_ins =  variants_tmb_final[variants_tmb_final\
-                                       ["CSQ_VARIANT_CLASS"] == "insertion"]
-
-    TMB_sub =  variants_tmb_final[variants_tmb_final\
-                                       ["CSQ_VARIANT_CLASS"] == "substitution"]
-
-    # count numbers
-    TMB_snv_final = len(TMB_snv)
-    TMB_snv_delins_final = len(TMB_snv) + len(TMB_del) + len(TMB_ins)
+    TMB_snv_delins_final = TMB_snv + TMB_del + TMB_ins
 
     # since we currently have wgs or wes only, and only use "clinical tumor mutational burden" (coding regions/exon)
     # use this single value, calculated from our bed file
@@ -175,21 +166,15 @@ def process_variants(args):
     # old value (wgs):
     # 3099.73 # 3099734149 IS NOT CLINICAL TMB
 
-    # make dataframe
-    TMB = pd.DataFrame()
 
-    header_col = ["Anzahl TMB Mut. missense", "Anzahl TMB Mut. Missense + InDel", "Regionsgroesse [Mb]",\
-                  "TMB Missense", \
-                  "TMB Missense + InDel"]
+    tmb_data = ["Anzahl TMB Mut. missense": [TMB_snv],
+                  "Anzahl TMB Mut. Missense + InDel": [TMB_snv_delins_final],
+                  "Regionsgroesse [Mb]": [Regionsgroesse_MB],
+                  "TMB Missense": [round(TMB_snv / Regionsgroesse_MB, 2)],
+                  "TMB Missense + InDel": [round(TMB_snv_delins_final / Regionsgroesse_MB, 2)]
+                  ]
 
-    for col in header_col:
-        TMB [col] = ""
-
-    TMB.loc[0, "Anzahl TMB Mut. missense"] = TMB_snv_final
-    TMB.loc[0, "Anzahl TMB Mut. Missense + InDel"] = TMB_snv_delins_final
-    TMB.loc[0, "Regionsgroesse [Mb]"] = Regionsgroesse_MB
-    TMB.loc[0, "TMB Missense"] = round(TMB_snv_final/Regionsgroesse_MB, 2)
-    TMB.loc[0, "TMB Missense + InDel"] = round(TMB_snv_delins_final/Regionsgroesse_MB, 2)
+    TMB_report = pd.DataFrame(tmb_data)
 
     # Check transcript input for " "
     for RefSeq_idx in range(len(RefSeq_NM)):
@@ -450,7 +435,7 @@ def process_variants(args):
     removed = pd.concat(discarded_data)
 
     final.to_csv(args.outfile, sep="\t", index = False)
-    TMB.to_csv(args.tmb_output, index=False)
+    TMB_report.to_csv(args.tmb_output, index=False)
 
     # shard table because some wgs have too many variants for reqular excel output
     def shard_table(table, shard_size=1_000_000):
