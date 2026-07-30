@@ -13,7 +13,8 @@ import pandas as pd
 
 from refseq_list_03_02_2025 import transcript_list, transcript_list_header
 from variantenliste22_12_15_restyled_csv import variant_list_csv
-from interpretation_db_csv import interpretation_db
+# TODO: solve this in filemaker db later, skip this internal annotation list for now
+# from interpretation_db_csv import interpretation_db
 
 ONCOKB_ANNOTATE_TMP_FILE = 'oncokb_outfile'
 
@@ -42,6 +43,7 @@ def cli():
     if args.vcf_type != 'paired':
         raise NotImplemented()
     if args.library_type not in ['wes','wgs']:
+        # panel not supported
         raise NotImplemented()
 
     return args
@@ -107,15 +109,10 @@ def process_variants(args):
     # TMB calculation
     # filter variants
 
-    if args.library_type == "wes" or args.library_type == "wgs":
-
-        # Variants with AF>5%
-        data_report_AF_tmb = data_report[data_report[AF_colnames[1]] >= 0.05]
-
-        data_report_AF_RD_tmb = data_report_AF_tmb[data_report_AF_tmb\
-                                                  [RD_colnames[1]] >= 30]
-
-        variants_tmb = data_report_AF_RD_tmb
+    # Variants with AF>5%
+    data_report_AF_tmb = data_report[data_report[AF_colnames[1]] >= 0.05]
+    data_report_AF_RD_tmb = data_report_AF_tmb[data_report_AF_tmb[RD_colnames[1]] >= 30]
+    variants_tmb = data_report_AF_RD_tmb
 
     # remove duplicates based on CHROM, POS, REF, ALT, AF_colnames[1], RD_colnames[1]
     unique_variants_tmb = variants_tmb.drop_duplicates(
@@ -125,7 +122,7 @@ def process_variants(args):
     non_synonymous_variants = unique_variants_tmb[unique_variants_tmb\
                                               ["CSQ_Consequence"] != "synonymous_variant"]
 
-    # coding_SO_term
+    # filter down to protein coding variants/regions
     coding_SO_term = ["synonymous_variant",
                       "missense_variant",
                       "inframe_insertion",
@@ -144,64 +141,40 @@ def process_variants(args):
                       "coding_transcript_variant",
                       "NMD_transcript_variant"]
 
-    # filter against coding_SO_term (keep)
-    non_synonymous_variants_coding = non_synonymous_variants[non_synonymous_variants\
-                                                             ["CSQ_Consequence"].isin(coding_SO_term)]
+    # boolean arrays to filter the dataframe
+    filter_to_coding_terms = non_synonymous_variants["CSQ_Consequence"].isin(coding_SO_term)
+    # keep CSQ_gnomADe_AF nan and keep values below 0.001
+    keepnans  = (non_synonymous_variants["CSQ_gnomADe_AF"].isna())
+    keep_low_AF = (non_synonymous_variants["CSQ_gnomADe_AF"] <= 0.001)
 
-    # keep rows were value is "nan"
-    non_synonymous_variants_coding_nan = non_synonymous_variants_coding[non_synonymous_variants_coding\
-                                                                        ["CSQ_gnomADe_AF"].isna()]
+    filter_coding = filter_to_coding_terms & ( keepnans | keep_low_AF)
 
-    # filter CSQ_gnomADe_AF notna and keep values below 0.001
-    non_synonymous_variants_coding_notnan = non_synonymous_variants_coding[(non_synonymous_variants_coding\
-                                                                            ["CSQ_gnomADe_AF"].notna()) & (non_synonymous_variants_coding\
-                                                                            ["CSQ_gnomADe_AF"] <= 0.001)]
-
-    #concat tmb variants
-    variants_tmb_frames = [non_synonymous_variants_coding_nan, non_synonymous_variants_coding_notnan]
-    variants_tmb_final = pd.concat(variants_tmb_frames)
+    variants_tmb_final = non_synonymous_variants[filter_coding]
 
     # get SNV, DEL, INS
-    TMB_snv =  variants_tmb_final[variants_tmb_final\
-                                       ["CSQ_VARIANT_CLASS"] == "SNV"]
+    TMB_snv =  (variants_tmb_final["CSQ_VARIANT_CLASS"] == "SNV").sum()
+    TMB_del =  (variants_tmb_final["CSQ_VARIANT_CLASS"] == "deletion").sum()
+    TMB_ins =  (variants_tmb_final["CSQ_VARIANT_CLASS"] == "insertion").sum()
+    TMB_sub =  (variants_tmb_final["CSQ_VARIANT_CLASS"] == "substitution").sum()
 
-    TMB_del =  variants_tmb_final[variants_tmb_final\
-                                       ["CSQ_VARIANT_CLASS"] == "deletion"]
+    TMB_snv_delins_final = TMB_snv + TMB_del + TMB_ins
 
-    TMB_ins =  variants_tmb_final[variants_tmb_final\
-                                       ["CSQ_VARIANT_CLASS"] == "insertion"]
-
-    TMB_sub =  variants_tmb_final[variants_tmb_final\
-                                       ["CSQ_VARIANT_CLASS"] == "substitution"]
-
-    # count numbers
-    TMB_snv_final = len(TMB_snv)
-    TMB_snv_delins_final = len(TMB_snv) + len(TMB_del) + len(TMB_ins)
-
+    # since we currently have wgs or wes only, and only use "clinical tumor mutational burden" (coding regions/exon)
+    # use this single value, calculated from our bed file
     # TODO: calculate this from a bedfile
-    #Regionsgroesse_MB = 3099.73 # 3099734149
-    if args.library_type == "wes" or args.library_type == "wgs":
-        Regionsgroesse_MB = 33.936165 # old 30.16
-    #elif args.analysis == "wgs":
-    #Regionsgroesse_MB = 3099.73 # 3099734149 IS NOT CLINICAL
-    else:
-        raise ValueError("library_type value not valid! Please correct!")
+    Regionsgroesse_MB = 33.936165 # old 30.16
+    # old value (wgs):
+    # 3099.73 # 3099734149 IS NOT CLINICAL TMB
 
-    # make dataframe
-    TMB = pd.DataFrame()
 
-    header_col = ["Anzahl TMB Mut. missense", "Anzahl TMB Mut. Missense + InDel", "Regionsgroesse [Mb]",\
-                  "TMB Missense", \
-                  "TMB Missense + InDel"]
+    tmb_data = {"Anzahl TMB Mut. missense": [TMB_snv],
+                  "Anzahl TMB Mut. Missense + InDel": [TMB_snv_delins_final],
+                  "Regionsgroesse [Mb]": [Regionsgroesse_MB],
+                  "TMB Missense": [round(TMB_snv / Regionsgroesse_MB, 2)],
+                  "TMB Missense + InDel": [round(TMB_snv_delins_final / Regionsgroesse_MB, 2)]
+                  }
 
-    for col in header_col:
-        TMB [col] = ""
-
-    TMB.loc[0, "Anzahl TMB Mut. missense"] = TMB_snv_final
-    TMB.loc[0, "Anzahl TMB Mut. Missense + InDel"] = TMB_snv_delins_final
-    TMB.loc[0, "Regionsgroesse [Mb]"] = Regionsgroesse_MB
-    TMB.loc[0, "TMB Missense"] = round(TMB_snv_final/Regionsgroesse_MB, 2)
-    TMB.loc[0, "TMB Missense + InDel"] = round(TMB_snv_delins_final/Regionsgroesse_MB, 2)
+    TMB_report = pd.DataFrame(tmb_data)
 
     # Check transcript input for " "
     for RefSeq_idx in range(len(RefSeq_NM)):
@@ -433,29 +406,36 @@ def process_variants(args):
     final["Matched_Norm_Sample_Barcode"] = normal_id
     final["NCBI_Build"] = "GRCh38"
 
+    # save file removed
+    discarded_data = [intergenic_variants, data_below_AF, no_refseq_match_variants,hgvsc_nan, variants_exlude]
+    removed = pd.concat(discarded_data)
+
+    # TODO: keep this function dead for now, fix with filemaker later
     # add interpretation db info
-    interpretation_db_data = pd.read_csv(io.StringIO(interpretation_db))
+    def interpretation_db_annotate():
+        # maybe also buggy join
+        interpretation_db_data = pd.read_csv(io.StringIO(interpretation_db))
 
-    cols_of_interpretation_db = ["NM-Nummer", "HGVSc", "Chromosome",
-                     "Start_Position", "Reference_Allele", "Tumor_Seq_Allele2",
-                     "HUGO_SYMBOL", "interpretation_db_intern", "patient_id", "count",
-                     "patient_id_combined"]
+        cols_of_interpretation_db = ["NM-Nummer", "HGVSc", "Chromosome",
+                         "Start_Position", "Reference_Allele", "Tumor_Seq_Allele2",
+                         "HUGO_SYMBOL", "interpretation_db_intern", "patient_id", "count",
+                         "patient_id_combined"]
 
-    interpretation_db_col = interpretation_db_data[cols_of_interpretation_db]
+        interpretation_db_col = interpretation_db_data[cols_of_interpretation_db]
 
-    cols_for_join = ["Chromosome", "Start_Position", "Reference_Allele", "Tumor_Seq_Allele2",
-                     "HUGO_SYMBOL", "NM-Nummer", "HGVSc"]
+        cols_for_join = ["Chromosome", "Start_Position", "Reference_Allele", "Tumor_Seq_Allele2",
+                         "HUGO_SYMBOL", "NM-Nummer", "HGVSc"]
 
-    # merge
-    final_interpretation_db_merged = final.merge(interpretation_db_col, on=cols_for_join, how="left")
+        # merge
+        final_interpretation_db_merged = final.merge(interpretation_db_col, on=cols_for_join, how="left")
 
     # save file removed
     discarded_data = [intergenic_variants, data_below_AF, no_refseq_match_variants,
                       hgvsc_nan, variants_exlude]
     removed = pd.concat(discarded_data)
 
-    final_interpretation_db_merged.to_csv(args.outfile, sep="\t", index = False)
-    TMB.to_csv(args.tmb_output, index=False)
+    final.to_csv(args.outfile, sep="\t", index = False)
+    TMB_report.to_csv(args.tmb_output, index=False)
 
     # shard table because some wgs have too many variants for reqular excel output
     def shard_table(table, shard_size=1_000_000):
@@ -476,7 +456,7 @@ def process_variants(args):
         table_shard.to_excel(str(out_name),index = False,engine= None)
 
     logger.info('Writing file for variants for oncokb and file for removed data to xlsx file: successful!')
-    return final_interpretation_db_merged
+    return final
 
 
 # originally from https://github.com/oncokb/oncokb-annotator AGPL-3.0 license
@@ -528,6 +508,9 @@ def run_oncokb_annotation(oncokb_token):
     cancer_hotspots_base_url = ""
     query_type =  None
     include_descriptions = False
+
+    # TODO: fix this by making the germline vcf a optional input to this tool,
+    # this tool should then produce a single output table for both germline and somatic
     if "germline" not in args.outfile.stem:
         input_file = args.outfile
         oncokb_api_bearer_token = oncokb_token
@@ -654,7 +637,10 @@ def annotation(args):
                      "CSQ_EXON", "CSQ_AF", "CSQ_MAX_AF", "CSQ_gnomADe_AF", "CSQ_gnomADg_AF",
                      "CSQ_CLIN_SIG", "ANNOTATED", "GENE_IN_ONCOKB", "VARIANT_IN_ONCOKB",
                      "MUTATION_EFFECT", "ONCOGENIC", "CSQ_SIFT", "CSQ_PolyPhen",
-                     "rs_number", "interpretation_db_intern", "Wertung", "count", "patient_id_combined"]
+                     "rs_number",  "Wertung"]
+
+    # final_columns.append("interpretation_db_intern")
+    #"count", "patient_id_combined"]
 
     final_output = UKB_ONCOKB_OUT_data[final_columns]
     final_output.to_excel(args.annotated_outfile, index = False, engine = None)

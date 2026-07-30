@@ -142,20 +142,20 @@ def process_variants(args):
                       "NMD_transcript_variant"]
 
     # boolean arrays to filter the dataframe
-    filter_to_coding_terms = non_synonymous_variants["CSQ_Consequence"].isin(coding_SO_term)]
+    filter_to_coding_terms = non_synonymous_variants["CSQ_Consequence"].isin(coding_SO_term)
     # keep CSQ_gnomADe_AF nan and keep values below 0.001
     keepnans  = (non_synonymous_variants["CSQ_gnomADe_AF"].isna())
     keep_low_AF = (non_synonymous_variants["CSQ_gnomADe_AF"] <= 0.001)
 
-    filter_coding = filter_to_coding_terms & ( keepnans | keep_low_af)
+    filter_coding = filter_to_coding_terms & ( keepnans | keep_low_AF)
 
     variants_tmb_final = non_synonymous_variants[filter_coding]
 
     # get SNV, DEL, INS
     TMB_snv =  (variants_tmb_final["CSQ_VARIANT_CLASS"] == "SNV").sum()
-    TMB_del =  (variants_tmb_final[variants_tmb_final["CSQ_VARIANT_CLASS"] == "deletion").sum()
-    TMB_ins =  (ariants_tmb_final[variants_tmb_final["CSQ_VARIANT_CLASS"] == "insertion").sum()
-    TMB_sub =  (ariants_tmb_final[variants_tmb_final["CSQ_VARIANT_CLASS"] == "substitution").sum()
+    TMB_del =  (variants_tmb_final["CSQ_VARIANT_CLASS"] == "deletion").sum()
+    TMB_ins =  (variants_tmb_final["CSQ_VARIANT_CLASS"] == "insertion").sum()
+    TMB_sub =  (variants_tmb_final["CSQ_VARIANT_CLASS"] == "substitution").sum()
 
     TMB_snv_delins_final = TMB_snv + TMB_del + TMB_ins
 
@@ -167,12 +167,12 @@ def process_variants(args):
     # 3099.73 # 3099734149 IS NOT CLINICAL TMB
 
 
-    tmb_data = ["Anzahl TMB Mut. missense": [TMB_snv],
+    tmb_data = {"Anzahl TMB Mut. missense": [TMB_snv],
                   "Anzahl TMB Mut. Missense + InDel": [TMB_snv_delins_final],
                   "Regionsgroesse [Mb]": [Regionsgroesse_MB],
                   "TMB Missense": [round(TMB_snv / Regionsgroesse_MB, 2)],
                   "TMB Missense + InDel": [round(TMB_snv_delins_final / Regionsgroesse_MB, 2)]
-                  ]
+                  }
 
     TMB_report = pd.DataFrame(tmb_data)
 
@@ -637,7 +637,10 @@ def annotation(args):
                      "CSQ_EXON", "CSQ_AF", "CSQ_MAX_AF", "CSQ_gnomADe_AF", "CSQ_gnomADg_AF",
                      "CSQ_CLIN_SIG", "ANNOTATED", "GENE_IN_ONCOKB", "VARIANT_IN_ONCOKB",
                      "MUTATION_EFFECT", "ONCOGENIC", "CSQ_SIFT", "CSQ_PolyPhen",
-                     "rs_number", "interpretation_db_intern", "Wertung", "count", "patient_id_combined"]
+                     "rs_number",  "Wertung"]
+
+    # final_columns.append("interpretation_db_intern")
+    #"count", "patient_id_combined"]
 
     final_output = UKB_ONCOKB_OUT_data[final_columns]
     final_output.to_excel(args.annotated_outfile, index = False, engine = None)
