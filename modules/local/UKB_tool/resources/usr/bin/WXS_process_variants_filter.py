@@ -48,6 +48,29 @@ def cli():
 
     return args
 
+
+def get_skippable_rows(filename, RefSeq_NM_lst):
+    ''' skip on RefSeq list first for memory efficiency '''
+    df3 = pd.read_csv(
+                 filename,
+                 nrows=None,
+                 sep="\t",
+                 header=0,
+                 #dtype=dtypes,
+                 usecols=['CSQ_Feature']
+                 )
+    # effectively drop nan value rows here
+    df3['CSQ_Feature'] = df3['CSQ_Feature'].fillna('')
+
+    # split .<int> suffixes from the NM_... refseq numbers
+    #trues = df3['CSQ_Feature'].str.startswith("NM")
+    refseq_no_suffix = df3['CSQ_Feature'].str.split('.', regex=False, n=1).str[0]
+    selected_refseq = refseq_no_suffix.isin(RefSeq_NM_lst)
+    logger.info(f'filtered {len(df3)} rows by refseq list down to {selected_refseq.sum()} rows')
+    # negated because skiprows skips and isnt keeprows and +1 to not skip the header
+    skiprows = (selected_refseq[~selected_refseq].index + 1).tolist()
+    return skiprows
+
 def process_variants(args):
     logger.info(f'''
     starting wxs_process_variants
@@ -58,14 +81,15 @@ def process_variants(args):
     Script: WXS_process_variants_filter.py
     ''')
 
-    # Get VEMBRANE_TABLE.out data
-    VEMBRANE_TABLE_OUT = args.vembrane_table
-    VEMBRANE_TABLE_OUT_data = pd.read_csv(VEMBRANE_TABLE_OUT, sep="\t",low_memory=False)
-
     # Load RefSeq transcripts to list
     RefSeq_NM = pd.DataFrame(transcript_list, columns=transcript_list_header)
     RefSeq_NM_lst = RefSeq_NM["NM_RefSeq_final"].values.tolist()
     variantDBi = pd.read_csv(io.StringIO(variant_list_csv))
+
+    # Get VEMBRANE_TABLE.out data
+    VEMBRANE_TABLE_OUT = args.vembrane_table
+    skippable_rows = get_skippable_rows(VEMBRANE_TABLE_OUT, RefSeq_NM_lst)
+    VEMBRANE_TABLE_OUT_data = pd.read_csv(VEMBRANE_TABLE_OUT, sep="\t",low_memory=False, skiprows=skippable_rows)
 
     # Remove INTERGENIC_VARIANTS
     vs_intergenic = []
