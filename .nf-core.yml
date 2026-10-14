@@ -11,3 +11,12 @@ lint:
   multiqc_config:
     - report_comment
 nf_core_version: "2.14.1"
+template:
+  author: CIO-ABCD
+  description: Pipeline to add biological and clinical knowledge to genomic variants.
+  force: false
+  is_nfcore: false
+  name: variantinterpretation
+  org: cio-abcd
+  outdir: .
+  version: 1.2.0
