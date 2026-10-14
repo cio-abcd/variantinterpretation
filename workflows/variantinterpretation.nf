@@ -57,11 +57,11 @@ workflow VARIANTINTERPRETATION {
 
     main:
     // gather versions of each process
-    ch_versions = Channel.empty()
+    ch_versions = channel.empty()
     // gather QC reports for multiQC
-    ch_multiqc_files = Channel.empty()
+    ch_multiqc_files = channel.empty()
     // gather warnings
-    ch_warnings = Channel.empty()
+    ch_warnings = channel.empty()
 
     //
     // Check parameter combinations and give warnings
@@ -266,30 +266,30 @@ workflow MULTIQC_REPORT {
     //
     // MODULE: MultiQC
     //
-    ch_multiqc_config        = Channel.fromPath(
+    ch_multiqc_config        = channel.fromPath(
         "$projectDir/assets/multiqc_config.yml", checkIfExists: true)
     ch_multiqc_custom_config = params.multiqc_config ?
-        Channel.fromPath(params.multiqc_config, checkIfExists: true) :
-        Channel.empty()
+        channel.fromPath(params.multiqc_config, checkIfExists: true) :
+        channel.empty()
     ch_multiqc_logo          = params.multiqc_logo ?
-        Channel.fromPath(params.multiqc_logo, checkIfExists: true) :
-        Channel.empty()
+        channel.fromPath(params.multiqc_logo, checkIfExists: true) :
+        channel.empty()
 
     summary_params      = paramsSummaryMap(
         workflow, parameters_schema: "nextflow_schema.json")
-    ch_workflow_summary = Channel.value(paramsSummaryMultiqc(summary_params))
+    ch_workflow_summary = channel.value(paramsSummaryMultiqc(summary_params))
 
     ch_multiqc_custom_methods_description = params.multiqc_methods_description ?
         file(params.multiqc_methods_description, checkIfExists: true) :
         file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-    ch_methods_description                = Channel.value(
+    ch_methods_description                = channel.value(
         methodsDescriptionText(ch_multiqc_custom_methods_description))
     ch_multiqc_warnings_template = params.multiqc_warnings_template ?
         file(params.multiqc_warnings_template, checkIfExists: true) :
         file("$projectDir/assets/warnings_multiqc_template.yml", checkIfExists: true)
 
     // collect warnings
-    ch_warnings_yaml = Channel.empty()
+    ch_warnings_yaml = channel.empty()
     DUMP_WARNINGS(ch_multiqc_warnings_template, ch_warnings.unique().collectFile(name: "collated_warnings.txt", newLine: true))
     ch_warnings_yaml = DUMP_WARNINGS.out.mqc_yml.collect().ifEmpty([])
 

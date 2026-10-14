@@ -13,7 +13,7 @@ workflow VARIANTFILTER {
     predefined_filters  // path: TSV file with predefined filters
 
     main:
-    ch_versions = Channel.empty()
+    ch_versions = channel.empty()
 
     // create once vembrane tag argument from custom filters
     VEMBRANE_CREATE_TAGS (predefined_filters)
@@ -29,7 +29,7 @@ workflow VARIANTFILTER {
     ch_versions = ch_versions.mix(VEMBRANE_TAG.out.versions)
 
     // split VCF files by used filters
-    ch_filters = Channel.of(params.used_filters.split(","))
+    ch_filters = channel.of(params.used_filters.split(","))
     VEMBRANE_FILTER(VEMBRANE_TAG.out.vcf,
                     ch_filters
     )

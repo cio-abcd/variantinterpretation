@@ -14,8 +14,8 @@ workflow CHECKVCF {
     ref_fai              // path: fasta index file
 
     main:
-    ch_versions = Channel.empty()
-    ch_multiqc_reports = Channel.empty()
+    ch_versions = channel.empty()
+    ch_multiqc_reports = channel.empty()
 
     //
     // Check VCF format integrity and reference genome correctness

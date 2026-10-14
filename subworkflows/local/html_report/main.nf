@@ -11,7 +11,7 @@ workflow HTML_REPORT {
     tsv_config_colinfo        // channel: [ val(meta), path(tsv), path(datavzrd_config), path(annotation_colinfo) ]
 
     main:
-    ch_versions = Channel.empty()
+    ch_versions = channel.empty()
 
     // Split TSV files and create datavzrd config file
     PREPROCESS_DATAVZRD ( tsv_config_colinfo )

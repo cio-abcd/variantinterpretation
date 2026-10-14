@@ -11,7 +11,7 @@ workflow MERGE_VCFS {
     vcf                // channel: [ val(meta), path(vcf), path(tbi) ]
 
     main:
-    ch_versions = Channel.empty()
+    ch_versions = channel.empty()
 
     // rename samples within VCF files: add 'sample' from samplesheet as prefix to current name.
     BCFTOOLS_SAMPLERENAME(vcf)

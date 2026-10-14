@@ -12,7 +12,7 @@ workflow TSV_CONVERSION {
     annotation_fields   // value: Annotation fields in INFO column
 
     main:
-    ch_versions = Channel.empty()
+    ch_versions = channel.empty()
 
     VEMBRANE_CREATE_FIELDS (vcf,
                             annotation_fields

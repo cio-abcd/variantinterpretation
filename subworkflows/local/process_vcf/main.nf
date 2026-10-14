@@ -13,8 +13,8 @@ workflow VCFPROC {
     fasta               // path: fastq file for bcftools norm
 
     main:
-    ch_versions = Channel.empty()
-    ch_multiqc_reports = Channel.empty()
+    ch_versions = channel.empty()
+    ch_multiqc_reports = channel.empty()
 
     //
     // VCF filtering
