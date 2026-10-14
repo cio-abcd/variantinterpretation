@@ -8,7 +8,8 @@
                     "bcftools/annotate": {
                         "branch": "master",
                         "git_sha": "c1a7fa1c038061b344f2a41be71942061ec40d2e",
-                        "installed_by": ["modules"]
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/bcftools/annotate/bcftools-annotate.diff"
                     },
                     "bcftools/index": {
                         "branch": "master",
