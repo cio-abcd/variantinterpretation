@@ -53,9 +53,9 @@ process BCFTOOLS_NORM {
                     "vcf.gz"
     def index = ''
     if (extension in ['vcf.gz', 'bcf', 'bcf.gz']) {
-        if (['--write-index=tbi', '-W=tbi'].any { args.contains(it) }  && extension == 'vcf.gz') {
+        if (['--write-index=tbi', '-W=tbi'].any { arg -> args.contains(arg) }  && extension == 'vcf.gz') {
             index = 'tbi'
-        } else if (['--write-index=tbi', '-W=tbi', '--write-index=csi', '-W=csi', '--write-index', '-W'].any { args.contains(it) }) {
+        } else if (['--write-index=tbi', '-W=tbi', '--write-index=csi', '-W=csi', '--write-index', '-W'].any { arg -> args.contains(arg) }) {
             index = 'csi'
         }
     }

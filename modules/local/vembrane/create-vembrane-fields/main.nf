@@ -23,7 +23,7 @@ process VEMBRANE_CREATE_FIELDS {
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     // check if vcf file is gzipped
-    def vcf_list = vcf.collect { it.toString() }
+    def vcf_list = vcf.collect { vcf_file -> vcf_file.toString() }
     def vcf_zip  = vcf_list[0].endsWith('.gz')
     def command1 = vcf_zip ? 'zcat' : 'cat'
 
