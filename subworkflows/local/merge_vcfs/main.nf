@@ -28,8 +28,8 @@ workflow MERGE_VCFS {
         .flatMap { list ->
             list.sort { it[0].index } // sort channel by index giving the samplesheet order. Important for bcftools merge.
         }
-        .map {meta, vcf, tbi ->
-                [meta.group, [meta, vcf, tbi]] // set group as first element for .groupTuple
+        .map {meta, vcf_file, tbi ->
+                [meta.group, [meta, vcf_file, tbi]] // set group as first element for .groupTuple
         }
         .groupTuple(by: 0) // group the tuple by this group
         .map {group, ch_vcfs ->

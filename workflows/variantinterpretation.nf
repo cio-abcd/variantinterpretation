@@ -83,7 +83,7 @@ workflow VARIANTINTERPRETATION {
     vcf_tbi = ch_samplesheet.join(BCFTOOLS_INDEX.out.tbi)
 
     // create sequence dictionary and faidx index of reference FASTA
-    fasta_ref = ch_fasta.map { ch_fasta -> ['ref', ch_fasta] }
+    fasta_ref = ch_fasta.map { fasta_file -> ['ref', fasta_file] }
     SAMTOOLS_DICT( fasta_ref )
     ch_versions = ch_versions.mix(SAMTOOLS_DICT.out.versions)
     SAMTOOLS_FAIDX( fasta_ref, [[], []], [] )
