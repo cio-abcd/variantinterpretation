@@ -3,6 +3,19 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### `Changed`
+
+- Nextflow strict syntax: `nextflow lint` (Nextflow 26.04) reports no errors (AI-assisted, Claude Code)
+  - `check_max()` replaced by inline caps in `conf/base.config`; `max_cpus`, `max_memory` and `max_time` work as before
+  - config `try`/`catch`, `if` and `def` replaced by conditional `includeConfig` and the new hidden param `trace_report_suffix`; removed the include of `pipeline/variantinterpretation.config`, which does not exist in nf-core/configs
+  - input channels are created inside `CIOABCD_VARIANTINTERPRETATION` instead of at the top level of `main.nf`
+  - updated nf-core subworkflows `utils_nextflow_pipeline` and `utils_nfcore_pipeline` (the latter patched to keep `workflowCitation`, `nfCoreLogo`, `dashedLine` and `imNotification`)
+  - patched nf-core modules `bcftools/annotate` (stub only), `bcftools/index`, `bcftools/merge` and `bcftools/norm` without changing their versions or containers
+  - quoted `env` outputs, renamed shadowing variables, explicit closure parameters, `channel` instead of `Channel`, removed unused variables
+  - no change in results: stub runs with Nextflow 25.10.4 and 26.04.4 give the same tasks, resources and published files as v1.2.0
+
 ## v1.2.0
 
 ### `Fixed`
