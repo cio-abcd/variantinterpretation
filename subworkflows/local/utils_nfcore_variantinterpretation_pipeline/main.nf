@@ -1,5 +1,5 @@
 //
-// Subworkflow with functionality specific to the nf-core/variantinterpretation pipeline
+// Subworkflow with functionality specific to the cio-abcd/variantinterpretation pipeline
 //
 
 /*
@@ -56,23 +56,6 @@ workflow PIPELINE_INITIALISATION {
 
     def before_text = ""
     def after_text = ""
-    before_text = """
--\033[2m----------------------------------------------------\033[0m-
-                                        \033[0;32m,--.\033[0;30m/\033[0;32m,-.\033[0m
-\033[0;34m        ___     __   __   __   ___     \033[0;32m/,-._.--~\'\033[0m
-\033[0;34m  |\\ | |__  __ /  ` /  \\ |__) |__         \033[0;33m}  {\033[0m
-\033[0;34m  | \\| |       \\__, \\__/ |  \\ |___     \033[0;32m\\`-._,-`-,\033[0m
-                                        \033[0;32m`._,._,\'\033[0m
-\033[0;35m  nf-core/variantinterpretation ${workflow.manifest.version}\033[0m
--\033[2m----------------------------------------------------\033[0m-
-"""
-    after_text = """${workflow.manifest.doi ? "\n* The pipeline\n" : ""}${workflow.manifest.doi.tokenize(",").collect { doi -> "    https://doi.org/${doi.trim().replace('https://doi.org/','')}"}.join("\n")}${workflow.manifest.doi ? "\n" : ""}
-* The nf-core framework
-    https://doi.org/10.1038/s41587-020-0439-x
-
-* Software dependencies
-    https://github.com/nf-core/variantinterpretation/blob/master/CITATIONS.md
-"""
     if (monochrome_logs) {
         before_text = before_text.replaceAll(/\033\[[0-9;]*m/, '')
     }

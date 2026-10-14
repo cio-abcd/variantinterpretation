@@ -1,4 +1,4 @@
-# nf-core/variantinterpretation: Output
+# cio-abcd/variantinterpretation: Output
 
 ## Introduction
 

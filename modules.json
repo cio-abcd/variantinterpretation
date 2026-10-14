@@ -1,6 +1,6 @@
 {
-    "name": "nf-core/variantinterpretation",
-    "homePage": "https://github.com/nf-core/variantinterpretation",
+    "name": "cio-abcd/variantinterpretation",
+    "homePage": "https://github.com/cio-abcd/variantinterpretation",
     "repos": {
         "https://github.com/nf-core/modules.git": {
             "modules": {

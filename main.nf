@@ -1,11 +1,9 @@
 #!/usr/bin/env nextflow
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    nf-core/variantinterpretation
+    cio-abcd/variantinterpretation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Github : https://github.com/nf-core/variantinterpretation
-    Website: https://nf-co.re/variantinterpretation
-    Slack  : https://nfcore.slack.com/channels/variantinterpretation
+    Github : https://github.com/cio-abcd/variantinterpretation
 ----------------------------------------------------------------------------------------
 */
 
@@ -40,7 +38,7 @@ params.fasta = getGenomeAttribute('fasta')
 //
 // WORKFLOW: Run main analysis pipeline depending on type of input
 //
-workflow NFCORE_VARIANTINTERPRETATION {
+workflow CIOABCD_VARIANTINTERPRETATION {
 
     take:
     samplesheet // channel: samplesheet read in from --input
@@ -87,7 +85,7 @@ workflow {
     //
     // WORKFLOW: Run main workflow
     //
-    NFCORE_VARIANTINTERPRETATION (
+    CIOABCD_VARIANTINTERPRETATION (
         PIPELINE_INITIALISATION.out.samplesheet
     )
     //
@@ -99,7 +97,7 @@ workflow {
         params.plaintext_email,
         params.outdir,
         params.monochrome_logs,
-        NFCORE_VARIANTINTERPRETATION.out.multiqc_report
+        CIOABCD_VARIANTINTERPRETATION.out.multiqc_report
     )
 }
 

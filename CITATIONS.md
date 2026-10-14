@@ -1,4 +1,4 @@
-# nf-core/variantinterpretation: Citations
+# cio-abcd/variantinterpretation: Citations
 
 ## [nf-core](https://pubmed.ncbi.nlm.nih.gov/32055031/)
 

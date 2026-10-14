@@ -59,7 +59,7 @@ workflow VARIANTINTERPRETATION {
         .mix(topic_versions_string)
         .collectFile(
             storeDir: "${outdir}/pipeline_info",
-            name: 'nf_core_'  +  'variantinterpretation_software_'  + 'mqc_'  + 'versions.yml',
+            name:  'variantinterpretation_software_'  + 'mqc_'  + 'versions.yml',
             sort: true,
             newLine: true
         )

@@ -15,8 +15,8 @@ template:
   author: CIO-ABCD
   description: Pipeline to add biological and clinical knowledge to genomic variants.
   force: false
-  is_nfcore: true
+  is_nfcore: false
   name: variantinterpretation
-  org: nf-core
+  org: cio-abcd
   outdir: .
   version: 1.2.0
