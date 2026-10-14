@@ -20,7 +20,6 @@ process VEMBRANE_CREATE_FIELDS {
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
 
     // check if vcf file is gzipped
     def vcf_list = vcf.collect { vcf_file -> vcf_file.toString() }

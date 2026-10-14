@@ -14,7 +14,6 @@ workflow VCFPROC {
 
     main:
     ch_versions = channel.empty()
-    ch_multiqc_reports = channel.empty()
 
     //
     // VCF filtering

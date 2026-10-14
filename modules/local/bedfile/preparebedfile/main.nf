@@ -17,8 +17,6 @@ process PREPAREBEDFILE {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
-
     """
     ### Rename output BED as tagged_*
     tagged_bed='tagged_$bedfile'
