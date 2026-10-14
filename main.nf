@@ -103,7 +103,7 @@ workflow CIOABCD_VARIANTINTERPRETATION {
     )
 
     emit:
-    multiqc_report = MULTIQC_REPORT.out.multiqc_report // channel: /path/to/multiqc_report.html
+    MULTIQC_REPORT.out.multiqc_report // channel: /path/to/multiqc_report.html
 
 }
 /*
@@ -144,7 +144,7 @@ workflow {
         params.outdir,
         params.monochrome_logs,
         params.hook_url,
-        CIOABCD_VARIANTINTERPRETATION.out.multiqc_report
+        CIOABCD_VARIANTINTERPRETATION.out
     )
 }
 
