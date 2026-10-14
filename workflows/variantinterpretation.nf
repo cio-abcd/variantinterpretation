@@ -52,7 +52,7 @@ workflow VARIANTINTERPRETATION {
     ch_datavzrd_config
     ch_annotation_colinfo
     ch_bedfile
-    ch_consequence_tmb
+    _ch_consequence_tmb     // unused: TMBCALCULATION reads params.filter_consequence via ext.args
     ch_custom_filters
 
     main:
