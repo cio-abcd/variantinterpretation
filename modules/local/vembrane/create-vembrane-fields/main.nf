@@ -11,8 +11,8 @@ process VEMBRANE_CREATE_FIELDS {
     val annotation_fields
 
     output:
-    env fields           , emit: fields
-    env header           , emit: header
+    env 'fields'         , emit: fields
+    env 'header'         , emit: header
     path "versions.yml"  , emit: versions
 
     when:
