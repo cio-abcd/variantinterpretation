@@ -128,13 +128,16 @@ workflow PIPELINE_COMPLETION {
     main:
 
     summary_params = paramsSummaryMap(workflow, parameters_schema: "nextflow_schema.json")
+    // collect the MultiQC report(s) into one value that can be read on completion
+    def multiqc_reports = multiqc_report.toList()
 
     //
     // Completion email and summary
     //
     workflow.onComplete {
         if (email || email_on_fail) {
-            completionEmail(summary_params, email, email_on_fail, plaintext_email, outdir, monochrome_logs, multiqc_report.toList())
+            // attach the MultiQC report only if the run succeeded (as before)
+            completionEmail(summary_params, email, email_on_fail, plaintext_email, outdir, monochrome_logs, workflow.success ? multiqc_reports.getVal() : null)
         }
 
         completionSummary(monochrome_logs)
