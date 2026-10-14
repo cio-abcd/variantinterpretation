@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### `Changed`
 
 - Nextflow strict syntax: `nextflow lint` (Nextflow 26.04) reports no errors (AI-assisted, Claude Code)
-  - `check_max()` replaced by inline caps in `conf/base.config`; `max_cpus`, `max_memory` and `max_time` work as before
+  - `check_max()` replaced by the Nextflow `process.resourceLimits` directive (requires Nextflow >= 24.04); the params `max_cpus`, `max_memory` and `max_time` are removed. **Breaking:** set `process { resourceLimits = [cpus: ..., memory: ..., time: ...] }` in your own config instead. `resourceLimits` also caps plain `withName` overrides, unlike `check_max()`
   - config `try`/`catch`, `if` and `def` replaced by conditional `includeConfig` and the new hidden param `trace_report_suffix`; removed the include of `pipeline/variantinterpretation.config`, which does not exist in nf-core/configs
   - input channels are created inside `CIOABCD_VARIANTINTERPRETATION` instead of at the top level of `main.nf`
   - updated nf-core subworkflows `utils_nextflow_pipeline` and `utils_nfcore_pipeline` (the latter patched to keep `workflowCitation`, `nfCoreLogo`, `dashedLine` and `imNotification`)
