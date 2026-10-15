@@ -6,15 +6,16 @@
 </h1>
 
 [![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.10036356-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.10036356)
-[![GitHub Actions CI Status](https://github.com/nf-core/variantinterpretation/actions/workflows/ci.yml/badge.svg)](https://github.com/nf-core/variantinterpretation/actions/workflows/ci.yml)
-[![GitHub Actions Linting Status](https://github.com/nf-core/variantinterpretation/actions/workflows/linting.yml/badge.svg)](https://github.com/nf-core/variantinterpretation/actions/workflows/linting.yml)[![AWS CI](https://img.shields.io/badge/CI%20tests-full%20size-FF9900?labelColor=000000&logo=Amazon%20AWS)](https://nf-co.re/variantinterpretation/results)
+[![Open in GitHub Codespaces](https://img.shields.io/badge/Open_In_GitHub_Codespaces-black?labelColor=grey&logo=github)](https://github.com/codespaces/new/cio-abcd/variantinterpretation)
+[![GitHub Actions CI Status](https://github.com/cio-abcd/variantinterpretation/actions/workflows/nf-test.yml/badge.svg)](https://github.com/cio-abcd/variantinterpretation/actions/workflows/nf-test.yml)
+[![GitHub Actions Linting Status](https://github.com/cio-abcd/variantinterpretation/actions/workflows/linting.yml/badge.svg)](https://github.com/cio-abcd/variantinterpretation/actions/workflows/linting.yml)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)
 [![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
 
-[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A523.04.0-23aa62.svg)](https://www.nextflow.io/)
+[![Nextflow](https://img.shields.io/badge/version-%E2%89%A525.10.4-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)
+[![nf-core template version](https://img.shields.io/badge/nf--core_template-4.1.0-green?style=flat&logo=nfcore&logoColor=white&color=%2324B064&link=https%3A%2F%2Fnf-co.re)](https://github.com/nf-core/tools/releases/tag/4.1.0)
 [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
-[![Launch on Seqera Platform](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Seqera%20Platform-%234256e7)](https://cloud.seqera.io/launch?pipeline=https://github.com/nf-core/variantinterpretation)
 
 ## Introduction
 
@@ -283,7 +284,7 @@ This Pipeline development repository is a collaborative effort of the center for
 
 <!-- TODO: Add Information on CIO and ZPM -->
 
-If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
+If you would like to contribute to this pipeline, please see the [contributing guidelines](docs/CONTRIBUTING.md).
 
 **Contributing authors**
 
@@ -297,7 +298,7 @@ If you would like to contribute to this pipeline, please see the [contributing g
 If you use variantinterpretation for your analysis, please cite it using the following doi: [10.5281/zenodo.10036356](https://doi.org/10.5281/zenodo.10036356)
 An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
 
-You can cite the `nf-core` publication as follows:
+This pipeline uses code and infrastructure developed and maintained by the [nf-core](https://nf-co.re) community, reused here under the [MIT license](https://github.com/nf-core/tools/blob/main/LICENSE).
 
 > **The nf-core framework for community-curated bioinformatics pipelines.**
 >
