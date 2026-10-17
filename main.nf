@@ -13,17 +13,6 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { VARIANTINTERPRETATION  } from './workflows/variantinterpretation'
-include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_variantinterpretation_pipeline'
-include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_variantinterpretation_pipeline'
-include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_variantinterpretation_pipeline'
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    IMPORT FUNCTIONS / MODULES / SUBWORKFLOWS / WORKFLOWS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
 include { VARIANTINTERPRETATION; MULTIQC_REPORT   } from './workflows/variantinterpretation'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_variantinterpretation_pipeline'
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_variantinterpretation_pipeline'

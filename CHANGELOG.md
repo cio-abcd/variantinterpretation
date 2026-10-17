@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Changed`
 
-- Nextflow strict syntax: `nextflow lint` (Nextflow 26.04) reports no errors (AI-assisted, Claude Code)
+- updated pipeline to Nextflow strict syntax to be executable with nextflow v26: `nextflow lint` (Nextflow 26.04) reports no errors (AI-assisted, Claude Code)
   - `check_max()` replaced by the Nextflow `process.resourceLimits` directive (requires Nextflow >= 24.04); the params `max_cpus`, `max_memory` and `max_time` are removed. **Breaking:** set `process { resourceLimits = [cpus: ..., memory: ..., time: ...] }` in your own config instead. `resourceLimits` also caps plain `withName` overrides, unlike `check_max()`
   - config `try`/`catch`, `if` and `def` replaced by conditional `includeConfig` and the new hidden param `trace_report_suffix`; removed the include of `pipeline/variantinterpretation.config`, which does not exist in nf-core/configs
   - input channels are created inside `CIOABCD_VARIANTINTERPRETATION` instead of at the top level of `main.nf`
@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - patched nf-core modules `bcftools/annotate` (stub only), `bcftools/index`, `bcftools/merge` and `bcftools/norm` without changing their versions or containers
   - quoted `env` outputs, renamed shadowing variables, explicit closure parameters, `channel` instead of `Channel`, removed unused variables
   - no change in results: stub runs with Nextflow 25.10.4 and 26.04.4 give the same tasks, resources and published files as v1.2.0
+- updated nf-core template to v4.1.
+  - updated multiQC module to v1.35
+  - require now at least nextflow >=25.10.4
+  - also chnaged from nf-validation to nf-schema plugin
 
 ## v1.2.0
 
