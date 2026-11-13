@@ -98,10 +98,14 @@ workflow CIOABCD_VARIANTINTERPRETATION {
         ch_versions,
         ch_multiqc_files,
         ch_warnings,
+        params.multiqc_config,
+        params.multiqc_logo,
+        params.multiqc_methods_description,
+        params.outdir
     )
 
     emit:
-    MULTIQC_REPORT.out.multiqc_report // channel: /path/to/multiqc_report.html
+    multiqc_report = MULTIQC_REPORT.out.multiqc_report // channel: /path/to/multiqc_report.html
 
 }
 /*

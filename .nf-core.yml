@@ -1,5 +1,15 @@
 lint:
+  # Project-specific versions: PR template links to the `main` branch (the
+  # template renders `master`); issue config omits the nf-core Slack channel,
+  # which does not exist for this non-nf-core pipeline.
+  files_unchanged:
+    - .github/PULL_REQUEST_TEMPLATE.md
+    - .github/ISSUE_TEMPLATE/config.yml
   files_exist:
+    # AWS full-size tests are not part of the nf-core/tools 4.1.0 template and
+    # need nf-core Seqera/AWS secrets this repository does not have.
+    - .github/workflows/awstest.yml
+    - .github/workflows/awsfulltest.yml
     - CODE_OF_CONDUCT.md
     - assets/nf-core-variantinterpretation_logo_light.png
     - docs/images/nf-core-variantinterpretation_logo_light.png
@@ -9,7 +19,7 @@ lint:
   nextflow_config:
     - manifest.name
     - manifest.homePage
-nf_core_version: 3.5.2
+nf_core_version: 4.1.0
 repository_type: pipeline
 template:
   author: CIO-ABCD

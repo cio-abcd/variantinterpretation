@@ -8,11 +8,7 @@ process MULTIQC {
         : 'community.wave.seqera.io/library/multiqc:1.35--c17fb751507e9dfc'}"
 
     input:
-    tuple val(meta), path(multiqc_files, stageAs: "?/*")
-    path(multiqc_config, stageAs: "?/*")
-    path(multiqc_logo)
-    path(replace_names)
-    path(sample_names)
+    tuple val(meta), path(multiqc_files, stageAs: "?/*"), path(multiqc_config, stageAs: "?/*"), path(multiqc_logo), path(replace_names), path(sample_names)
 
     output:
     tuple val(meta), path("*.html"), emit: report

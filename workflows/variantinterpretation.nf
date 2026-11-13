@@ -73,8 +73,6 @@ workflow VARIANTINTERPRETATION {
     if (!params.bedfile && params.calculate_tmb) error("ERROR: Need to specify bedfile for calculating TMB.")
     if (!params.read_depth && params.calculate_tmb) error("ERROR: Need to specify the read_depth FORMAT field for calculating TMB.")
 
-    def ch_versions = channel.empty()
-    def ch_multiqc_files = channel.empty()
     //
     // Index vcf and reference files
     //
@@ -174,7 +172,7 @@ workflow VARIANTINTERPRETATION {
     }
 
     // Filtering for transcripts
-    if ( params.transcriptfilter || (params.transcriptlist!=[]) ) {
+    if ( params.transcriptfilter || params.transcriptlist ) {
         TRANSCRIPT_FILTER(  ch_vcf,
                             ch_transcriptlist
         )
@@ -251,6 +249,10 @@ workflow MULTIQC_REPORT {
     ch_versions
     ch_multiqc_files
     ch_warnings
+    multiqc_config
+    multiqc_logo
+    multiqc_methods_description
+    outdir
 
     main:
 

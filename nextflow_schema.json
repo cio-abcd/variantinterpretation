@@ -250,8 +250,7 @@
                     "type": "string",
                     "help_text": "If the variant does not have any matching transcript, all annotations will be removed and variant is flagged in FILTER column.\nCan work simultaneously with \"transcriptfilter\" parameter.",
                     "format": "file-path",
-                    "description": "List of transcripts for filtering.",
-                    "default": "[]"
+                    "description": "List of transcripts for filtering."
                 },
                 "custom_filters": {
                     "type": "string",
@@ -518,7 +517,7 @@
                     "type": "string",
                     "description": "Custom mutliQC template containing HTML coe to add warnings.",
                     "fa_icon": "fas fa-cog"
-                }
+                },
                 "validate_params": {
                     "type": "boolean",
                     "description": "Boolean whether to validate parameters against the schema at runtime",
@@ -559,34 +558,34 @@
             "$ref": "#/$defs/input_output_options"
         },
         {
-            "$ref": "#/definitions/vcf_normalization"
+            "$ref": "#/$defs/vcf_normalization"
         },
         {
-            "$ref": "#/definitions/reference_genome_options"
+            "$ref": "#/$defs/reference_genome_options"
         },
         {
-            "$ref": "#/definitions/preprocessing_options"
+            "$ref": "#/$defs/preprocessing_options"
         },
         {
-            "$ref": "#/definitions/annotation_options"
+            "$ref": "#/$defs/annotation_options"
         },
         {
-            "$ref": "#/definitions/annotation_filtering_option"
+            "$ref": "#/$defs/annotation_filtering_option"
         },
         {
-            "$ref": "#/definitions/tsv_conversion_options"
+            "$ref": "#/$defs/tsv_conversion_options"
         },
         {
-            "$ref": "#/definitions/html_report"
+            "$ref": "#/$defs/html_report"
         },
         {
-            "$ref": "#/definitions/tmb_calculation_options"
+            "$ref": "#/$defs/tmb_calculation_options"
         },
         {
-            "$ref": "#/definitions/institutional_config_options"
+            "$ref": "#/$defs/institutional_config_options"
         },
         {
-            "$ref": "#/definitions/generic_options"
+            "$ref": "#/$defs/generic_options"
         }
     ]
 }
