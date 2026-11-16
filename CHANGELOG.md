@@ -3,6 +3,31 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v1.2.0 - [unreleased<!-- TODO nf-core: replace with date on release -->]
+
+### `Changed`
+
+- updated pipeline to Nextflow strict syntax to be executable with nextflow v26: `nextflow lint` (Nextflow 26.04) reports no errors (AI-assisted, Claude Code)
+  - `check_max()` replaced by the Nextflow `process.resourceLimits` directive (requires Nextflow >= 24.04); the params `max_cpus`, `max_memory` and `max_time` are removed. **Breaking:** set `process { resourceLimits = [cpus: ..., memory: ..., time: ...] }` in your own config instead. `resourceLimits` also caps plain `withName` overrides, unlike `check_max()`
+  - config `try`/`catch`, `if` and `def` replaced by conditional `includeConfig` and the new hidden param `trace_report_suffix`; removed the include of `pipeline/variantinterpretation.config`, which does not exist in nf-core/configs
+  - input channels are created inside `CIOABCD_VARIANTINTERPRETATION` instead of at the top level of `main.nf`
+  - updated nf-core subworkflows `utils_nextflow_pipeline` and `utils_nfcore_pipeline` (unpatched; the pipeline no longer uses `workflowCitation`, `nfCoreLogo`, `dashedLine` or `imNotification`)
+  - patched nf-core modules `bcftools/annotate` (stub only), `bcftools/index`, `bcftools/merge` and `bcftools/norm` without changing their versions or containers
+  - quoted `env` outputs, renamed shadowing variables, explicit closure parameters, `channel` instead of `Channel`, removed unused variables
+  - no change in results: stub runs with Nextflow 25.10.4 and 26.04.4 give the same tasks, resources and published files as v1.2.0
+- updated nf-core template to v4.1.
+  - updated multiQC module to v1.35
+  - require now at least nextflow >=25.10.4
+  - also chnaged from nf-validation to nf-schema plugin
+  - fixed template merge leftovers so that `nf-core pipelines lint` (nf-core/tools 4.1.0) and `nextflow lint` pass without failures and a stub run completes:
+    - `nextflow_schema.json`: missing comma and `#/definitions/` references replaced by `#/$defs/`
+    - `MULTIQC_REPORT` gets `multiqc_config`, `multiqc_logo`, `multiqc_methods_description` and `outdir` as inputs; removed duplicate channel declarations; `CIOABCD_VARIANTINTERPRETATION` emits a named `multiqc_report`
+    - restored the unmodified nf-core `multiqc` module (single tuple input)
+    - removed the unused `utils_nfvalidation_plugin` subworkflow, the unapplied `utils_nfcore_pipeline` patch file, the AWS test workflows and the template files dropped in v4.1 (`assets/adaptivecard.json`, `assets/slackreport.json`, `.github/CONTRIBUTING.md`)
+    - `.nf-core.yml`: `nf_core_version` set back to 4.1.0 after the accidental 3.5.2 template merge
+  - `transcriptlist` defaults to `null` instead of `[]` (nf-core/tools 4.1.0 lint crashed on the list default)
+  - fixed the `datavzrd` stub (now creates `report_*`) and a stray `)` in its version string
+
 ## v1.2.0
 
 ### `Fixed`

@@ -1,0 +1,305 @@
+{
+    "@context": [
+        "https://w3id.org/ro/crate/1.2/context",
+        {
+            "GithubService": "https://w3id.org/ro/terms/test#GithubService",
+            "JenkinsService": "https://w3id.org/ro/terms/test#JenkinsService",
+            "PlanemoEngine": "https://w3id.org/ro/terms/test#PlanemoEngine",
+            "TestDefinition": "https://w3id.org/ro/terms/test#TestDefinition",
+            "TestInstance": "https://w3id.org/ro/terms/test#TestInstance",
+            "TestService": "https://w3id.org/ro/terms/test#TestService",
+            "TestSuite": "https://w3id.org/ro/terms/test#TestSuite",
+            "TravisService": "https://w3id.org/ro/terms/test#TravisService",
+            "definition": "https://w3id.org/ro/terms/test#definition",
+            "engineVersion": "https://w3id.org/ro/terms/test#engineVersion",
+            "instance": "https://w3id.org/ro/terms/test#instance",
+            "resource": "https://w3id.org/ro/terms/test#resource",
+            "runsOn": "https://w3id.org/ro/terms/test#runsOn"
+        }
+    ],
+    "@graph": [
+        {
+            "@id": "./",
+            "@type": "Dataset",
+            "creativeWorkStatus": "Stable",
+            "datePublished": "2026-10-17T10:17:28+00:00",
+            "description": "<h1>\n  <picture>\n    <source media=\"(prefers-color-scheme: dark)\" srcset=\"docs/images/cio-abcd-variantinterpretation_logo_dark.png\">\n    <img alt=\"nf-core/variantinterpretation\" src=\"docs/images/cio-abcd-variantinterpretation_logo_light.png\">\n  </picture>\n</h1>\n\n[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.10036356-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.10036356)\n[![Open in GitHub Codespaces](https://img.shields.io/badge/Open_In_GitHub_Codespaces-black?labelColor=grey&logo=github)](https://github.com/codespaces/new/cio-abcd/variantinterpretation)\n[![GitHub Actions CI Status](https://github.com/cio-abcd/variantinterpretation/actions/workflows/nf-test.yml/badge.svg)](https://github.com/cio-abcd/variantinterpretation/actions/workflows/nf-test.yml)\n[![GitHub Actions Linting Status](https://github.com/cio-abcd/variantinterpretation/actions/workflows/linting.yml/badge.svg)](https://github.com/cio-abcd/variantinterpretation/actions/workflows/linting.yml)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)\n[![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)\n\n[![Nextflow](https://img.shields.io/badge/version-%E2%89%A525.10.4-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)\n[![nf-core template version](https://img.shields.io/badge/nf--core_template-3.5.2-green?style=flat&logo=nfcore&logoColor=white&color=%2324B064&link=https%3A%2F%2Fnf-co.re)](https://github.com/nf-core/tools/releases/tag/3.5.2)\n[![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)\n[![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)\n[![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)\n\n## Introduction\n\nThe **variantinterpretation** pipeline is a bioinformatic analysis workflow adding biological and clinical knowledge to genomic variants.\nIt takes as input genomic variants in the variant calling file format (VCF), adds annotations and wraps them into an HTML report and spreadsheet-compatible TSV files.\nVariants are annotated with information that support molecular biologists and pathologists in interpreting their functional relevance in a biological and clinical context.\nFurther, the pipeline enables variant filtering and deriving meaningful metrics as the tumor mutational burden (TMB).\n\nThe pipeline is currently tailored for analyzing somatic single-nucleotide variants (SNVs) and small Insertions and Deletions (InDels).\nIn principle, the workflow was designed to work with all VCF files independent from the originating variant caller.\nWe tested the pipeline with the variant callers mutect2 and freebayes and are happy to get feedback about compatibility or problems with other variant callers.\n\nThe pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. Further it provides many options for configuration the pipeline to tailor them to your specific application. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) in order to make them available to all nf-core pipelines, and to everyone within the Nextflow community.\n\n<!-- TODO nf-core: Add full-sized test dataset and amend the paragraph below if applicable -->\n<!-- On release, automated continuous integration tests run the pipeline on a full-sized dataset on the AWS cloud infrastructure. This ensures that the pipeline runs on AWS, has sensible resource allocation defaults set to run on real-world datasets, and permits the persistent storage of results to benchmark between pipeline releases and other analysis sources.-->\n\n## Documentation\n\n1. **Detailed description** about the modules, their function, capabilities, limitations and configuration tips can be found in the following chapters of this README.\n2. A **Step-by-step guide** for setting up and running this workflow that is also suited for beginners with nextflow and nf-core pipelines can be found in the [docs/usage.md](docs/usage.md) documentation.\n3. A **Output file description** from each module can be found in the [docs/output.md](docs/output.md) documentation.\n4. A **parameter description** with all their defaults, possible values and help texts can be found on the [docs/params.md](docs/params.md) documentation.\n\n## Pipeline overview\n\n![Pipeline overview](assets/metromap_variantinterpretation.png)\n\n1. [VCF preprocessing](#vcf-preprocessing)\n   - [Indexing](#vcf-indexing) with `bctools index`.\n   - [VCF checks](#vcf-checks)\n     - Checks samplesheet integrity with modified [nf-core script](bin/check_samplesheet.py)\n     - Checks VCF file requirements and integrity with `GATK4 ValidateVariants`, `bcftools` and a custom python script.\n     - Runs optional BED file format check using a [python script](bin/process_bedfiles.py)\n   - [Pre-annotation VCF filtering](#pre-annotation-vcf-filter) based on FILTER column entries using `bcftools view`.\n   - [VCF normalization](#vcf-normalization): Splitting of multi-allelic into bi-allelic variants and optional left-alignment of InDels using `bcftools norm`.\n   - [VCF merging](#vcf-merging): Optional merging of VCF file based on 'group' column in samplesheet into multi-sample VCF files.\n2. [Variant annotation](#ensembl-vep-annotation) using the ensembl variant effect predictor (VEP).\n3. [Filtering](#filtering)\n   - [Transcript filtering](#transcript-filtering) using the filter_vep script.\n   - [Custom filters](#custom-filters): Create additional filtered VCF files based on preset filter criteria using `vembrane tag` and `vembrane filter`.\n4. [Reporting](#reporting)\n   - [TSV conversion](#tsv-conversion) based on VCF fields including FORMAT and INFO columns and the VEP annotation fields encoded as CSQ strings in the INFO field using `vembrane table`.\n   - [HTML report](#html-report) generation using `datavzrd`.\n   - [MultiQC HTML report](#multiqc) summarizing general statistics and warning messages.\n   - [Pipeline information](#pipeline-information) summarizing runtime and other statistics in nf-core pipeline overview.\n5. [Tumor mutational burden (TMB) calculation](#tumor-mutational-burden-tmb-calculation-module): Based on provided cutoffs and thresholds for each sample using the vembrane TSV output and a python script.\n\n## Module description\n\n### VCF preprocessing\n\n#### VCF indexing\n\nCreates tabix index (tbi) for the VCF file that is required for several workflow processes using [`bcftools index`](https://samtools.github.io/bcftools/bcftools.html#index).\nIt requires an uncompressed or bgzip compressed VCF file.\n\n#### VCF checks\n\nThis VCF quality control module checks for integrity of the VCF file and several requirements to the input variants. It additionally can create warnings logged in the multiQC module if the VCF file shows some characteristics that can hamper interpretation.\n\nIt uses the following tools:\n\n- [GATK4 ValidateVariants](https://gatk.broadinstitute.org/hc/en-us/articles/360037057272-ValidateVariants)\n- [bcftools stats](https://samtools.github.io/bcftools/bcftools.html#stats)\n- custom python script\n\nThe following table gives an overview about the criteria that are checked and possible warnings:\n\n| criteria                                     | log-level | description                                                                                                                                                                                                                                                                                 | tool                     |\n| -------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |\n| VCF file format                              | ERROR     | General structure of VCF file needs to stick to the [VCF file format](https://samtools.github.io/hts-specs/).                                                                                                                                                                               | `GATK4 ValidateVariants` |\n| uncompressed or bgzip compressed             | ERROR     | VCF files needs to be either uncompressed or bgzip compressed. Gzip-compressed files give an error during indexing.                                                                                                                                                                         | `bcftools index`         |\n| \"chr\" prefix in CHROM column                 | ERROR     | The chromosome column `CHROM` in the VCF file needs to contains the \"chr\" prefix. Please be aware that the provided reference genome also contains the \"chr\" prefix. This ensures compatibility with annnotation sources.                                                                   | `python script`          |\n| matching reference genome                    | ERROR     | Provided VCF file needs to match the provided reference genome. Especially this test can differentiate between GRCh37 and GRCh38 human reference genomes. If left-alignment of indels is activated, `bcftools norm` also additionally checks the reference genome.                          | `GATK4 ValidateVariants` |\n| only passed filters                          | WARNING   | Gives warning if the FILTER column contains entries other than \"PASS\" or \".\". NOTE: These can be removed with the the `filter_pass` parameter in the VCF preprocessing module. Also, new flags might be added after annotation if additional filters are specified in the Filtering module. | `python script`          |\n| no-ALT entries                               | WARNING   | Gives warning if VCF file contains non-variant positions. Genomic VCF files (gVCFs) are supported in the pipeline but can dramatically increase the runtime of VEP.                                                                                                                         | `bcftools stats`         |\n| no multiallelic sites                        | WARNING   | Gives warning if the VCF file contains multiallelic variants. NOTE: These will be automatically split with `bcftools norm` in the VCF preprocessing module.                                                                                                                                 | `bcftools stats`         |\n| contains other variants than SNVs and InDels | WARNING   | Gives warning if VCF file contains other variants than SNVs and InDels.                                                                                                                                                                                                                     | `bcftools stats`         |\n| previous VEP annotation present              | WARNING   | Gives warning if previous VEP annotation is present. The test checks for VEP in the header and if the INFO column already contains a `CSQ` key.                                                                                                                                             |\n\n#### Pre-annotation VCF filter\n\nIt can filter VCF files based on flags in the FILTER column using [`bcftools view`](https://samtools.github.io/bcftools/bcftools.html#view).\nThis can be enabled with the `--filter_vcf` parameter providing flag names for the VCF FILTER column to be kept (e.g., \"PASS\").\nThis step is placed prior to annotation to improve runtime if, e.g., lots of low-quality variants are removed.\n\n> WARNING: Variants filtered in this step will NOT be included in any output file!\n\n#### VCF normalization\n\nThis module uses [`bcftools norm`](https://samtools.github.io/bcftools/bcftools.html#norm) to split multi-allelic into bi-allelic sites.\nThis step is required by vembrane as it cannot handle multi-allelic records (also see [vembrane documentation](https://github.com/vembrane/vembrane)).\nOptionally, the left-alignment of InDels can be activated using the `--left-align-indels` parameter.\n\n> NOTE: When left-alignment is enabled, it performs an additional reference genome check (there is already a check in the `VCF checks` module).\n\n#### VCF Merging\n\nThis is an optional step activated with the `--merge_vcfs` parameter.\nIt requires an additional column in the `samplesheet.csv` named 'group' that specifies which VCF files to merge.\nThis column can consist of arbitrary name or number that will be used to name the respective output.\nThe module uses `bcftools merge` to create a multi-sample VCF file from the input VCF files. The sample names within the original VCFs will be preserved with an additional prefix that contains the samplename from the 'sample' column of the `samplesheet.csv`.\n\n> NOTE: The order of VCF input files to `bcftools merge` is important for merging the VCF header.\n> Hence, the order of VCF files within the samplesheet is preserved as input for `bcftools merge` to ensure reproducibility.\n> If you encounter an pipeline error downstream hinting towards malformatted VCF header, you can try changing the order of VCF files.\n\n### Ensembl VEP annotation\n\n[Variant effect predictor (VEP)](https://www.ensembl.org/info/docs/tools/vep/index.html) annotates variants based on provided public databases. It provides biological information as protein consequence and effect prediction as well as co-located variants from existing databases, e.g., about population allele frequencies. For full overview, see the [VEP annotation sources](https://www.ensembl.org/info/docs/tools/vep/script/vep_cache.html) and [VEP command flags](https://www.ensembl.org/info/docs/tools/vep/script/vep_options.html).\n\nCurrently, this workflow only supports annotation with sources from the VEP cache.\nWe plan on adding other databases as annotation source in the future.\nTo add HGVS nomenclature for variants, you need to specify a FASTA file which is therefore a requirement for this pipeline.\nYou can easily enable/disable VEP options using several parameter, also see the parameter documentation [docs/params.md](docs/params.md).\n\nThe databases and their respective version is documentated within the VCF file under the VEP flag.\nCurrently, we use VEP version 115 and hence using the VEP cache from v115 is highly recommended. It contains the following databases:\n\n- ensembl=115\n- assembly=\"GRCh38.p14\"\n- MANE=v1.4\n- gencode=\"49\"\n- refseq=\"GCF_000001405.40-RS_2024_08 (GCF_000001405.40_GRCh38.p14_genomic.gff)\"\n- regbuild=\"1.0\"\n- polyphen=\"2.2.3\"\n- sift=\"6.2.1\"\n- dbSNP=\"156\"\n- COSMIC=\"101\"\n- HGMD-PUBLIC=\"2020.4\"\n- ClinVar=\"2025-02\"\n- 1000genomes=\"phase3 (remapped)\"\n- gnomAD exomes=\"v4.1\"\n- gnomAD genomes=\"v4.1\"\n\n### Filtering\n\n#### Transcript filtering\n\nThe first step after annotation is a (optional) filtering for transcripts using the [`filter_vep` script](https://www.ensembl.org/info/docs/tools/vep/script/vep_filter.html) provided by the VEP software suite.\nVEP adds all possible transcripts and their annotations (e.g., consequence) to the variant records in the VCF file.\nFor interpretation it is useful to filter for the most relevant or very specific transcripts.\n\n> NOTE: The final TSV and HTML reports include each transcript from a variant as a separate row!\n> For example: If you have a variant with 6 transcripts annotated, this results in 6 separate rows in the final TSV file for each transcript from the same variant.\n\nThis module has a default external argument `--soft_filter` to prevent silent dropping of variants.\nInstead a flag \"filter_vep_fail/filter_vep_pass\" will be added to the FILTER column.\nAnother default external argument is also `--only_matched` that will result in annotation being dropped if it does not match the filtering criteria.\nThis results in variants only having transcript annotations if matching the filter criteria, variants without any matching transcript will be retained, but without any annotation.\n\nThis module has two options to filter transcripts:\n\n1. Filter by specific VEP annotation columns using the parameter `--transcriptfilter`. It only supports specific columns that provide a boolean information about which transcript to include:\n   - PICK: Provided by VEP and recommended for extracting only the most relevant transcript. It uses an ordered set of criteria to identify those transcripts summarized in the [VEP documentation](https://www.ensembl.org/info/docs/tools/vep/script/vep_other.html#pick).\n   - CANONICAL: Flag for canonical transcripts [defined by Ensembl](https://www.ensembl.org/info/genome/genebuild/canonical.html).\n   - MANE_SELECT: [Matched annotation from NCBI and EBI](https://www.ensembl.org/info/genome/genebuild/mane.html).\n2. Filter by a specific list of transcripts provided by the `--transcriptlist` parameter. Can be combined with `--transcriptfilter`. The provided file needs to contain one transcript per row and matches the provided VEP cache transcript definitions (Refseq or Ensembl), see also the downloads section in [docs/usage.md](docs/usage.md). Please note that the annotation will be completely removed for variants that do not match any of the provided transcripts!\n\n> WARNING: Transcripts filtered in this step will not be shown in any output file!\n\n#### Custom filters\n\nThis module can create additional reports in which preset filters are applied.\nThese are very useful for interpretation as you can once define complex filters and do not have to enter these manually in your spreadsheet program or HTML report every single time.\nIt can be used, e.g., for hopper-based interpretation strategies.\n[`vembrane`](https://github.com/vembrane/vembrane) is used for creating filtered subsets of the VCF files from which additional TSV files and HTML reports will be created.\nThe workflow always creates a report for the VCF file after transcript filtering.\nIt can be configured as following:\n\n1. Define your preset filters in a TSV file and supply it with the `--custom_filters` parameter. You can find an example TSV file in the assets folder: [assets/custom_filters.tsv](assets/custom_filters.tsv).\n   The TSV files needs two columns: The first column contains the name of the filter (letters, numbers and underscores allowed), the second column a valid python expression defining the filter. The python expression has to follow the guidelines for vembrane, also see here: [https://github.com/vembrane/vembrane#filter-expression](https://github.com/vembrane/vembrane#filter-expression).\n2. Define the filters to be used in this run with `--used_filters`. This allows you to define a multitude of filters in a central TSV file, but only use a subset of them for specific runs.\n\nThe module performs two consecutive steps for filtering the variants:\n\n1. Tag variants in their FILTER columns using [`vembrane tag`](https://github.com/vembrane/vembrane#vembrane-tag) with the respective filter name. This tag can be found in every report file.\n2. Create additional VCF files by filtering for each of the `--used_filters` specified using [`vembrane filter`](https://github.com/vembrane/vembrane#vembrane-filter).\n\n### Reporting\n\nSummary of final output files in `reports/` folder:\n\n1. [TSV files](#tsv-conversion) for each sample and preset filter in `tsv/`\n2. [HTML reports](#html-report) for each sample and preset filter in `html/`\n3. [MultiQC report](#multiqc) in `multiQC`\n4. Nextflow pipeline report in `pipeline_report/`\n\n#### TSV conversion\n\nThe VCF file is converted into a tab-separated values (TSV) file format using [`vembrane table`](https://github.com/vembrane/vembrane#vembrane-table).\nThis can be easily imported into spreadsheet programs for manual processing.\nSeveral parameters can control which VCF fields are extracted into the TSV file.\nNote that the resulting TSV file is the basis for HTML reports, hence the HTML report will not contain fields missing in the TSV file.\nThe following parameters control the extracted TSV fields:\n\n- `format_fields` and `--info_fields`: Extract specific fields from INFO and FORMAT column as separate columns in the TSV output, e.g., DP in the FORMAT column. It can also handle mathematical operations, e.g. `AD[1] / DP` will divide allelic depth by read depth.\n- `--annotation_fields`: These extract CSQ strings of the FORMAT column added by VEP annotation. the value `all` results into extraction of all available fields (default).\n- `--allele_fraction`: Define how to extract the allele fraction from the VCF file.\n  Variant callers save this information in different ways, the allele fraction defined here will be used for downstream operations, e.g., filtering and TMB calculation. It will be extracted into the column named `allele_fraction`. This will be done for each sample separately in the VCF file.\n  You can find more information about available options in the [parameter help text](docs/params.md). If your option is not supported, please let us know!\n- `--read_depth`: Similar to allele fraction for the read depth. Specifies the FORMAT fields containing read depth information, which will be extracted into the `read_depth` column and used downstream. Also done for each sample in the VCF file.\n\nFor an overview of CSQ fields included in the VEP-annotated VCF file, have a look into the [VEP output documentation](https://www.ensembl.org/info/docs/tools/vep/vep_formats.html#output).\n\n#### HTML report\n\nHTML reports are generated using [datavzrd](https://github.com/datavzrd/datavzrd#readme) based on a YAML configuration file.\nThe HTML report enables several features including interactive filtering, links within the data or to the internet, plotting, etc.\nThe configuration file is rendered using the [YTE template engine](https://github.com/yte-template-engine/yte#readme) that enables usage of python code in YAML files for dynamic rendering.\nThe HTML report can be highly customized by defining the structure and display of each column with the `--annotation_colinfo` parameter.\nYou can find detailed information in the [parameters help text](docs/params.md). By default, the preconfigured columns in [assets/annotation_colinfo.tsv](assets/annotation_colinfo.tsv) are used.\nThe pipeline allows the report to distribute columns to different HTML sites using the `group` identifier making the report more clear and easy to read.\nYou can further define the displayed column name, if the column should be shown by default and create special visualizations, e.g. tick plots, heatmaps and hyperlinks, by defining the `data_type` of each column.\nEach HTML report also contains a button to export an excel file (`.xlsx` format), which differs from the TSV file, e.g., by grouping columns in different sheets based on their `group` definition.\n\nIf you are familiar with datavzrd config files, you can also specify your own datavzrd configuration template using the `--datavzrd_config parameter` and customize the HTML report even more. By default, the configuration file in [assets/datavzrd_config_template.yaml](assets/datavzrd_config_template.yaml) is used and rendered.\n\n#### MultiQC\n\n[MultiQC](http://multiqc.info) is a visualization tool that generates a single HTML report summarising all samples in your project.\nMost of the pipeline QC results are visualised in the report and further statistics are available in the report data directory.\nResults generated by MultiQC collate pipeline QC from supported tools e.g. bcftools.\nThe pipeline has special steps which also allow the software versions to be reported in the MultiQC output for future traceability.\nFor more information about how to use MultiQC reports, see <http://multiqc.info>.\n\nIt can have the following sections:\n\n- Warnings: Collects warnings from the VCF check modules that might have an influence on the results.\n- bcftools: Summarized statistics from `bcftools stats` command giving an overview about variant types, quality, depth and InDel distribution.\n- VEP: Gives a detailed report and visualizations about VEP annotation results for all variants of each sample.\n- Description of variantinterpretation pipeline.\n\n#### Pipeline information\n\n[Nextflow](https://www.nextflow.io/docs/latest/tracing.html) provides excellent functionality for generating various reports relevant to the running and execution of the pipeline. This will allow you to troubleshoot errors with the running of the pipeline, and also provide you with other information such as launch commands, run times and resource usage.\n\n### Tumor Mutational Burden (TMB) calculation module\n\nThe TMB calculation module calculates the ratio of eligible mutations per Megabasepair (MBp) using a custom [python scripts](bin/calculate_TMB.py).\nThe TMB module works in coordination with the BED check module, as a BED file is required to calculate the panelsize-adapted TMB, and requires a set of filtering thresholds which define the eligibility of a mutation.\nThe eligible mutations remaining after each applied filtering step (variant type, coverage, allele frequency, population allele frequency) and the panel size (in bp) inferred from the provided BED file are reported.\nThe calculation will be performed on the vembrane TSV output file, allowing for prefiltering of unwanted mutations using the variant-filter step prior to TMB calculation.\nTMB calculation will only be performed if a [well-formatted BED file](https://genome.ucsc.edu/FAQ/FAQformat.html#format1) was provided to the workflow.\nBased on the provided BED file, a comparison to the provided breaking threshold (`--panelsize_threshold`) will be performed.\nIf the BED file covers less base pairs than the provided threshold, calculation will be stopped and a warning raised.\nTMB calculation is not a unified and standarized process, thus different filtering thresholds can be provided including a variant type filter for SNVs or SNVs and MNVs, lower and upper allele frequency boundaries, a minimal threshold for coverage, a maximal threshold for presence in the [gnomAD global population frequency](https://gnomad.broadinstitute.org/) or another defined population database and a flag to filter InDels from the calculation procedure.\n\nThe main parameter flags and their respective defaults are:\n\n- `--calculate_tmb` : boolean, activates the TMB calculation module. [default: false]\n- `--min_af` : float, defines the lower allele frequency (AF) filtering threshold, dropping all mutations with an AF below the value. [default: 0.00]\n- `--max_af` : float, defines the upper AF filtering threshold, dropping all mutations with an AF above the value. [default: 1.00]\n- `--min_cov` : integer, defines the lower coverage threshold based on the reported DP value of the vembrane tsv, dropping all mutations below the threshold. Consider increasing the value for highly-covered data (e.g. Panel-derived data) to reduce technical artifacts [default: 10]\n- `--filter_muttype` : string, defines the filtering stringency for non single nucleotide variants, as f.e. multinucleotide variants or InDels. Setting **'snv'** will only consider single-base substitutions as eligible, **'mnv'** will additionally consider double-base substitutions and other substitution classes, every other string input will retain the full dataset as eligible. [default: 'snv']\n- `--population_db` : string, defines the major population database following the [VEP output nomenclature for external databases](https://www.ensembl.org/info/docs/tools/vep/vep_formats.html#output) for population AF based filtering. If not changed, it defaults to the combined global gnomAD exome AF as filtering database. The string should be formatted as 'CSQ\\_{population_database_name}' to be compatible with the vembrane TSV output. [default: 'CSQ_gnomADe_AF']\n- `--panelsize_threshold` : integer, defines an additional threshold which checks if the provided BED file covers more basepairs than the threshold value. The TMB module will skip the TMB calculation without breaking the pipeline if the panelsize is below the threshold. The threshold should be lowered if the provided BED file covers less than 1 MBp but a TMB estimate needs to be inferred. [default: 1000000]\n- `--filter_roi_for_tmb`: boolean, controls if the TMB value should be calculated only on the provided positional arguments from the provided BED file. This option affects only the TMB calculation and would be equivalent of running the workflow with both `--tag_roi` and `--filter_vcf '\"PASS\"'`. [default: false]\n- `--filter_consequence`: boolean, controls if consequence filtering should be performed. Should be used in conjuction with `--csq_values` or no filtering based on consequences will be performed. [default: false]\n- `--csq_values`: comma-seperated string containing [consequences as defined on the VEP website](https://www.ensembl.org/info/genome/variation/prediction/predicted_data.html) fo which consequence filtering should be performed. If not defined it will default to all consequences retaining all mutations. [default: null]\n\n## Contributions and Support\n\nThis Pipeline development repository is a collaborative effort of the center for integrated oncology (CIO) of the universities of Aachen, Bonn, Cologne and D\u00fcsseldorf (ABCD) to standardize and optimize data analysis in a clinical context.\n\n<!-- TODO: Add Information on CIO and ZPM -->\n\nIf you would like to contribute to this pipeline, please see the [contributing guidelines](docs/CONTRIBUTING.md).\n\n**Contributing authors**\n\n- RWTH University Hospital (UKA): Lancelot Seillier\n- University Hospital Bonn (UKB): Patrick Basitta, Florian H\u00f6lscher\n- University Hospital K\u00f6ln (UKK): tba\n- University Hospital D\u00fcsseldorf (UKD): Kai Horny\n\n## Citations\n\nIf you use variantinterpretation for your analysis, please cite it using the following doi: [10.5281/zenodo.10036356](https://doi.org/10.5281/zenodo.10036356)\nAn extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.\n\nThis pipeline uses code and infrastructure developed and maintained by the [nf-core](https://nf-co.re) community, reused here under the [MIT license](https://github.com/nf-core/tools/blob/main/LICENSE).\n\n> **The nf-core framework for community-curated bioinformatics pipelines.**\n>\n> Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.\n>\n> _Nat Biotechnol._ 2020 Feb 13. doi: [10.1038/s41587-020-0439-x](https://dx.doi.org/10.1038/s41587-020-0439-x).\n",
+            "hasPart": [
+                {
+                    "@id": "main.nf"
+                },
+                {
+                    "@id": "assets/"
+                },
+                {
+                    "@id": "conf/"
+                },
+                {
+                    "@id": "docs/"
+                },
+                {
+                    "@id": "modules/"
+                },
+                {
+                    "@id": "modules/nf-core/"
+                },
+                {
+                    "@id": "workflows/"
+                },
+                {
+                    "@id": "subworkflows/"
+                },
+                {
+                    "@id": "nextflow.config"
+                },
+                {
+                    "@id": "README.md"
+                },
+                {
+                    "@id": "nextflow_schema.json"
+                },
+                {
+                    "@id": "CHANGELOG.md"
+                },
+                {
+                    "@id": "LICENSE"
+                },
+                {
+                    "@id": "CITATIONS.md"
+                },
+                {
+                    "@id": "modules.json"
+                },
+                {
+                    "@id": "docs/usage.md"
+                },
+                {
+                    "@id": "docs/output.md"
+                },
+                {
+                    "@id": ".nf-core.yml"
+                },
+                {
+                    "@id": ".pre-commit-config.yaml"
+                },
+                {
+                    "@id": ".prettierignore"
+                }
+            ],
+            "isBasedOn": "https://github.com/cio-abcd/variantinterpretation",
+            "license": "MIT",
+            "mainEntity": {
+                "@id": "main.nf"
+            },
+            "mentions": [
+                {
+                    "@id": "#4b311279-e384-4f12-b4b7-3c9862ad12f5"
+                }
+            ],
+            "name": "cio-abcd/variantinterpretation"
+        },
+        {
+            "@id": "ro-crate-metadata.json",
+            "@type": "CreativeWork",
+            "about": {
+                "@id": "./"
+            },
+            "conformsTo": [
+                {
+                    "@id": "https://w3id.org/ro/crate/1.2"
+                },
+                {
+                    "@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0"
+                }
+            ]
+        },
+        {
+            "@id": "main.nf",
+            "@type": [
+                "File",
+                "SoftwareSourceCode",
+                "ComputationalWorkflow"
+            ],
+            "contributor": [
+                {
+                    "@id": "#67989038-dffc-47c8-8a21-26805c12cc40"
+                }
+            ],
+            "dateCreated": "",
+            "dateModified": "2026-10-17T12:17:28Z",
+            "dct:conformsTo": "https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE/",
+            "keywords": [
+                "nf-core",
+                "nextflow"
+            ],
+            "license": [
+                "MIT"
+            ],
+            "name": [
+                "cio-abcd/variantinterpretation"
+            ],
+            "programmingLanguage": {
+                "@id": "https://w3id.org/workflowhub/workflow-ro-crate#nextflow"
+            },
+            "sdPublisher": {
+                "@id": "https://nf-co.re/"
+            },
+            "url": [
+                "https://github.com/cio-abcd/variantinterpretation",
+                "https://nf-co.re/cio-abcd/variantinterpretation/1.2.0/"
+            ],
+            "version": [
+                "1.2.0"
+            ]
+        },
+        {
+            "@id": "https://w3id.org/workflowhub/workflow-ro-crate#nextflow",
+            "@type": "ComputerLanguage",
+            "identifier": {
+                "@id": "https://www.nextflow.io/"
+            },
+            "name": "Nextflow",
+            "url": {
+                "@id": "https://www.nextflow.io/"
+            },
+            "version": "!>=25.10.4"
+        },
+        {
+            "@id": "#4b311279-e384-4f12-b4b7-3c9862ad12f5",
+            "@type": "TestSuite",
+            "instance": [
+                {
+                    "@id": "#7059ee87-5df7-4347-a324-cf3ee03c8e6e"
+                }
+            ],
+            "mainEntity": {
+                "@id": "main.nf"
+            },
+            "name": "Test suite for cio-abcd/variantinterpretation"
+        },
+        {
+            "@id": "#7059ee87-5df7-4347-a324-cf3ee03c8e6e",
+            "@type": "TestInstance",
+            "name": "GitHub Actions workflow for testing cio-abcd/variantinterpretation",
+            "resource": "repos/cio-abcd/variantinterpretation/actions/workflows/nf-test.yml",
+            "runsOn": {
+                "@id": "https://w3id.org/ro/terms/test#GithubService"
+            },
+            "url": "https://api.github.com"
+        },
+        {
+            "@id": "https://w3id.org/ro/terms/test#GithubService",
+            "@type": "TestService",
+            "name": "Github Actions",
+            "url": {
+                "@id": "https://github.com"
+            }
+        },
+        {
+            "@id": "assets/",
+            "@type": "Dataset",
+            "description": "Additional files"
+        },
+        {
+            "@id": "conf/",
+            "@type": "Dataset",
+            "description": "Configuration files"
+        },
+        {
+            "@id": "docs/",
+            "@type": "Dataset",
+            "description": "Markdown files for documenting the pipeline"
+        },
+        {
+            "@id": "modules/",
+            "@type": "Dataset",
+            "description": "Modules used by the pipeline"
+        },
+        {
+            "@id": "modules/nf-core/",
+            "@type": "Dataset",
+            "description": "nf-core modules"
+        },
+        {
+            "@id": "workflows/",
+            "@type": "Dataset",
+            "description": "Main pipeline workflows to be executed in main.nf"
+        },
+        {
+            "@id": "subworkflows/",
+            "@type": "Dataset",
+            "description": "Smaller subworkflows"
+        },
+        {
+            "@id": "nextflow.config",
+            "@type": "File",
+            "description": "Main Nextflow configuration file"
+        },
+        {
+            "@id": "README.md",
+            "@type": "File",
+            "description": "Basic pipeline usage information"
+        },
+        {
+            "@id": "nextflow_schema.json",
+            "@type": "File",
+            "description": "JSON schema for pipeline parameter specification"
+        },
+        {
+            "@id": "CHANGELOG.md",
+            "@type": "File",
+            "description": "Information on changes made to the pipeline"
+        },
+        {
+            "@id": "LICENSE",
+            "@type": "File",
+            "description": "The license - should be MIT"
+        },
+        {
+            "@id": "CITATIONS.md",
+            "@type": "File",
+            "description": "Citations needed when using the pipeline"
+        },
+        {
+            "@id": "modules.json",
+            "@type": "File",
+            "description": "Version information for modules from nf-core/modules"
+        },
+        {
+            "@id": "docs/usage.md",
+            "@type": "File",
+            "description": "Usage documentation"
+        },
+        {
+            "@id": "docs/output.md",
+            "@type": "File",
+            "description": "Output documentation"
+        },
+        {
+            "@id": ".nf-core.yml",
+            "@type": "File",
+            "description": "nf-core configuration file, configuring template features and linting rules"
+        },
+        {
+            "@id": ".pre-commit-config.yaml",
+            "@type": "File",
+            "description": "Configuration file for pre-commit hooks"
+        },
+        {
+            "@id": ".prettierignore",
+            "@type": "File",
+            "description": "Ignore file for prettier"
+        },
+        {
+            "@id": "https://nf-co.re/",
+            "@type": "Organization",
+            "name": "nf-core",
+            "url": "https://nf-co.re/"
+        },
+        {
+            "@id": "#67989038-dffc-47c8-8a21-26805c12cc40",
+            "@type": "Person",
+            "name": "CIO-ABCD"
+        }
+    ]
+}

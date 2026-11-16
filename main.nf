@@ -7,8 +7,6 @@
 ----------------------------------------------------------------------------------------
 */
 
-nextflow.enable.dsl = 2
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT FUNCTIONS / MODULES / SUBWORKFLOWS / WORKFLOWS
@@ -32,33 +30,6 @@ params.fasta = getGenomeAttribute('fasta')
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    INPUT CHANNELS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-// Initialize files channels from parameters
-
-ch_vep_cache                  = params.vep_cache          ? Channel.fromPath(params.vep_cache).collect()                : []
-ch_fasta                      = params.fasta              ? Channel.fromPath(params.fasta).collect()                    : Channel.empty()
-ch_transcriptlist             = params.transcriptlist     ? Channel.fromPath(params.transcriptlist).collect()           : []
-ch_datavzrd_config            = params.datavzrd_config    ? Channel.fromPath(params.datavzrd_config).collect()          : Channel.fromPath("$projectDir/assets/datavzrd_config_template.yaml", checkIfExists: true)
-ch_annotation_colinfo         = params.annotation_colinfo ? Channel.fromPath(params.annotation_colinfo).collect()       : Channel.fromPath("$projectDir/assets/annotation_colinfo.tsv", checkIfExists: true)
-ch_bedfile			          = params.bedfile            ? Channel.fromPath(params.bedfile).collect()		            : []
-ch_consequence_tmb            = params.consequence_tmb    ? Channel.fromPath(params.consequence_tmb).collect()          : Channel.fromPath("$projectDir/assets/tmb_consequence_filters.csv", checkIfExists: true).collect()
-ch_custom_filters             = params.custom_filters     ? Channel.fromPath(params.custom_filters).collect()           : []
-
-// Initialize value channels from parameters
-
-ch_vep_cache_version          = params.vep_cache_version       ?: Channel.empty()
-ch_vep_genome                 = params.vep_genome              ?: Channel.empty()
-ch_vep_species                = params.vep_species             ?: Channel.empty()
-ch_annotation_fields          = params.annotation_fields       ?: ''
-
-// VEP extra files
-ch_vep_extra_files            = []
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     NAMED WORKFLOWS FOR PIPELINE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
@@ -73,6 +44,31 @@ workflow CIOABCD_VARIANTINTERPRETATION {
 
 
     main:
+
+    //
+    // INPUT CHANNELS: created here because strict syntax does not allow
+    // statements outside of a process, workflow or function
+    //
+    // Initialize files channels from parameters
+
+    ch_vep_cache                  = params.vep_cache          ? channel.fromPath(params.vep_cache).collect()                : []
+    ch_fasta                      = params.fasta              ? channel.fromPath(params.fasta).collect()                    : channel.empty()
+    ch_transcriptlist             = params.transcriptlist     ? channel.fromPath(params.transcriptlist).collect()           : []
+    ch_datavzrd_config            = params.datavzrd_config    ? channel.fromPath(params.datavzrd_config).collect()          : channel.fromPath("$projectDir/assets/datavzrd_config_template.yaml", checkIfExists: true)
+    ch_annotation_colinfo         = params.annotation_colinfo ? channel.fromPath(params.annotation_colinfo).collect()       : channel.fromPath("$projectDir/assets/annotation_colinfo.tsv", checkIfExists: true)
+    ch_bedfile                    = params.bedfile            ? channel.fromPath(params.bedfile).collect()                    : []
+    ch_consequence_tmb            = params.consequence_tmb    ? channel.fromPath(params.consequence_tmb).collect()          : channel.fromPath("$projectDir/assets/tmb_consequence_filters.csv", checkIfExists: true).collect()
+    ch_custom_filters             = params.custom_filters     ? channel.fromPath(params.custom_filters).collect()           : []
+
+    // Initialize value channels from parameters
+
+    ch_vep_cache_version          = params.vep_cache_version       ?: channel.empty()
+    ch_vep_genome                 = params.vep_genome              ?: channel.empty()
+    ch_vep_species                = params.vep_species             ?: channel.empty()
+    ch_annotation_fields          = params.annotation_fields       ?: ''
+
+    // VEP extra files
+    ch_vep_extra_files            = []
 
     //
     // WORKFLOW: Run pipeline
@@ -102,6 +98,10 @@ workflow CIOABCD_VARIANTINTERPRETATION {
         ch_versions,
         ch_multiqc_files,
         ch_warnings,
+        params.multiqc_config,
+        params.multiqc_logo,
+        params.multiqc_methods_description,
+        params.outdir
     )
 
     emit:
@@ -117,25 +117,27 @@ workflow CIOABCD_VARIANTINTERPRETATION {
 workflow {
 
     main:
-
     //
     // SUBWORKFLOW: Run initialisation tasks
     //
     PIPELINE_INITIALISATION (
         params.version,
-        params.help,
         params.validate_params,
         params.monochrome_logs,
         args,
         params.outdir,
-        params.input
+        params.input,
+        params.help,
+        params.help_full,
+        params.show_hidden
     )
 
     //
     // WORKFLOW: Run main workflow
     //
-    CIOABCD_VARIANTINTERPRETATION (PIPELINE_INITIALISATION.out.samplesheet)
-
+    CIOABCD_VARIANTINTERPRETATION (
+        PIPELINE_INITIALISATION.out.samplesheet
+    )
     //
     // SUBWORKFLOW: Run completion tasks
     //
@@ -145,7 +147,6 @@ workflow {
         params.plaintext_email,
         params.outdir,
         params.monochrome_logs,
-        params.hook_url,
         CIOABCD_VARIANTINTERPRETATION.out.multiqc_report
     )
 }

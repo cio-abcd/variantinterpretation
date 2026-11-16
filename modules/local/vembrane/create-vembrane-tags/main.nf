@@ -9,7 +9,7 @@ process VEMBRANE_CREATE_TAGS {
     path customfilters
 
     output:
-    env tagargs          , emit: tagargs
+    env 'tagargs'        , emit: tagargs
     path "versions.yml"  , emit: versions
 
     when:

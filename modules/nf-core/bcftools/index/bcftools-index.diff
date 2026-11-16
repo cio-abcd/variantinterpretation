@@ -1,0 +1,27 @@
+Changes in component 'nf-core/bcftools/index'
+Changes in 'bcftools/index/main.nf':
+--- modules/nf-core/bcftools/index/main.nf
++++ modules/nf-core/bcftools/index/main.nf
+@@ -20,7 +20,6 @@
+ 
+     script:
+     def args = task.ext.args ?: ''
+-    def prefix = task.ext.prefix ?: "${meta.id}"
+ 
+     """
+     bcftools \\
+@@ -37,7 +36,6 @@
+ 
+     stub:
+     def args = task.ext.args ?: ''
+-    def prefix = task.ext.prefix ?: "${meta.id}"
+     def extension = args.contains("--tbi") || args.contains("-t") ? "tbi" :
+                     "csi"
+     """
+
+'modules/nf-core/bcftools/index/meta.yml' is unchanged
+'modules/nf-core/bcftools/index/environment.yml' is unchanged
+'modules/nf-core/bcftools/index/tests/nextflow.config' is unchanged
+'modules/nf-core/bcftools/index/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/bcftools/index/tests/main.nf.test' is unchanged
+************************************************************

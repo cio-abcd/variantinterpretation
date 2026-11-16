@@ -61,12 +61,12 @@ process BCFTOOLS_ANNOTATE {
                     args.contains("--output-type z") || args.contains("-Oz") ? "vcf.gz" :
                     args.contains("--output-type v") || args.contains("-Ov") ? "vcf" :
                     "vcf"
-    def index = args.contains("--write-index=tbi") || args.contains("-W=tbi") ? "tbi" :
-                args.contains("--write-index=csi") || args.contains("-W=csi") ? "csi" :
-                args.contains("--write-index") || args.contains("-W") ? "csi" :
-                ""
+    def index_ext = args.contains("--write-index=tbi") || args.contains("-W=tbi") ? "tbi" :
+                    args.contains("--write-index=csi") || args.contains("-W=csi") ? "csi" :
+                    args.contains("--write-index") || args.contains("-W") ? "csi" :
+                    ""
     def create_cmd = extension.endsWith(".gz") ? "echo '' | gzip >" : "touch"
-    def create_index = extension.endsWith(".gz") && index.matches("csi|tbi") ? "touch ${prefix}.${extension}.${index}" : ""
+    def create_index = extension.endsWith(".gz") && index_ext.matches("csi|tbi") ? "touch ${prefix}.${extension}.${index_ext}" : ""
 
     """
     ${create_cmd} ${prefix}.${extension}

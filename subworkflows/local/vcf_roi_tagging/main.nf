@@ -17,13 +17,13 @@ workflow TAGROI {
 
     main:
 
-    ch_versions = Channel.empty()
+    ch_versions = channel.empty()
 
     // create a temprorary file with header lines for bcftools annotate
     def tmpdir = "/tmp/cio_variantinterpretation_header_lines_${workflow.sessionId}.txt"
     def f = file("${tmpdir}")
     f.text = "##INFO=<ID=ROI,Number=1,Type=String,Description=\"Region is present in the target regions BED file specified in variantinterpretation pipeline\">"
-    annotation_header = Channel.value("${tmpdir}")
+    annotation_header = channel.value("${tmpdir}")
 
     // Include a boolean flag in the provided BED file for bcftools annotate
     PREPAREBEDFILE (

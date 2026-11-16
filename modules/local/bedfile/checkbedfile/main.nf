@@ -12,9 +12,9 @@ process CHECKBEDFILE {
     path bedfile
 
     output:
-    env  valid_structure						, emit: bed_valid
+    env 'valid_structure'                       , emit: bed_valid
     path "minimized_*"                          , emit: bedfile_min
-    path "versions.yml"							, emit: versions
+    path "versions.yml"                         , emit: versions
 
     when:
     task.ext.when == null || task.ext.when

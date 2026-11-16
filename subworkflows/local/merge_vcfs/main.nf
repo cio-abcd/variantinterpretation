@@ -11,7 +11,7 @@ workflow MERGE_VCFS {
     vcf                // channel: [ val(meta), path(vcf), path(tbi) ]
 
     main:
-    ch_versions = Channel.empty()
+    ch_versions = channel.empty()
 
     // rename samples within VCF files: add 'sample' from samplesheet as prefix to current name.
     BCFTOOLS_SAMPLERENAME(vcf)
@@ -26,16 +26,16 @@ workflow MERGE_VCFS {
     vcf_tbi
         .toList()
         .flatMap { list ->
-            list.sort { it[0].index } // sort channel by index giving the samplesheet order. Important for bcftools merge.
+            list.sort { entry -> entry[0].index } // sort channel by index giving the samplesheet order. Important for bcftools merge.
         }
-        .map {meta, vcf, tbi ->
-                [meta.group, [meta, vcf, tbi]] // set group as first element for .groupTuple
+        .map {meta, vcf_file, tbi ->
+                [meta.group, [meta, vcf_file, tbi]] // set group as first element for .groupTuple
         }
         .groupTuple(by: 0) // group the tuple by this group
         .map {group, ch_vcfs ->
-            def metadata = [group: group, samples: ch_vcfs.collect { it[0].sample }, id: group] // collect sample names, set meta.id to group
-            def vcfs = ch_vcfs.collect { it[1] }.flatten() // collect vcfs
-            def tbis = ch_vcfs.collect { it[2] } // collect tbis
+            def metadata = [group: group, samples: ch_vcfs.collect { entry -> entry[0].sample }, id: group] // collect sample names, set meta.id to group
+            def vcfs = ch_vcfs.collect { entry -> entry[1] }.flatten() // collect vcfs
+            def tbis = ch_vcfs.collect { entry -> entry[2] } // collect tbis
             [metadata, vcfs, tbis]
         }
         .set { group_vcf_tbi }

@@ -28,17 +28,19 @@ process DATAVZRD {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        datavzrd: \$(echo \$(datavzrd --version 2>&1) | sed 's/^.*datavzrd //; s/Using.*\$//' ))
+        datavzrd: \$(echo \$(datavzrd --version 2>&1) | sed 's/^.*datavzrd //; s/Using.*\$//' )
     END_VERSIONS
     """
 
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
+    mkdir report_${prefix}
+    touch report_${prefix}/index.html
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        datavzrd: \$(echo \$(datavzrd --version 2>&1) | sed 's/^.*datavzrd //; s/Using.*\$//' ))
+        datavzrd: \$(echo \$(datavzrd --version 2>&1) | sed 's/^.*datavzrd //; s/Using.*\$//' )
     END_VERSIONS
     """
 }

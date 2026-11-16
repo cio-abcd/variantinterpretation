@@ -14,8 +14,8 @@ workflow CHECKVCF {
     ref_fai              // path: fasta index file
 
     main:
-    ch_versions = Channel.empty()
-    ch_multiqc_reports = Channel.empty()
+    ch_versions = channel.empty()
+    ch_multiqc_reports = channel.empty()
 
     //
     // Check VCF format integrity and reference genome correctness
@@ -36,7 +36,7 @@ workflow CHECKVCF {
                     [ [], []]
     )
     ch_versions        = ch_versions.mix(BCFTOOLS_STATS.out.versions)
-    ch_multiqc_reports = ch_multiqc_reports.mix(BCFTOOLS_STATS.out.stats.collect{ meta, stats -> stats})
+    ch_multiqc_reports = ch_multiqc_reports.mix(BCFTOOLS_STATS.out.stats.collect{ _meta, stats -> stats})
 
     //
     // Check VCF file
@@ -44,7 +44,7 @@ workflow CHECKVCF {
 
     // join vcf and stats file channels
     vcf_stats=vcf_tbi
-        .map { meta, vcf, tbi -> tuple(meta, vcf) }
+        .map { meta, vcf, _tbi -> tuple(meta, vcf) }
         .join(BCFTOOLS_STATS.out.stats)
 
     VCFCHECKS(vcf_stats)

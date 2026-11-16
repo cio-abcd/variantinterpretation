@@ -13,8 +13,7 @@ workflow VCFPROC {
     fasta               // path: fastq file for bcftools norm
 
     main:
-    ch_versions = Channel.empty()
-    ch_multiqc_reports = Channel.empty()
+    ch_versions = channel.empty()
 
     //
     // VCF filtering
@@ -41,7 +40,7 @@ workflow VCFPROC {
     // optional arguments for left-align indels, remove duplicates, etc.
     //
 
-    fasta_meta = fasta.map { fasta -> tuple([ id:'genome' ], fasta) }
+    fasta_meta = fasta.map { fasta_file -> tuple([ id:'genome' ], fasta_file) }
 
     BCFTOOLS_NORM ( proc_vcf_tbi,
                     fasta_meta
